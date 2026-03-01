@@ -170,12 +170,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | AUTH-01 to AUTH-06 | Phase 1 | Pending |
-| LEAD-01 to LEAD-18 | Phase 2 | Pending |
-| QUAL-01 to QUAL-17 | Phase 3 | Pending |
-| WHATS-01 to WHATS-10 | Phase 3 | Pending |
-| EMAIL-01 to EMAIL-10 | Phase 4 | Pending |
-| APPT-01 to APPT-14 | Phase 5 | Pending |
-| CAMP-01 to CAMP-17 | Phase 6 | Pending |
+| LEAD-01 to LEAD-16 | Phase 1 | Pending |
+| LEAD-17, LEAD-18 | Phase 2 | Pending |
+| QUAL-01 to QUAL-17 | Phase 2 | Pending |
+| WHATS-01 to WHATS-10 | Phase 2 | Pending |
+| EMAIL-01 to EMAIL-10 | Phase 3 | Pending |
+| APPT-01 to APPT-14 | Phase 4 | Pending |
+| QUAL-14, QUAL-15, CAMP-01 to CAMP-17 | Phase 5 | Pending |
+| LEAD-09, LEAD-10, LEAD-13, LEAD-14 | Phase 6 | Pending |
 
 **Coverage:**
 - v1 requirements: 98 total
@@ -184,4 +186,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2025-03-01*
-*Last updated: 2025-03-01 after initial definition*
+*Last updated: 2025-03-01 after roadmap creation*
