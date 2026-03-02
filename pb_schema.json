@@ -231,6 +231,66 @@
           }
         }
       ]
+    },
+    {
+      "id": "sessions_collection",
+      "name": "sessions",
+      "type": "base",
+      "schema": [
+        {
+          "id": "sessions_userId",
+          "name": "userId",
+          "type": "relation",
+          "required": true,
+          "options": {
+            "collectionId": "_pb_users_auth_",
+            "cascadeDelete": true,
+            "minSelect": 1,
+            "maxSelect": 1
+          }
+        },
+        {
+          "id": "sessions_deviceName",
+          "name": "deviceName",
+          "type": "text",
+          "required": false,
+          "options": {
+            "min": 1,
+            "max": 200
+          }
+        },
+        {
+          "id": "sessions_deviceType",
+          "name": "deviceType",
+          "type": "select",
+          "required": true,
+          "options": {
+            "values": ["desktop", "mobile", "tablet"],
+            "maxSelect": 1
+          },
+          "default": "desktop"
+        },
+        {
+          "id": "sessions_ipAddress",
+          "name": "ipAddress",
+          "type": "text",
+          "required": false,
+          "options": {
+            "min": 1,
+            "max": 50
+          }
+        },
+        {
+          "id": "sessions_userAgent",
+          "name": "userAgent",
+          "type": "text",
+          "required": false,
+          "options": {
+            "min": 1,
+            "max": 500
+          }
+        }
+      ]
     }
   ]
 }
