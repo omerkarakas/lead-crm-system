@@ -37,12 +37,12 @@ Decimal phases appear between their surrounding integers in numeric order.
 5. User can search leads by name/phone/email and filter by status and tags
 6. User can view lead detail page with all information and add notes/tags
 
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 01-01: Authentication & user roles
-- [ ] 01-02: Lead CRUD operations
-- [ ] 01-03: Lead search, filtering, and detail view
+- [ ] 01-01-PLAN.md — Foundation setup & authentication (Vue 3 + PocketBase, email/password + OAuth)
+- [ ] 01-02-PLAN.md — User management & RBAC (Admin can create users, assign roles)
+- [ ] 01-03-PLAN.md — Lead management complete (CRUD, search, filtering, detail view, notes, tags)
 
 ### Phase 2: WhatsApp & Qualification
 
@@ -161,7 +161,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/3 | Not started | - |
+| 1. Foundation | 0/3 | Ready to execute | - |
 | 2. WhatsApp & Qualification | 0/4 | Not started | - |
 | 3. Email Communication | 0/3 | Not started | - |
 | 4. Appointments | 0/4 | Not started | - |
