@@ -40,12 +40,14 @@ export async function fetchLeads(params: LeadsListParams = {}): Promise<LeadsRes
     filterParts.push(`(${tagFilters.join(' || ')})`);
   }
 
-  const filter = filterParts.length > 0 ? filterParts.join(' && ') : undefined;
+  const options: any = { sort };
 
-  const response = await pb.collection('leads').getList<Lead>(page, perPage, {
-    filter,
-    sort,
-  });
+  // Only add filter if it exists
+  if (filterParts.length > 0) {
+    options.filter = filterParts.join(' && ');
+  }
+
+  const response = await pb.collection('leads').getList<Lead>(page, perPage, options);
 
   return {
     page: response.page,

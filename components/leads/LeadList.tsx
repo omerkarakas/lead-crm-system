@@ -37,7 +37,7 @@ interface LeadListProps {
 
 const STATUS_LABELS: Record<LeadStatus, string> = {
   [LeadStatus.NEW]: 'Yeni',
-  [LeadStatus.QUALIFIED]: 'Hakem',
+  [LeadStatus.QUALIFIED]: 'Aday',
   [LeadStatus.BOOKED]: 'Randevu',
   [LeadStatus.CUSTOMER]: 'Müşteri',
   [LeadStatus.LOST]: 'Kayıp',
@@ -154,6 +154,12 @@ export function LeadList({
               </TableHead>
               <TableHead
                 className="cursor-pointer hover:bg-muted/50"
+                onClick={() => onSort('company')}
+              >
+                Şirket{getSortIndicator('company', sortField, sortOrder)}
+              </TableHead>
+              <TableHead
+                className="cursor-pointer hover:bg-muted/50"
                 onClick={() => onSort('status')}
               >
                 Durum{getSortIndicator('status', sortField, sortOrder)}
@@ -180,6 +186,7 @@ export function LeadList({
                 <TableCell className="font-medium">{lead.name}</TableCell>
                 <TableCell>{lead.phone}</TableCell>
                 <TableCell>{lead.email || '-'}</TableCell>
+                <TableCell>{lead.company || '-'}</TableCell>
                 <TableCell>
                   <Badge variant={STATUS_VARIANTS[lead.status]} className="font-medium">
                     {STATUS_LABELS[lead.status]}

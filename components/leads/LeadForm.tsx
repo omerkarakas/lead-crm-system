@@ -69,7 +69,7 @@ interface LeadFormProps {
 
 const STATUS_LABELS: Record<LeadStatus, string> = {
   [LeadStatus.NEW]: 'Yeni',
-  [LeadStatus.QUALIFIED]: 'Hakem',
+  [LeadStatus.QUALIFIED]: 'Uygun',
   [LeadStatus.BOOKED]: 'Randevu',
   [LeadStatus.CUSTOMER]: 'Müşteri',
   [LeadStatus.LOST]: 'Kayıp',

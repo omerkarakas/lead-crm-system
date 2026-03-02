@@ -12,7 +12,9 @@
       "Bash(npm run build)",
       "Bash(ls -la /c/Dev/claude/mokadijital-website-project/public/ 2>/dev/null || dir \"C:\\\\Dev\\\\claude\\\\mokadijital-website-project\\\\public\" 2>nul)",
       "Bash(ls:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(node:*)",
+      "Bash(wc:*)"
     ]
   }
 }

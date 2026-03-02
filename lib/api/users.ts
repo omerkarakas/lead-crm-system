@@ -32,12 +32,14 @@ export async function fetchUsers(params: UsersListParams = {}): Promise<UsersRes
     filterParts.push(`role = "${role}"`);
   }
 
-  const filter = filterParts.length > 0 ? filterParts.join(' && ') : undefined;
+  const options: any = { sort };
 
-  const response = await pb.collection('users').getList<User>(page, perPage, {
-    filter,
-    sort,
-  });
+  // Only add filter if it exists
+  if (filterParts.length > 0) {
+    options.filter = filterParts.join(' && ');
+  }
+
+  const response = await pb.collection('users').getList<User>(page, perPage, options);
 
   return {
     page: response.page,
@@ -59,13 +61,13 @@ export async function fetchUser(id: string): Promise<User> {
  * Create a new user (Admin only)
  */
 export async function createUser(data: CreateUserDto): Promise<User> {
-  const { passwordConfirm, ...userData } = data;
-
-  // Create user via PocketBase
+  // PocketBase auth collection requires specific format
   const record = await pb.collection('users').create<User>({
-    ...userData,
-    passwordConfirm,
+    email: data.email,
     password: data.password,
+    passwordConfirm: data.passwordConfirm,
+    name: data.name,
+    role: data.role,
   });
 
   return record;
