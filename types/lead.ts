@@ -1,0 +1,104 @@
+export enum LeadStatus {
+  NEW = 'new',
+  QUALIFIED = 'qualified',
+  BOOKED = 'booked',
+  CUSTOMER = 'customer',
+  LOST = 'lost'
+}
+
+export enum LeadSource {
+  WEB_FORM = 'web_form',
+  API = 'api',
+  MANUAL = 'manual',
+  WHATSAPP = 'whatsapp'
+}
+
+export enum LeadQuality {
+  PENDING = 'pending',
+  QUALIFIED = 'qualified'
+}
+
+export interface Lead {
+  id: string;
+  name: string;
+  phone: string;
+  email?: string;
+  company?: string;
+  website?: string;
+  message?: string;
+  source: LeadSource;
+  status: LeadStatus;
+  score: number;
+  quality: LeadQuality;
+  tags: string[];
+  createdBy?: string;
+  created: string;
+  updated: string;
+}
+
+export interface CreateLeadDto {
+  name: string;
+  phone: string;
+  email?: string;
+  company?: string;
+  website?: string;
+  message?: string;
+  source: LeadSource;
+  status?: LeadStatus;
+  score?: number;
+  quality?: LeadQuality;
+  tags?: string[];
+}
+
+export interface UpdateLeadDto {
+  name?: string;
+  phone?: string;
+  email?: string;
+  company?: string;
+  website?: string;
+  message?: string;
+  source?: LeadSource;
+  status?: LeadStatus;
+  score?: number;
+  quality?: LeadQuality;
+  tags?: string[];
+}
+
+export interface Note {
+  id: string;
+  leadId: string;
+  userId: string;
+  content: string;
+  created: string;
+  updated: string;
+  expand?: {
+    userId?: {
+      id: string;
+      name: string;
+      email: string;
+      avatar?: string;
+    };
+  };
+}
+
+export interface CreateNoteDto {
+  leadId: string;
+  content: string;
+}
+
+export interface LeadsResponse {
+  page: number;
+  perPage: number;
+  totalItems: number;
+  totalPages: number;
+  items: Lead[];
+}
+
+export interface LeadsListParams {
+  page?: number;
+  perPage?: number;
+  search?: string;
+  status?: LeadStatus;
+  tags?: string[];
+  sort?: string;
+}
