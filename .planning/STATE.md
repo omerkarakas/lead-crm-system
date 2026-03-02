@@ -10,28 +10,29 @@ See: .planning/PROJECT.md (updated 2025-03-01)
 ## Current Position
 
 Phase: 1 of 6 (Foundation)
-Plan: 1 of 4
+Plan: 2 of 4
 Status: In progress
-Last activity: 2026-03-02 — Completed 01-01-PLAN.md: Foundation setup with Next.js 14, PocketBase integration, and authentication system
+Last activity: 2026-03-02 — Completed 01-02-PLAN.md: User management and RBAC with permission-aware navigation
 
-Progress: [██░░░░░░░░] 25%
+Progress: [████░░░░░░] 50%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 12 min
-- Total execution time: 0.2 hours
+- Total plans completed: 2
+- Average duration: 8 min
+- Total execution time: 0.3 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-foundation | 1 of 4 | 12 min | 12 min |
+| 01-foundation | 2 of 4 | 16 min | 8 min |
 
 **Recent Trend:**
-- Foundation setup with Next.js 14 and PocketBase auth completed
-- Ready to proceed with user management features
+- User management with RBAC completed
+- Permission-based navigation implemented
+- Ready to proceed with lead management features
 
 *Updated after each plan completion*
 
@@ -50,6 +51,10 @@ Recent decisions affecting current work:
 | Cookie-based auth persistence | Better UX, survives browser refresh | 2026-03-02 |
 | Zustand for state management | Lightweight, simple API, no boilerplate | 2026-03-02 |
 | Turkish language UI | Target audience language preference | 2026-03-02 |
+| Role-based access control (RBAC) | Three roles (Admin, Sales, Marketing) with permission mapping | 2026-03-02 |
+| Permission-based navigation | UI elements shown/hidden based on user role | 2026-03-02 |
+| Session management | View and revoke active sessions across devices | 2026-03-02 |
+| Dashboard route group layout | Consistent layout for protected pages | 2026-03-02 |
 
 ### Pending Todos
 
@@ -63,10 +68,12 @@ None yet.
 
 - PocketBase server needs to be set up and running before auth can be tested
 - Users collection needs to be created in PocketBase with proper API rules
+- Sessions collection needs to be created in PocketBase
 - Initial admin user needs to be created via PocketBase Admin UI
+- Session creation on login needs to be implemented (API hook in PocketBase)
 
 ## Session Continuity
 
 Last session: 2026-03-02 (plan execution)
-Stopped at: Completed 01-01-PLAN.md
+Stopped at: Completed 01-02-PLAN.md
 Resume file: None
