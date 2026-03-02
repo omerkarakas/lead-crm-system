@@ -42,7 +42,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 4 plans in 4 waves
 
 Plans:
-- [ ] 01-01-PLAN.md — Foundation setup & authentication (Vue 3 + PocketBase, email/password + OAuth, password reset)
+- [ ] 01-01-PLAN.md — Foundation setup & authentication (Next.js 14 + PocketBase, email/password + OAuth, password reset)
 - [ ] 01-02-PLAN.md — User management & RBAC (Admin can create users, assign roles, device management)
 - [ ] 01-03a-PLAN.md — Lead API & list view (CRUD API, search, filtering, pagination)
 - [ ] 01-03b-PLAN.md — Lead form & detail view (create/edit forms, detail page, notes, tags)
