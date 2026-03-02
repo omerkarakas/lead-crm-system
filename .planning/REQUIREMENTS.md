@@ -9,33 +9,33 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Authentication & Users
 
-- [ ] **AUTH-01**: User can log in with email and password via PocketBase auth
-- [ ] **AUTH-02**: User session persists across browser refresh
-- [ ] **AUTH-03**: User can log out from any page
-- [ ] **AUTH-04**: Admin can create new users (Admin, Sales, Marketing roles)
-- [ ] **AUTH-05**: Admin can assign roles to users
-- [ ] **AUTH-06**: System restricts access based on user role
+- [x] **AUTH-01**: User can log in with email and password via PocketBase auth ✅
+- [x] **AUTH-02**: User session persists across browser refresh ✅
+- [x] **AUTH-03**: User can log out from any page ✅
+- [x] **AUTH-04**: Admin can create new users (Admin, Sales, Marketing roles) ✅
+- [x] **AUTH-05**: Admin can assign roles to users ✅
+- [x] **AUTH-06**: System restricts access based on user role ✅
 
 ### Lead Management
 
-- [ ] **LEAD-01**: User can create lead manually (name, phone, email, company, website, message, source)
-- [ ] **LEAD-02**: User can view lead list with pagination (50 per page)
-- [ ] **LEAD-03**: User can search leads by name, phone, email
-- [ ] **LEAD-04**: User can filter leads by status (new, qualified, booked, customer, lost)
-- [ ] **LEAD-05**: User can filter leads by tags
-- [ ] **LEAD-06**: User can view lead detail page with all information
-- [ ] **LEAD-07**: User can edit lead information
-- [ ] **LEAD-08**: User can delete lead (with confirmation)
-- [ ] **LEAD-09**: User can add notes to lead
-- [ ] **LEAD-10**: System displays lead activity timeline (notes, messages, status changes)
-- [ ] **LEAD-11**: User can add tags to lead
-- [ ] **LEAD-12**: User can remove tags from lead
-- [ ] **LEAD-13**: System displays lead score (calculated from QA answers)
-- [ ] **LEAD-14**: System displays lead quality (pending/qualified based on score threshold)
-- [ ] **LEAD-15**: User can change lead status manually
-- [ ] **LEAD-16**: System records lead source (web_form, api, manual, whatsapp)
-- [ ] **LEAD-17**: API can create lead via webhook (for n8n integration)
-- [ ] **LEAD-18**: API can update lead status (for n8n automation)
+- [x] **LEAD-01**: User can create lead manually (name, phone, email, company, website, message, source) ✅
+- [x] **LEAD-02**: User can view lead list with pagination (50 per page) ✅
+- [x] **LEAD-03**: User can search leads by name, phone, email ✅
+- [x] **LEAD-04**: User can filter leads by status (new, qualified, booked, customer, lost) ✅
+- [x] **LEAD-05**: User can filter leads by tags ✅
+- [x] **LEAD-06**: User can view lead detail page with all information ✅
+- [x] **LEAD-07**: User can edit lead information ✅
+- [x] **LEAD-08**: User can delete lead (with confirmation) ✅
+- [x] **LEAD-09**: User can add notes to lead ✅
+- [ ] **LEAD-10**: System displays lead activity timeline (notes, messages, status changes) ⏳ Phase 6
+- [x] **LEAD-11**: User can add tags to lead ✅
+- [x] **LEAD-12**: User can remove tags from lead ✅
+- [ ] **LEAD-13**: System displays lead score (calculated from QA answers) ⏳ Phase 2
+- [ ] **LEAD-14**: System displays lead quality (pending/qualified based on score threshold) ⏳ Phase 2
+- [x] **LEAD-15**: User can change lead status manually ✅
+- [x] **LEAD-16**: System records lead source (web_form, api, manual, whatsapp) ✅
+- [ ] **LEAD-17**: API can create lead via webhook (for n8n integration) ⏳ Phase 6
+- [ ] **LEAD-18**: API can update lead status (for n8n automation) ⏳ Phase 6
 
 ### Lead Qualification
 
@@ -169,8 +169,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 to AUTH-06 | Phase 1 | Pending |
-| LEAD-01 to LEAD-16 | Phase 1 | Pending |
+| AUTH-01 to AUTH-06 | Phase 1 | ✅ Complete |
+| LEAD-01 to LEAD-16 | Phase 1 | ✅ Complete |
 | LEAD-17, LEAD-18 | Phase 2 | Pending |
 | QUAL-01 to QUAL-17 | Phase 2 | Pending |
 | WHATS-01 to WHATS-10 | Phase 2 | Pending |
@@ -186,4 +186,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2025-03-01*
-*Last updated: 2025-03-01 after roadmap creation*
+*Last updated: 2026-03-02 - Phase 1 complete (AUTH-01 to AUTH-06, LEAD-01 to LEAD-16)*
