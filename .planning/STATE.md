@@ -10,30 +10,33 @@ See: .planning/PROJECT.md (updated 2025-03-01)
 ## Current Position
 
 Phase: 1 of 6 (Foundation)
-Plan: 3a of 4
+Plan: 3b of 4
 Status: In progress
-Last activity: 2026-03-02 — Completed 01-03a-PLAN.md: Lead list API with search, filtering, and pagination
+Last activity: 2026-03-02 — Completed 01-03b-PLAN.md: Lead CRUD and detail view with notes and tags
 
-Progress: [█████░░░░░] 62.5%
+Progress: [██████░░░░] 75%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: 6 min
-- Total execution time: 0.3 hours
+- Total plans completed: 4
+- Average duration: 15 min
+- Total execution time: 1 hour
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-foundation | 3 of 4 | 18 min | 6 min |
+| 01-foundation | 4 of 4 | 60 min | 15 min |
 
 **Recent Trend:**
 - User management with RBAC completed
 - Permission-based navigation implemented
 - Lead list API and UI with search/filter/pagination completed
-- Ready to proceed with lead detail view
+- Lead CRUD operations with form validation completed
+- Lead detail view with notes and tags management completed
+- Fixed auth redirect issue in middleware (server-side token validation)
+- Phase 1 Foundation complete, ready for Phase 2
 
 *Updated after each plan completion*
 
@@ -60,6 +63,9 @@ Recent decisions affecting current work:
 | URL query params for filters | Shareable links for filtered views | 2026-03-02 |
 | Status badge color variants | Visual feedback for lead states | 2026-03-02 |
 | Desktop table + mobile card pattern | Responsive design for lead list | 2026-03-02 |
+| Modal-based CRUD operations | Consistent UI for create/edit actions | 2026-03-02 |
+| Optimistic UI updates | Better UX with rollback on error | 2026-03-02 |
+| Server-side auth validation | Using authRefresh() in middleware for security | 2026-03-02 |
 
 ### Pending Todos
 
@@ -71,14 +77,14 @@ None yet.
 
 [Issues that affect future work]
 
-- PocketBase server needs to be set up and running before auth can be tested
-- Users collection needs to be created in PocketBase with proper API rules
-- Sessions collection needs to be created in PocketBase
-- Initial admin user needs to be created via PocketBase Admin UI
-- Session creation on login needs to be implemented (API hook in PocketBase)
+- None currently blocking
+- Previous concern resolved: Auth redirect issue fixed with server-side token validation
+- Notes stored in lead record - may need separate notes collection for Phase 6 (activity timeline)
+- No file upload capability yet (needed for lead attachments in future phases)
+- Tag autocomplete queries all leads - may need optimization for large datasets
 
 ## Session Continuity
 
-Last session: 2026-03-02 (plan execution)
-Stopped at: Completed 01-03a-PLAN.md
+Last session: 2026-03-02 (plan execution + checkpoint resolution)
+Stopped at: Completed 01-03b-PLAN.md
 Resume file: None
