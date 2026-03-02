@@ -4,12 +4,13 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/stores/auth';
 import { useLeadsStore } from '@/lib/stores/leads';
-import { LeadStatus } from '@/types/lead';
+import { LeadStatus, Lead } from '@/types/lead';
 import { Button } from '@/components/ui/button';
 import { Plus, Loader2 } from 'lucide-react';
 import { LeadSearch } from '@/components/leads/LeadSearch';
 import { LeadFilter } from '@/components/leads/LeadFilter';
 import { LeadList } from '@/components/leads/LeadList';
+import { LeadModal } from '@/components/leads/LeadModal';
 import { useSearchParams } from 'next/navigation';
 
 export default function LeadsPage() {
@@ -28,6 +29,9 @@ export default function LeadsPage() {
 
   const [sortField, setSortField] = useState<string>('created');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingLead, setEditingLead] = useState<Lead | undefined>();
+  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
 
   // Extract unique tags from leads
   const availableTags = useMemo(() => {
@@ -105,6 +109,23 @@ export default function LeadsPage() {
     }
   }, [sortField, sortOrder]);
 
+  const handleAddLead = useCallback(() => {
+    setEditingLead(undefined);
+    setModalMode('create');
+    setIsModalOpen(true);
+  }, []);
+
+  const handleEditLead = useCallback((lead: Lead) => {
+    setEditingLead(lead);
+    setModalMode('edit');
+    setIsModalOpen(true);
+  }, []);
+
+  const handleCloseModal = useCallback(() => {
+    setIsModalOpen(false);
+    setEditingLead(undefined);
+  }, []);
+
   const hasActiveFilters = Boolean(
     filters.search ||
     filters.status ||
@@ -133,7 +154,7 @@ export default function LeadsPage() {
             Leadlerinizi görüntüleyin, arayın ve filtreleyin.
           </p>
         </div>
-        <Button onClick={() => router.push('/leads/create')}>
+        <Button onClick={handleAddLead}>
           <Plus className="mr-2 h-4 w-4" />
           Yeni Lead
         </Button>
@@ -168,6 +189,14 @@ export default function LeadsPage() {
         onSort={handleSort}
         sortField={sortField}
         sortOrder={sortOrder}
+        onEditLead={handleEditLead}
+      />
+
+      <LeadModal
+        open={isModalOpen}
+        onOpenChange={handleCloseModal}
+        lead={editingLead}
+        mode={modalMode}
       />
     </div>
   );

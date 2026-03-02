@@ -12,8 +12,15 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Loader2, Eye, Pencil, Trash2 } from 'lucide-react';
 import { LeadCard } from './LeadCard';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { MoreHorizontal } from 'lucide-react';
 
 interface LeadListProps {
   leads: Lead[];
@@ -25,6 +32,7 @@ interface LeadListProps {
   onSort: (field: string) => void;
   sortField?: string;
   sortOrder?: 'asc' | 'desc';
+  onEditLead?: (lead: Lead) => void;
 }
 
 const STATUS_LABELS: Record<LeadStatus, string> = {
@@ -65,6 +73,7 @@ export function LeadList({
   onSort,
   sortField,
   sortOrder,
+  onEditLead,
 }: LeadListProps) {
   if (loading) {
     return (
@@ -162,6 +171,7 @@ export function LeadList({
               >
                 Kayıt Tarihi{getSortIndicator('created', sortField, sortOrder)}
               </TableHead>
+              <TableHead className="text-right">İşlemler</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -192,6 +202,27 @@ export function LeadList({
                 <TableCell>
                   {new Date(lead.created).toLocaleDateString('tr-TR')}
                 </TableCell>
+                <TableCell className="text-right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => window.location.href = `/leads/${lead.id}`}>
+                        <Eye className="mr-2 h-4 w-4" />
+                        Detay
+                      </DropdownMenuItem>
+                      {onEditLead && (
+                        <DropdownMenuItem onClick={() => onEditLead(lead)}>
+                          <Pencil className="mr-2 h-4 w-4" />
+                          Düzenle
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -204,7 +235,7 @@ export function LeadList({
       {/* Mobile Card View */}
       <div className="md:hidden space-y-4">
         {leads.map((lead) => (
-          <LeadCard key={lead.id} lead={lead} />
+          <LeadCard key={lead.id} lead={lead} onEdit={onEditLead} />
         ))}
         <div className="flex justify-center">
           {renderPagination()}
