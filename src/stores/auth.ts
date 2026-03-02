@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import pb from '@/lib/pocketbase';
 import type { UserRecord, OAuthProvider } from '@/types/pocketbase';
+import type { SessionRecord, DeviceType } from '@/types/sessions';
 import { ROLE_PERMISSIONS } from '@/types/permissions';
 
 export const useAuthStore = defineStore('auth', () => {
@@ -43,6 +44,10 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const authData = await pb.collection('users').authWithPassword(email, password);
       user.value = authData.record as UserRecord;
+
+      // Create session record
+      await createSession();
+
       return authData;
     } catch (err: any) {
       error.value = err.message || 'Login failed';
@@ -106,6 +111,9 @@ export const useAuthStore = defineStore('auth', () => {
         // PocketBase will have set the auth store during the redirect
         if (pb.authStore.isValid && pb.authStore.model) {
           user.value = pb.authStore.model as UserRecord;
+
+          // Create session record after OAuth login
+          await createSession();
         }
 
         // Clean up URL
@@ -166,11 +174,141 @@ export const useAuthStore = defineStore('auth', () => {
     return ROLE_PERMISSIONS[user.value.role] || [];
   });
 
+  // Session management
+  const sessions = ref<SessionRecord[]>([]);
+  const currentSessionId = ref<string | null>(localStorage.getItem('currentSessionId'));
+
+  /**
+   * Get device type from user agent
+   */
+  function getDeviceType(userAgent: string): DeviceType {
+    const ua = userAgent.toLowerCase();
+    if (/mobile|android|iphone|ipod|blackberry|iemobile|opera mini/i.test(ua)) {
+      return 'mobile';
+    }
+    if (/tablet|ipad|playbook|silk/i.test(ua)) {
+      return 'tablet';
+    }
+    return 'desktop';
+  }
+
+  /**
+   * Get device name from user agent
+   */
+  function getDeviceName(userAgent: string): string {
+    const ua = userAgent;
+
+    // Detect browser
+    let browser = 'Unknown Browser';
+    if (ua.includes('Firefox')) browser = 'Firefox';
+    else if (ua.includes('Chrome')) browser = 'Chrome';
+    else if (ua.includes('Safari')) browser = 'Safari';
+    else if (ua.includes('Edge')) browser = 'Edge';
+    else if (ua.includes('Opera')) browser = 'Opera';
+
+    // Detect OS
+    let os = 'Unknown OS';
+    if (ua.includes('Windows')) os = 'Windows';
+    else if (ua.includes('Mac')) os = 'macOS';
+    else if (ua.includes('Linux')) os = 'Linux';
+    else if (ua.includes('Android')) os = 'Android';
+    else if (ua.includes('iOS')) os = 'iOS';
+
+    return `${browser} on ${os}`;
+  }
+
+  /**
+   * Create a new session record
+   */
+  async function createSession() {
+    if (!user.value) return;
+
+    try {
+      const userAgent = navigator.userAgent;
+      const deviceName = getDeviceName(userAgent);
+      const deviceType = getDeviceType(userAgent);
+
+      const session = await pb.collection('sessions').create<SessionRecord>({
+        userId: user.value.id,
+        deviceName,
+        deviceType,
+        userAgent
+      });
+
+      // Store as current session
+      currentSessionId.value = session.id;
+      localStorage.setItem('currentSessionId', session.id);
+
+      return session;
+    } catch (err) {
+      console.error('Failed to create session:', err);
+    }
+  }
+
+  /**
+   * Fetch active sessions for current user
+   */
+  async function fetchActiveSessions() {
+    if (!user.value) return;
+
+    try {
+      const resultList = await pb.collection('sessions').getList<SessionRecord>(
+        1,
+        50,
+        {
+          filter: `userId = "${user.value.id}"`,
+          sort: '-created'
+        }
+      );
+
+      sessions.value = resultList.items;
+      return resultList.items;
+    } catch (err) {
+      console.error('Failed to fetch sessions:', err);
+      return [];
+    }
+  }
+
+  /**
+   * Revoke a specific session
+   */
+  async function revokeSession(sessionId: string) {
+    try {
+      await pb.collection('sessions').delete(sessionId);
+      sessions.value = sessions.value.filter(s => s.id !== sessionId);
+    } catch (err) {
+      console.error('Failed to revoke session:', err);
+      throw err;
+    }
+  }
+
+  /**
+   * Revoke all sessions except the current one
+   */
+  async function revokeAllOtherSessions() {
+    if (!currentSessionId.value) return;
+
+    try {
+      const otherSessions = sessions.value.filter(s => s.id !== currentSessionId.value);
+
+      for (const session of otherSessions) {
+        await pb.collection('sessions').delete(session.id);
+      }
+
+      sessions.value = sessions.value.filter(s => s.id === currentSessionId.value);
+    } catch (err) {
+      console.error('Failed to revoke sessions:', err);
+      throw err;
+    }
+  }
+
   return {
     // State
     user,
     loading,
     error,
+    sessions,
+    currentSessionId,
     // Computed
     isAuthenticated,
     isAdmin,
@@ -185,6 +323,10 @@ export const useAuthStore = defineStore('auth', () => {
     handleOAuthCallback,
     logout,
     requestPasswordReset,
-    resetPassword
+    resetPassword,
+    createSession,
+    fetchActiveSessions,
+    revokeSession,
+    revokeAllOtherSessions
   };
 });

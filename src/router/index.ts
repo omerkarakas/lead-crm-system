@@ -36,6 +36,12 @@ const router = createRouter({
       name: 'users',
       component: () => import('@/views/UsersView.vue'),
       meta: { requiresAuth: true, permission: Permission.MANAGE_USERS }
+    },
+    {
+      path: '/settings/sessions',
+      name: 'settings-sessions',
+      component: () => import('@/views/DeviceManagerView.vue'),
+      meta: { requiresAuth: true }
     }
   ]
 });
