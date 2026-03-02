@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import pb from '@/lib/pocketbase';
 import type { UserRecord, OAuthProvider } from '@/types/pocketbase';
+import { ROLE_PERMISSIONS } from '@/types/permissions';
 
 export const useAuthStore = defineStore('auth', () => {
   // State
@@ -159,6 +160,12 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  // Export user permissions for convenience
+  const userPermissions = computed(() => {
+    if (!user.value) return [];
+    return ROLE_PERMISSIONS[user.value.role] || [];
+  });
+
   return {
     // State
     user,
@@ -169,6 +176,7 @@ export const useAuthStore = defineStore('auth', () => {
     isAdmin,
     isSales,
     isMarketing,
+    userPermissions,
     // Actions
     initAuth,
     login,
