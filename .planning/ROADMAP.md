@@ -31,18 +31,21 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 **Success Criteria** (what must be TRUE):
 1. User can log in with email/password and stay logged in across browser refreshes
-2. Admin can create users and assign them roles (Admin, Sales, Marketing)
-3. System restricts access based on user role (Admin sees all, Sales limited, Marketing limited)
-4. User can create, view, edit, and delete leads with all standard fields (name, phone, email, company, website, message, source, status)
-5. User can search leads by name/phone/email and filter by status and tags
-6. User can view lead detail page with all information and add notes/tags
+2. User can reset password via email link
+3. User can view and revoke active sessions on other devices
+4. Admin can create users and assign them roles (Admin, Sales, Marketing)
+5. System restricts access based on user role (Admin sees all, Sales limited, Marketing limited)
+6. User can create, view, edit, and delete leads with all standard fields (name, phone, email, company, website, message, source, status)
+7. User can search leads by name/phone/email and filter by status and tags
+8. User can view lead detail page with all information and add notes/tags
 
-**Plans**: 3 plans
+**Plans**: 4 plans in 4 waves
 
 Plans:
-- [ ] 01-01-PLAN.md — Foundation setup & authentication (Vue 3 + PocketBase, email/password + OAuth)
-- [ ] 01-02-PLAN.md — User management & RBAC (Admin can create users, assign roles)
-- [ ] 01-03-PLAN.md — Lead management complete (CRUD, search, filtering, detail view, notes, tags)
+- [ ] 01-01-PLAN.md — Foundation setup & authentication (Vue 3 + PocketBase, email/password + OAuth, password reset)
+- [ ] 01-02-PLAN.md — User management & RBAC (Admin can create users, assign roles, device management)
+- [ ] 01-03a-PLAN.md — Lead API & list view (CRUD API, search, filtering, pagination)
+- [ ] 01-03b-PLAN.md — Lead form & detail view (create/edit forms, detail page, notes, tags)
 
 ### Phase 2: WhatsApp & Qualification
 
@@ -161,7 +164,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/3 | Ready to execute | - |
+| 1. Foundation | 0/4 | Ready to execute | - |
 | 2. WhatsApp & Qualification | 0/4 | Not started | - |
 | 3. Email Communication | 0/3 | Not started | - |
 | 4. Appointments | 0/4 | Not started | - |
