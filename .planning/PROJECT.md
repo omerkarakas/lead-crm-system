@@ -86,7 +86,9 @@ Lead toplamadan satışa giden tüm süreci (yakala → qualifie et → randevu 
 | Multi-instance vs Single-tenant DB | Her müşteri ayrı instance = veri izolasyonu, kolay backup, migration | — Pending |
 | Resend for email | Modern API, TypeScript SDK, template management, iyi fiyat | — Pending |
 | Admin panel type | Tek merkezden tüm müşteri instance'larını yönetmek için ayrı admin panel | — Pending |
-| Frontend framework | TBD — Vue/React/Svelte kararı verilecek | — Pending |
+| Frontend framework | Vue 3 + TypeScript + Vite — Simplicity, fast dev, good PB integration | ✓ Implemented (01-01) |
+| Session management | PocketBase built-in authStore — No custom cookie/localStorage needed | ✓ Implemented (01-01) |
+| Authentication flow | Email/password + OAuth (Google/GitHub) via PocketBase authWithOAuth2 | ✓ Implemented (01-01) |
 
 ---
-*Last updated: 2025-03-01 after initialization*
+*Last updated: 2026-03-02 after 01-01 completion*
