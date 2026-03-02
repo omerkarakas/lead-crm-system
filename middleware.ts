@@ -16,12 +16,28 @@ export async function middleware(request: NextRequest) {
 
   // Check if user is authenticated
   let isAuthenticated = false;
-  if (pbCookie) {
+  if (pbCookie?.value) {
     try {
-      pb.authStore.loadFromCookie(`${pbCookie.name}=${pbCookie.value}`);
-      isAuthenticated = pb.authStore.isValid;
+      // Clear any existing auth state first
+      pb.authStore.clear();
+      // Load the cookie value directly - the format should be "pb_auth=<value>"
+      pb.authStore.loadFromCookie(`pb_auth=${pbCookie.value}`);
+      // Check if we have a token and it's valid format
+      const token = pb.authStore.token;
+      if (token && token.length > 0) {
+        // Try to validate with the server
+        try {
+          await pb.collection('users').authRefresh();
+          isAuthenticated = true;
+        } catch (refreshError) {
+          // Token is invalid or expired
+          isAuthenticated = false;
+        }
+      }
     } catch (error) {
-      // Invalid token, continue as unauthenticated
+      // Invalid token format, continue as unauthenticated
+      console.warn('Auth validation failed:', error);
+      isAuthenticated = false;
     }
   }
 
