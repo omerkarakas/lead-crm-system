@@ -5,15 +5,14 @@ type: execute
 wave: 3
 depends_on: [01-02]
 files_modified:
-  - src/stores/leads.ts
-  - src/api/leads.ts
-  - src/views/LeadsView.vue
-  - src/components/leads/LeadList.vue
-  - src/components/leads/LeadCard.vue
-  - src/components/leads/LeadSearch.vue
-  - src/components/leads/LeadFilter.vue
-  - src/router/index.ts
-  - src/types/lead.ts
+  - lib/stores/leads.ts
+  - lib/api/leads.ts
+  - app/leads/page.tsx
+  - components/leads/LeadList.tsx
+  - components/leads/LeadCard.tsx
+  - components/leads/LeadSearch.tsx
+  - components/leads/LeadFilter.tsx
+  - types/lead.ts
 autonomous: true
 must_haves:
   truths:
@@ -24,36 +23,36 @@ must_haves:
     - "Lead API supports CRUD operations with proper error handling"
     - "Non-Admin users see data according to their role permissions"
   artifacts:
-    - path: "src/stores/leads.ts"
-      provides: "Lead management state and actions"
-      exports: ["leads", "fetchLeads", "createLead", "updateLead", "deleteLead", "searchLeads", "filterLeads"]
-    - path: "src/api/leads.ts"
+    - path: "lib/stores/leads.ts"
+      provides: "Lead management state and actions (Zustand)"
+      exports: ["useLeadsStore", "fetchLeads", "createLead", "updateLead", "deleteLead", "searchLeads", "filterLeads"]
+    - path: "lib/api/leads.ts"
       provides: "Lead API functions"
       exports: ["fetchLeads", "createLead", "updateLead", "deleteLead", "searchLeads"]
-    - path: "src/components/leads/LeadSearch.vue"
+    - path: "components/leads/LeadSearch.tsx"
       provides: "Lead search functionality"
       contains: "search input for name, phone, email"
-    - path: "src/components/leads/LeadFilter.vue"
+    - path: "components/leads/LeadFilter.tsx"
       provides: "Lead filtering by status and tags"
       contains: "status filter, tags filter"
-    - path: "src/types/lead.ts"
+    - path: "types/lead.ts"
       provides: "Lead TypeScript types"
       contains: "Lead interface, LeadStatus enum, LeadSource enum"
   key_links:
-    - from: "src/views/LeadsView.vue"
-      to: "src/stores/leads.ts"
+    - from: "app/leads/page.tsx"
+      to: "lib/stores/leads.ts"
       via: "fetch leads on mount and on search/filter changes"
       pattern: "fetchLeads\\("
-    - from: "src/components/leads/LeadList.vue"
-      to: "src/stores/leads.ts"
+    - from: "components/leads/LeadList.tsx"
+      to: "lib/stores/leads.ts"
       via: "display leads from store"
-      pattern: "leads\\.value"
-    - from: "src/components/leads/LeadSearch.vue"
-      to: "src/stores/leads.ts"
+      pattern: "leads"
+    - from: "components/leads/LeadSearch.tsx"
+      to: "lib/stores/leads.ts"
       via: "trigger search on input"
       pattern: "searchLeads\\("
-    - from: "src/components/leads/LeadFilter.vue"
-      to: "src/stores/leads.ts"
+    - from: "components/leads/LeadFilter.tsx"
+      to: "lib/stores/leads.ts"
       via: "trigger filter on selection"
       pattern: "filterLeads\\("
 ---
@@ -83,9 +82,9 @@ Output: Working lead list with search, filtering, pagination, and responsive des
 
 <task type="auto">
   <name>Task 1: Build Lead CRUD API and store</name>
-  <files>src/types/lead.ts, src/api/leads.ts, src/stores/leads.ts</files>
+  <files>types/lead.ts, lib/api/leads.ts, lib/stores/leads.ts</files>
   <action>
-    1. Define Lead types (src/types/lead.ts):
+    1. Define Lead types (types/lead.ts):
        ```typescript
        export enum LeadStatus {
          NEW = 'new',
@@ -147,7 +146,7 @@ Output: Working lead list with search, filtering, pagination, and responsive des
        }
        ```
 
-    2. Create Lead API functions (src/api/leads.ts):
+    2. Create Lead API functions (lib/api/leads.ts):
        - fetchLeads(params): GET with pagination, search, filter params
          - page: number (default 1)
          - perPage: number (default 50)
@@ -162,7 +161,7 @@ Output: Working lead list with search, filtering, pagination, and responsive des
        - addNote(leadId, content): POST add note to lead
        - getNotes(leadId): GET notes for lead
 
-    3. Create Pinia store (src/stores/leads.ts):
+    3. Create Zustand store (lib/stores/leads.ts):
        - State: leads[], currentLead, loading, error, pagination (page, totalPages, totalItems)
        - Actions:
          - fetchLeads(params) - with pagination support
@@ -172,18 +171,10 @@ Output: Working lead list with search, filtering, pagination, and responsive des
          - deleteLead(id) - removes from list
          - addNote(leadId, content) - adds note to currentLead
          - fetchNotes(leadId) - loads notes for currentLead
-       - Getters:
-         - filteredLeads - computed from search/filter params
-         - leadsByStatus - grouped by status
        - Use PocketBase SDK with proper error handling
 
     4. Set up PocketBase API rules for leads collection (document in README):
-       - Create: All authenticated users can create
-       - Read: Admin all, Sales/Marketing all (for this phase - no filtering yet)
-       - Update: Admin all, Sales/Marketing can edit leads they created (or all for phase 1)
-       - Delete: Admin all, Sales/Marketing can delete leads they created (or all for phase 1)
-
-       For Phase 1, we allow all users to see all leads (no data filtering by user). This will be tightened in later phases if needed.
+       For Phase 1, all authenticated users can see and edit all leads.
 
        Example PocketBase rules:
        ```
@@ -212,28 +203,23 @@ Output: Working lead list with search, filtering, pagination, and responsive des
 
 <task type="auto">
   <name>Task 2: Create lead list with search, filtering, and pagination</name>
-  <files>src/views/LeadsView.vue, src/components/leads/LeadList.vue, src/components/leads/LeadCard.vue, src/components/leads/LeadSearch.vue, src/components/leads/LeadFilter.vue, src/router/index.ts</files>
+  <files>app/leads/page.tsx, components/leads/LeadList.tsx, components/leads/LeadCard.tsx, components/leads/LeadSearch.tsx, components/leads/LeadFilter.tsx</files>
   <action>
-    1. Add /leads route to router (src/router/index.ts):
-       - Route: /leads with component LeadsView
-       - Meta: { requiresAuth: true }
-       - Permission check: canCreateLeads or canViewAllLeads
-
-    2. Create LeadsView (src/views/LeadsView.vue):
+    1. Create leads page (app/leads/page.tsx):
        - Page title: "Leads"
        - Action buttons: "Add Lead" (if canCreateLeads) - placeholder for now (form in Plan 03b)
        - Search and filter section
        - Lead list component
        - Breadcrumb navigation
 
-    3. Create LeadSearch component (src/components/leads/LeadSearch.vue):
+    2. Create LeadSearch component (components/leads/LeadSearch.tsx):
        - Search input field
        - Placeholder: "Search by name, phone, or email..."
        - Debounced search (300ms delay)
        - Clear button (X) to reset search
-       - Emits search event with query string
+       - Uses useState + useEffect for search
 
-    4. Create LeadFilter component (src/components/leads/LeadFilter.vue):
+    3. Create LeadFilter component (components/leads/LeadFilter.tsx):
        - Status filter: dropdown or button group
          - Options: All, New, Qualified, Booked, Customer, Lost
          - Show count per status (e.g., "New (12)")
@@ -241,44 +227,41 @@ Output: Working lead list with search, filtering, pagination, and responsive des
          - Show available tags from all leads
          - Allow selecting multiple tags
          - Clear filters button
-       - Emits filter event with { status, tags }
 
-    5. Create LeadList component (src/components/leads/LeadList.vue):
+    4. Create LeadList component (components/leads/LeadList.tsx):
        - Table layout for desktop:
          - Columns: Name, Phone, Email, Company, Status, Tags, Source, Created, Actions
          - Status badges with colors (New: gray, Qualified: blue, Booked: yellow, Customer: green, Lost: red)
          - Tags as chips with colors
          - Source badges (web_form: purple, api: cyan, manual: gray, whatsapp: green)
-         - Actions: View button (opens detail - placeholder for Plan 03b), Edit button (if canEditLeads - placeholder), Delete button (if canDeleteLeads - placeholder)
+         - Actions: View button, Edit button, Delete button
        - Pagination controls:
          - Page info: "Showing 1-50 of 123 leads"
          - Previous/Next buttons
-         - Page number buttons (1, 2, 3...)
-         - Go to page input
-       - Empty state: "No leads found. Try adjusting filters or create your first lead."
+         - Page number buttons
+       - Empty state: "No leads found"
        - Loading state: Spinner or skeleton rows
        - Fetch leads from leadsStore on mount
        - Watch for search/filter changes and refetch
 
-    6. Create LeadCard component (src/components/leads/LeadCard.vue - mobile responsive):
-       - Card layout with same information as table row
+    5. Create LeadCard component (components/leads/LeadCard.tsx):
+       - Card layout for mobile responsive
+       - Same information as table row
        - Expandable for more details
-       - Action buttons at bottom
-       - Grid layout for mobile (2 columns)
 
-    7. Implement sorting:
+    6. Implement sorting:
        - Click column headers to sort
        - Toggle between ascending/descending
        - Visual indicator (arrow) for sort direction
 
-    8. Update LeadsView to handle search/filter:
+    7. Handle search/filter:
        - Maintain local state for searchQuery, statusFilter, tagFilters
-       - Pass to LeadList for fetchLeads call
        - Update URL query params for shareable links (?status=new&search=john)
+       - Use useSearchParams from next/navigation
 
     Note: Create/Edit/Delete buttons are placeholders that will be implemented in Plan 03b.
   </action>
-  <verify>Visit /leads, see lead list (empty or with test data), search works, filter by status works, filter by tags works, pagination works, sorting works, responsive design works on mobile</verify>
+  <verify>Visit /leads, see lead list, search works, filter by status works, filter by tags works, pagination works, sorting works, responsive design works on mobile</verify>
   <done>Lead list displays with search, filtering, sorting, and pagination</done>
 </task>
 

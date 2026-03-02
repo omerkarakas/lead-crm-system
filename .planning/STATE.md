@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2025-03-01)
 ## Current Position
 
 Phase: 1 of 6 (Foundation)
-Plan: 2 of TBD
-Status: In progress
-Last activity: 2026-03-02 — Completed 01-02: User management and permissions
+Plan: 0 of 4
+Status: Ready to execute
+Last activity: 2026-03-02 — Tech stack change: Vue → Next.js
 
-Progress: [██░░░░░░░░] 20%
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -27,11 +27,11 @@ Progress: [██░░░░░░░░] 20%
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-foundation | 2 of 4 | 13 min | 6.5 min |
+| 01-foundation | 0 of 4 | 0 min | — |
 
 **Recent Trend:**
-- Last 5 plans: 6.5min
-- Trend: Fast execution (2 plans completed)
+- Tech stack changed to Next.js
+- Ready to start execution
 
 *Updated after each plan completion*
 
@@ -44,13 +44,9 @@ Recent decisions affecting current work:
 
 | Decision | Rationale | Date |
 |----------|-----------|------|
-| Vue 3 + TypeScript + Vite | Simplicity, fast dev, good PB integration | 2026-03-02 |
-| PocketBase authStore | Built-in session persistence | 2026-03-02 |
-| Navigation guard pattern | Vue Router beforeEach for protected routes | 2026-03-02 |
-| TypeScript path aliases | @/* -> ./src/* for clean imports | 2026-03-02 |
-| Regular enums (not const) | Better IDE support, removed erasableSyntaxOnly | 2026-03-02 |
-| Dual-layer security | Frontend permission UX + PocketBase API rules | 2026-03-02 |
-| Session tracking via localStorage | Current session identification for revoke feature | 2026-03-02 |
+| Next.js 14 + TypeScript | App Router, Server Components, RSC, better DX | 2026-03-02 |
+| Tailwind CSS + shadcn/ui | Modern styling with pre-built components | 2026-03-02 |
+| PocketBase as backend | Self-contained, Go-based, easy deployment | 2026-03-02 |
 
 ### Pending Todos
 

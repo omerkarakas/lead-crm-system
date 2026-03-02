@@ -1,0 +1,18 @@
+{
+  "env": {
+    "ANTHROPIC_AUTH_TOKEN": "03d62b2eabc04169bdcc3b756f994199.oajf2Hpr7PLV8qjE"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(npx next build)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(python3:*)",
+      "WebSearch",
+      "Bash(npm run build)",
+      "Bash(ls -la /c/Dev/claude/mokadijital-website-project/public/ 2>/dev/null || dir \"C:\\\\Dev\\\\claude\\\\mokadijital-website-project\\\\public\" 2>nul)",
+      "Bash(ls:*)",
+      "Bash(rm:*)"
+    ]
+  }
+}
