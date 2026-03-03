@@ -36,7 +36,7 @@ migrate((app) => {
         required: true,
         options: {
           values: ["a", "b", "c"],
-          maxSelect": 1
+          maxSelect: 1
         }
       },
       {
