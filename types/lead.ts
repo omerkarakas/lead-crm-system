@@ -29,9 +29,14 @@ export interface Lead {
   source: LeadSource;
   status: LeadStatus;
   score: number;
+  total_score?: number;
   quality: LeadQuality;
   tags: string[];
   createdBy?: string;
+  qa_sent: boolean;
+  qa_sent_at?: string;
+  qa_completed: boolean;
+  qa_completed_at?: string;
   created: string;
   updated: string;
 }

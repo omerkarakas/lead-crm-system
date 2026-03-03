@@ -40,6 +40,7 @@ export interface WhatsAppMessage {
   direction: 'incoming' | 'outgoing';
   message_text: string;
   message_type: 'poll' | 'booking_link' | 'info' | 'error';
-  status: 'sent' | 'delivered' | 'read' | 'failed';
+  status: 'sent' | 'delivered' | 'read' | 'failed' | 'received';
   sent_at?: string;
+  green_api_id?: string;
 }
