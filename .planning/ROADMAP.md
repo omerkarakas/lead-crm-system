@@ -62,7 +62,7 @@ Plans:
 4. System displays lead's total score, quality status (qualified/pending), and score breakdown per question on lead detail page
 5. User can view full WhatsApp conversation history on lead detail page with message direction (incoming/outgoing) and status
 
-**Plans**: 5 plans in 4 waves
+**Plans**: 4 plans in 4 waves
 
 Plans:
 
@@ -85,12 +85,12 @@ Plans:
 3. System saves sent emails to messages table with delivery status
 4. User can view email history on lead detail page
 
-**Plans**: TBD
+**Plans**: 3 plans in 2 waves
 
 Plans:
-- [ ] 03-01: Email sending via Resend API
-- [ ] 03-02: Email template management
-- [ ] 03-03: Email history display on lead detail
+- [ ] 03-01-PLAN.md — Resend email integration with variable substitution and logging
+- [ ] 03-02-PLAN.md — Email template management (admin-only CRUD)
+- [ ] 03-03-PLAN.md — Email sending UI and history display on lead detail
 
 ### Phase 4: Appointments
 
@@ -167,7 +167,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 |-------|----------------|--------|-----------|
 | 1. Foundation | 4/4 | ✅ Complete | 2026-03-02 |
 | 2. WhatsApp & Qualification | 4/4 | ✅ Complete | 2026-03-03 |
-| 3. Email Communication | 0/3 | Not started | - |
+| 3. Email Communication | 0/3 | 🔄 Planning | - |
 | 4. Appointments | 0/4 | Not started | - |
 | 5. Campaigns & Nurturing | 0/5 | Not started | - |
 | 6. Polish & Integration | 0/3 | Not started | - |
