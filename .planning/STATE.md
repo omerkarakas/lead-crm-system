@@ -10,29 +10,33 @@ See: .planning/PROJECT.md (updated 2025-03-01)
 ## Current Position
 
 Phase: 2 of 6 (WhatsApp & Qualification)
-Plan: 2 of 4
+Plan: 4 of 4
 Status: In progress
-Last activity: 2026-03-03 — Completed 02-02 WhatsApp Integration & QA Flow Engine
+Last activity: 2026-03-03 — Completed 02-04 WhatsApp Message History UI
 
-Progress: [█████░░░░░] 25% (1/6 phases complete, 6/24 plans)
+Progress: [█████░░░░░] 29% (1/6 phases complete, 7/24 plans)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 6
-- Average duration: 11 min
-- Total execution time: 1 hour 5 min
+- Total plans completed: 7
+- Average duration: 10 min
+- Total execution time: 1 hour 6 min
 
 **By Phase:**
 
 | Phase                    | Plans     | Total     | Avg/Plan |
 |--------------------------|-----------|-----------|----------|
 | 01-foundation            | 4 of 4    | 60 min    | 15 min   |
-| 02-whatsapp-qualification | 2 of 4    | 5 min     | 2.5 min  |
+| 02-whatsapp-qualification | 4 of 4    | 6 min     | 1.5 min  |
 
 **Recent Trend:**
 
+- Chat-bubble WhatsApp message history UI with auto-refresh
+- Message status badges (sent/delivered/read/failed) with Lucide icons
+- Turkish locale timestamps for WhatsApp messages
+- 30-second auto-refresh for real-time message updates
 - WhatsApp webhook endpoint created for incoming messages
 - Background job for delayed poll sending (1 minute after lead creation)
 - Poll answer parser supporting multiple formats
@@ -85,6 +89,9 @@ Recent decisions affecting current work:
 | Green API integration | WhatsApp messaging via Green API with webhook | 2026-03-03 |
 | Poll sending delay | 1 minute delay after lead creation | 2026-03-03 |
 | Answer format support | Multiple formats: '1a, 2b', '1a2b', 'ab', 'a b' | 2026-03-03 |
+| Chat-bubble UI pattern | Left=incoming, right=outgoing with status badges | 2026-03-03 |
+| WhatsApp auto-refresh | 30-second polling interval for message updates | 2026-03-03 |
+| Turkish timestamp format | DD.MM.YYYY HH:MM using Intl.DateTimeFormat | 2026-03-03 |
 
 ### Pending Todos
 
@@ -107,5 +114,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-03 (plan execution)
-Stopped at: Completed 02-02-PLAN.md
+Stopped at: Completed 02-04-PLAN.md
 Resume file: None
