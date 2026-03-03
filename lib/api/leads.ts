@@ -10,7 +10,7 @@ import type {
 } from '@/types/lead';
 import { fetchActiveQuestions } from '@/lib/api/qa';
 import { sendWhatsAppMessage, logWhatsAppMessage } from '@/lib/api/whatsapp';
-import { QA_CONFIG, formatWelcomeMessage } from '@/lib/config/qa';
+import { formatPollMessage as formatWhatsAppPollMessage } from '@/lib/whatsapp/message-formatter';
 
 /**
  * Fetch all leads with pagination and filtering
@@ -147,23 +147,6 @@ export async function deleteNote(noteId: string): Promise<void> {
 }
 
 /**
- * Format poll message for WhatsApp
- */
-function formatPollMessage(lead: Lead, questions: any[]): string {
-  // Format welcome message
-  let welcome = formatWelcomeMessage(lead.name || 'Değerli Müşterimiz', lead.company);
-
-  // Format questions
-  const questionsText = questions.map((q, index) => {
-    const num = index + 1;
-    const options = q.options.join('\n   ');
-    return `${num}. ${q.question_text}\n   ${options}`;
-  }).join('\n\n');
-
-  return welcome + '\n\n' + questionsText + QA_CONFIG.pollFooter;
-}
-
-/**
  * Send poll after 1 minute delay
  */
 export async function sendPollAfterDelay(leadId: string): Promise<void> {
@@ -192,7 +175,7 @@ export async function sendPollAfterDelay(leadId: string): Promise<void> {
     }
 
     // Format poll message
-    const pollMessage = formatPollMessage(lead, questions);
+    const pollMessage = formatWhatsAppPollMessage(lead, questions);
 
     // Send WhatsApp
     const chatId = lead.phone.replace(/\D/g, '') + '@c.us';
