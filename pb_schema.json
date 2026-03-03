@@ -188,6 +188,16 @@
           "name": "qa_completed_at",
           "type": "date",
           "required": false
+        },
+        {
+          "id": "leads_total_score",
+          "name": "total_score",
+          "type": "number",
+          "required": false,
+          "options": {
+            "min": null,
+            "max": null
+          }
         }
       ]
     },
