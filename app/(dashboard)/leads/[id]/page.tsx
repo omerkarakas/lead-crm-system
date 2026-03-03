@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { LeadInfo } from '@/components/leads/LeadInfo';
 import { NotesSection } from '@/components/leads/NotesSection';
 import { TagsManager } from '@/components/leads/TagsManager';
+import { WhatsAppConversation } from '@/components/leads/WhatsAppConversation';
 import { LeadDetailActions } from '@/components/leads/LeadDetailActions';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
@@ -48,6 +49,7 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <LeadInfo lead={lead} />
+          <WhatsAppConversation leadId={lead.id} />
           <NotesSection leadId={lead.id} />
         </div>
         <div className="space-y-6">
