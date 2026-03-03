@@ -104,30 +104,7 @@ migrate((app) => {
     "viewRule": null
   });
 
-  const savedCollection = app.save(collection);
-
-  // Seed default questions
-  const dao = new Dao();
-
-  // Question 1: Şirket büyüklüğü
-  const q1 = new Record(savedCollection);
-  q1.set("question_text", "Şirketinizde kaç kişi çalışıyor?");
-  q1.set("options", ["a) 1-10 kişi", "b) 11-50 kişi", "c) 51+ kişi"]);
-  q1.set("points", { "a": 30, "b": 60, "c": 100 });
-  q1.set("order", 1);
-  q1.set("is_active", true);
-  dao.saveRecord(q1);
-
-  // Question 2: Hizmet türü
-  const q2 = new Record(savedCollection);
-  q2.set("question_text", "Hangi hizmeti arıyorsunuz?");
-  q2.set("options", ["a) Danışmanlık", "b) Yazılım Geliştirme", "c) Dijital Pazarlama"]);
-  q2.set("points", { "a": 30, "b": 60, "c": 100 });
-  q2.set("order", 2);
-  q2.set("is_active", true);
-  dao.saveRecord(q2);
-
-  return savedCollection;
+  return app.save(collection);
 }, (app) => {
   const collection = app.findCollectionByNameOrId("pbc_3705076666");
 
