@@ -7,7 +7,8 @@ import { canManageQAQuestions } from '@/lib/utils/permissions';
 import { useQAStore } from '@/lib/stores/qa';
 import { QuestionBuilder } from '@/components/admin/qa/QuestionBuilder';
 import { QuestionList } from '@/components/admin/qa/QuestionList';
-import { WelcomeMessageConfig, DEFAULT_WELCOME_MESSAGE, POLL_FOOTER } from '@/components/admin/qa/WelcomeMessageConfig';
+import { WelcomeMessageConfig } from '@/components/admin/qa/WelcomeMessageConfig';
+import { QA_CONFIG } from '@/lib/config/qa';
 import { Button } from '@/components/ui/button';
 import { Plus, MessageSquare, Settings, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -21,7 +22,7 @@ export default function AdminQAPage() {
   const [builderOpen, setBuilderOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<QAQuestion | null>(null);
   const [welcomeConfigOpen, setWelcomeConfigOpen] = useState(false);
-  const [welcomeMessage, setWelcomeMessage] = useState(DEFAULT_WELCOME_MESSAGE);
+  const [welcomeMessage, setWelcomeMessage] = useState(QA_CONFIG.welcomeMessage);
 
   useEffect(() => {
     checkAuth();
@@ -34,11 +35,9 @@ export default function AdminQAPage() {
   }, [user, fetchQuestions]);
 
   useEffect(() => {
-    // Load welcome message from localStorage
+    // Load welcome message from localStorage or use default
     const saved = localStorage.getItem('qa_welcome_message');
-    if (saved) {
-      setWelcomeMessage(saved);
-    }
+    setWelcomeMessage(saved || QA_CONFIG.welcomeMessage);
   }, []);
 
   // Redirect if not authenticated
