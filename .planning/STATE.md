@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2025-03-01)
 ## Current Position
 
 Phase: 2 of 6 (WhatsApp & Qualification)
-Plan: 4 of 4
+Plan: 3 of 4
 Status: In progress
-Last activity: 2026-03-03 — Completed 02-04 WhatsApp Message History UI
+Last activity: 2026-03-03 — Completed 02-03 Lead Scoring Display & Completion Flow
 
 Progress: [█████░░░░░] 29% (1/6 phases complete, 7/24 plans)
 
@@ -22,17 +22,21 @@ Progress: [█████░░░░░] 29% (1/6 phases complete, 7/24 plans)
 
 - Total plans completed: 7
 - Average duration: 10 min
-- Total execution time: 1 hour 6 min
+- Total execution time: 1 hour 7 min
 
 **By Phase:**
 
 | Phase                    | Plans     | Total     | Avg/Plan |
 |--------------------------|-----------|-----------|----------|
 | 01-foundation            | 4 of 4    | 60 min    | 15 min   |
-| 02-whatsapp-qualification | 4 of 4    | 6 min     | 1.5 min  |
+| 02-whatsapp-qualification | 3 of 4    | 7 min     | 2.3 min  |
 
 **Recent Trend:**
 
+- Score display with breakdown by question and quality badge
+- QA answers table showing question/answer/points for each response
+- Admin-only manual poll trigger with "Tekrar Gönder" button
+- QA scoring section with status timestamps (sent, completed)
 - Chat-bubble WhatsApp message history UI with auto-refresh
 - Message status badges (sent/delivered/read/failed) with Lucide icons
 - Turkish locale timestamps for WhatsApp messages
@@ -89,6 +93,9 @@ Recent decisions affecting current work:
 | Green API integration | WhatsApp messaging via Green API with webhook | 2026-03-03 |
 | Poll sending delay | 1 minute delay after lead creation | 2026-03-03 |
 | Answer format support | Multiple formats: '1a, 2b', '1a2b', 'ab', 'a b' | 2026-03-03 |
+| Quality badge variants | shadcn/ui Badge for qualified/pending status | 2026-03-03 |
+| Score breakdown display | Per-question points in ScoreDisplay component | 2026-03-03 |
+| Manual poll trigger | Admin-only resend via POST /api/leads/[id]/send-poll | 2026-03-03 |
 | Chat-bubble UI pattern | Left=incoming, right=outgoing with status badges | 2026-03-03 |
 | WhatsApp auto-refresh | 30-second polling interval for message updates | 2026-03-03 |
 | Turkish timestamp format | DD.MM.YYYY HH:MM using Intl.DateTimeFormat | 2026-03-03 |
@@ -114,5 +121,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-03 (plan execution)
-Stopped at: Completed 02-04-PLAN.md
+Stopped at: Completed 02-03-PLAN.md
 Resume file: None
