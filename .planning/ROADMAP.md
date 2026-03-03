@@ -13,7 +13,7 @@ Moka CRM transforms lead-to-customer conversion through automation. We build fro
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - Authentication, roles, and basic lead management ✅ Completed 2026-03-02
-- [ ] **Phase 2: WhatsApp & Qualification** - QA system with automated WhatsApp scoring
+- [x] **Phase 2: WhatsApp & Qualification** - QA system with automated WhatsApp scoring ✅ Completed 2026-03-03
 - [ ] **Phase 3: Email Communication** - Email sending, templates, and manual messaging
 - [ ] **Phase 4: Appointments** - Cal.com integration with booking workflow
 - [ ] **Phase 5: Campaigns & Nurturing** - Multi-channel sequences and automation
@@ -70,7 +70,6 @@ Plans:
 - [x] 02-02-PLAN.md — WhatsApp integration & QA flow engine (webhook, background job, poll sender, answer parser) ✅
 - [x] 02-03-PLAN.md — Lead scoring display & completion flow (score display, quality badge, answers table, manual trigger) ✅
 - [x] 02-04-PLAN.md — WhatsApp message history UI (chat-bubble interface, status badges, auto-refresh) ✅
-- [ ] 02-05-PLAN.md — Gap closure: Add Phase 2 fields to leads collection (qa_sent, qa_sent_at, qa_completed, qa_completed_at, total_score)
 
 ### Phase 3: Email Communication
 
