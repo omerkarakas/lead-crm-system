@@ -62,13 +62,15 @@ Plans:
 4. System displays lead's total score, quality status (qualified/pending), and score breakdown per question on lead detail page
 5. User can view full WhatsApp conversation history on lead detail page with message direction (incoming/outgoing) and status
 
-**Plans**: TBD
+**Plans**: 5 plans in 4 waves
 
 Plans:
-- [ ] 02-01: QA question builder and management
-- [ ] 02-02: WhatsApp integration for Q&A flow
-- [ ] 02-03: Lead scoring calculation and display
-- [ ] 02-04: WhatsApp message history UI
+
+- [x] 02-01-PLAN.md — QA question builder & data model (PocketBase collection, admin UI, welcome message config) ✅
+- [x] 02-02-PLAN.md — WhatsApp integration & QA flow engine (webhook, background job, poll sender, answer parser) ✅
+- [x] 02-03-PLAN.md — Lead scoring display & completion flow (score display, quality badge, answers table, manual trigger) ✅
+- [x] 02-04-PLAN.md — WhatsApp message history UI (chat-bubble interface, status badges, auto-refresh) ✅
+- [ ] 02-05-PLAN.md — Gap closure: Add Phase 2 fields to leads collection (qa_sent, qa_sent_at, qa_completed, qa_completed_at, total_score)
 
 ### Phase 3: Email Communication
 
@@ -165,7 +167,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 4/4 | ✅ Complete | 2026-03-02 |
-| 2. WhatsApp & Qualification | 0/4 | Ready to execute | - |
+| 2. WhatsApp & Qualification | 4/5 | Gap closure needed | - |
 | 3. Email Communication | 0/3 | Not started | - |
 | 4. Appointments | 0/4 | Not started | - |
 | 5. Campaigns & Nurturing | 0/5 | Not started | - |
