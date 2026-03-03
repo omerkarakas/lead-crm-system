@@ -8,6 +8,9 @@ import type {
   LeadsResponse,
   LeadsListParams,
 } from '@/types/lead';
+import { fetchActiveQuestions } from '@/lib/api/qa';
+import { sendWhatsAppMessage, logWhatsAppMessage } from '@/lib/api/whatsapp';
+import { QA_CONFIG, formatWelcomeMessage } from '@/lib/config/qa';
 
 /**
  * Fetch all leads with pagination and filtering
@@ -78,7 +81,14 @@ export async function createLead(data: CreateLeadDto): Promise<Lead> {
     score: data.score ?? 0,
     quality: data.quality || 'pending',
     tags: data.tags || [],
+    qa_sent: false,
+    qa_completed: false,
   });
+
+  // Trigger background job (fire and forget)
+  sendPollAfterDelay(record.id).catch(err =>
+    console.error('Poll send background job error:', err)
+  );
 
   return record;
 }
@@ -134,4 +144,108 @@ export async function getNotes(leadId: string): Promise<Note[]> {
  */
 export async function deleteNote(noteId: string): Promise<void> {
   await pb.collection('notes').delete(noteId);
+}
+
+/**
+ * Format poll message for WhatsApp
+ */
+function formatPollMessage(lead: Lead, questions: any[]): string {
+  // Format welcome message
+  let welcome = formatWelcomeMessage(lead.name || 'Değerli Müşterimiz', lead.company);
+
+  // Format questions
+  const questionsText = questions.map((q, index) => {
+    const num = index + 1;
+    const options = q.options.join('\n   ');
+    return `${num}. ${q.question_text}\n   ${options}`;
+  }).join('\n\n');
+
+  return welcome + '\n\n' + questionsText + QA_CONFIG.pollFooter;
+}
+
+/**
+ * Send poll after 1 minute delay
+ */
+export async function sendPollAfterDelay(leadId: string): Promise<void> {
+  // 1 minute delay
+  await new Promise(resolve => setTimeout(resolve, 60000));
+
+  try {
+    // Fetch lead
+    const lead = await fetchLead(leadId);
+    if (!lead || !lead.phone) {
+      console.error('Lead not found or no phone:', leadId);
+      return;
+    }
+
+    // Skip if already sent
+    if (lead.qa_sent) {
+      console.log('QA poll already sent for lead:', leadId);
+      return;
+    }
+
+    // Fetch active questions
+    const questions = await fetchActiveQuestions();
+    if (questions.length === 0) {
+      console.error('No active questions found');
+      return;
+    }
+
+    // Format poll message
+    const pollMessage = formatPollMessage(lead, questions);
+
+    // Send WhatsApp
+    const chatId = lead.phone.replace(/\D/g, '') + '@c.us';
+    const result = await sendWhatsAppMessage(chatId, pollMessage);
+
+    if (!result) {
+      console.error('Failed to send WhatsApp message');
+      return;
+    }
+
+    // Log message
+    await logWhatsAppMessage({
+      lead_id: leadId,
+      direction: 'outgoing',
+      message_text: pollMessage,
+      message_type: 'poll',
+      status: 'sent',
+      sent_at: new Date().toISOString(),
+      green_api_id: result.idMessage
+    });
+
+    // Update lead: qa_sent = true
+    await updateLead(leadId, {
+      qa_sent: true,
+      qa_sent_at: new Date().toISOString()
+    });
+
+    console.log('QA poll sent successfully to lead:', leadId);
+  } catch (error) {
+    console.error('Error sending poll after delay:', error);
+  }
+}
+
+/**
+ * Find lead by phone number
+ */
+export async function findLeadByPhone(phone: string): Promise<Lead | null> {
+  try {
+    // Remove @c.us suffix if present
+    const cleanPhone = phone.replace('@c.us', '').replace(/\D/g, '');
+
+    const response = await pb.collection('leads').getList<Lead>(1, 1, {
+      filter: `phone ~ "${cleanPhone}"`,
+      sort: '-created'
+    });
+
+    if (response.items.length > 0) {
+      return response.items[0];
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Find lead by phone error:', error);
+    return null;
+  }
 }
