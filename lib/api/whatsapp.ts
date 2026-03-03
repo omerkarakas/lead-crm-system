@@ -61,18 +61,35 @@ export async function logWhatsAppMessage(data: WhatsAppMessage): Promise<string 
 }
 
 /**
- * Get messages for a lead
+ * Get messages for a lead (chronological order - oldest first)
  */
 export async function getLeadWhatsAppMessages(leadId: string): Promise<WhatsAppMessage[]> {
   try {
     const response = await pb.collection('whatsapp_messages').getList<WhatsAppMessage>(1, 100, {
       filter: `lead_id = "${leadId}"`,
-      sort: '-sent_at'
+      sort: 'sent_at'
     });
 
     return response.items;
   } catch (error) {
     console.error('Get lead WhatsApp messages error:', error);
     return [];
+  }
+}
+
+/**
+ * Get unread message count for a lead
+ */
+export async function getUnreadMessageCount(leadId: string): Promise<number> {
+  try {
+    const response = await pb.collection('whatsapp_messages').getList(1, 1, {
+      filter: `lead_id = "${leadId}" && direction = "incoming"`,
+      skipTotal: true
+    });
+
+    return response.totalItems;
+  } catch (error) {
+    console.error('Get unread message count error:', error);
+    return 0;
   }
 }
