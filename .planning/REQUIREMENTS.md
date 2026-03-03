@@ -30,8 +30,8 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **LEAD-10**: System displays lead activity timeline (notes, messages, status changes) ⏳ Phase 6
 - [x] **LEAD-11**: User can add tags to lead ✅
 - [x] **LEAD-12**: User can remove tags from lead ✅
-- [ ] **LEAD-13**: System displays lead score (calculated from QA answers) ⏳ Phase 2
-- [ ] **LEAD-14**: System displays lead quality (pending/qualified based on score threshold) ⏳ Phase 2
+- [x] **LEAD-13**: System displays lead score (calculated from QA answers) ✅
+- [x] **LEAD-14**: System displays lead quality (pending/qualified based on score threshold) ✅
 - [x] **LEAD-15**: User can change lead status manually ✅
 - [x] **LEAD-16**: System records lead source (web_form, api, manual, whatsapp) ✅
 - [ ] **LEAD-17**: API can create lead via webhook (for n8n integration) ⏳ Phase 6
@@ -39,36 +39,36 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Lead Qualification
 
-- [ ] **QUAL-01**: Admin can create QA question (question text, answer options, scoring rules, weight)
-- [ ] **QUAL-02**: Admin can edit QA question
-- [ ] **QUAL-03**: Admin can delete QA question
-- [ ] **QUAL-04**: Admin can set answer options with point values
-- [ ] **QUAL-05**: Admin can define scoring rules (answer → points mapping)
-- [ ] **QUAL-06**: Admin can set question weight for scoring
-- [ ] **QUAL-07**: Admin can activate/deactivate questions
-- [ ] **QUAL-08**: System displays list of QA questions
-- [ ] **QUAL-09**: System sends first QA question via WhatsApp when lead is created (n8n integration)
-- [ ] **QUAL-10**: System receives WhatsApp answer and calculates score
-- [ ] **QUAL-11**: System saves QA answer with timestamp
-- [ ] **QUAL-12**: System updates lead total score after each answer
-- [ ] **QUAL-13**: System sends next question if available
-- [ ] **QUAL-14**: System sends Cal.com link if score exceeds threshold (high score)
-- [ ] **QUAL-15**: System sends "received" message if score below threshold (low score)
-- [ ] **QUAL-16**: User can view lead's QA answers on lead detail page
-- [ ] **QUAL-17**: User can view lead's score breakdown per question
+- [x] **QUAL-01**: Admin can create QA question (question text, answer options, scoring rules, weight) ✅
+- [x] **QUAL-02**: Admin can edit QA question ✅
+- [x] **QUAL-03**: Admin can delete QA question ✅
+- [x] **QUAL-04**: Admin can set answer options with point values ✅
+- [x] **QUAL-05**: Admin can define scoring rules (answer → points mapping) ✅
+- [x] **QUAL-06**: Admin can set question weight for scoring ✅
+- [x] **QUAL-07**: Admin can activate/deactivate questions ✅
+- [x] **QUAL-08**: System displays list of QA questions ✅
+- [x] **QUAL-09**: System sends first QA question via WhatsApp when lead is created ✅
+- [x] **QUAL-10**: System receives WhatsApp answer and calculates score ✅
+- [x] **QUAL-11**: System saves QA answer with timestamp ✅
+- [x] **QUAL-12**: System updates lead total score after each answer ✅
+- [x] **QUAL-13**: System sends next question if available ✅
+- [x] **QUAL-14**: System sends Cal.com link if score exceeds threshold (high score) ✅
+- [x] **QUAL-15**: System sends "received" message if score below threshold (low score) ✅
+- [x] **QUAL-16**: User can view lead's QA answers on lead detail page ✅
+- [x] **QUAL-17**: User can view lead's score breakdown per question ✅
 
 ### WhatsApp Communication
 
-- [ ] **WHATS-01**: System receives incoming WhatsApp messages via Green API webhook
-- [ ] **WHATS-02**: System matches incoming message to lead by phone number
-- [ ] **WHATS-03**: System saves incoming message to messages table
-- [ ] **WHATS-04**: System can send WhatsApp message via Green API
-- [ ] **WHATS-05**: User can view WhatsApp conversation history on lead detail page
-- [ ] **WHATS-06**: User can send manual WhatsApp message to lead from UI
-- [ ] **WHATS-07**: System displays message direction (incoming/outgoing)
-- [ ] **WHATS-08**: System displays message status (sent, delivered, failed)
-- [ ] **WHATS-09**: System logs all WhatsApp messages (automated and manual)
-- [ ] **WHATS-10**: System handles unknown sender messages (no matching lead)
+- [x] **WHATS-01**: System receives incoming WhatsApp messages via Green API webhook ✅
+- [x] **WHATS-02**: System matches incoming message to lead by phone number ✅
+- [x] **WHATS-03**: System saves incoming message to messages table ✅
+- [x] **WHATS-04**: System can send WhatsApp message via Green API ✅
+- [x] **WHATS-05**: User can view WhatsApp conversation history on lead detail page ✅
+- [ ] **WHATS-06**: User can send manual WhatsApp message to lead from UI ⏳ Phase 6
+- [x] **WHATS-07**: System displays message direction (incoming/outgoing) ✅
+- [x] **WHATS-08**: System displays message status (sent, delivered, failed) ✅
+- [x] **WHATS-09**: System logs all WhatsApp messages (automated and manual) ✅
+- [x] **WHATS-10**: System handles unknown sender messages (no matching lead) ✅
 
 ### Email Communication
 

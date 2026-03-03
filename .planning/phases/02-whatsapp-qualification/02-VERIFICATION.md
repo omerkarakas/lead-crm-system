@@ -1,92 +1,129 @@
 ---
 phase: 02-whatsapp-qualification
-verified: 2026-03-03T14:35:00Z
-reverified: 2026-03-03T14:40:00Z
-status: passed
+verified: 2026-03-03T12:19:16Z
+status: human_needed
 score: 5/5 must-haves verified
-gaps: []
+re_verification:
+  previous_status: passed
+  previous_score: 5/5
+  gaps_closed: []
+  gaps_remaining: []
+  regressions: []
 human_verification:
-  - test: "Create a new lead and verify WhatsApp poll is sent after 1 minute"
-    expected: "Lead receives WhatsApp message with poll questions"
-    why_human: "Requires external Green API service"
-  - test: "Respond to WhatsApp poll with answers"
-    expected: "System calculates score and sends response"
-    why_human: "Requires real webhook invocation"
-  - test: "Check lead detail page for score display"
-    expected: "Score display shows total score and quality badge"
-    why_human: "Visual verification of UI components"
+  - test: "Create a new lead and verify WhatsApp poll is sent after 1 minute delay"
+    expected: "Lead receives WhatsApp message with poll questions at Green API number"
+    why_human: "Requires external Green API service integration and real-time delivery verification"
+  - test: "Respond to WhatsApp poll with answer format like '1a, 2b'"
+    expected: "System parses answer, calculates score, updates lead quality, sends response message"
+    why_human: "Requires real webhook invocation from Green API and live WhatsApp message flow"
+  - test: "Verify lead detail page shows score and conversation history"
+    expected: "ScoreDisplay shows total score with quality badge, WhatsAppConversation shows message history with direction and status"
+    why_human: "Visual verification of UI components and real-time message updates"
+  - test: "Admin creates new QA question via /admin/qa"
+    expected: "Question is created, appears in list, can be activated/deactivated, reordered"
+    why_human: "Full admin workflow verification with form submission and state management"
+  - test: "Cal.com booking link is sent to qualified leads (score >= 80)"
+    expected: "Leads with 80+ points receive booking link message after completing QA"
+    why_human: "Requires complete QA flow with qualified score threshold"
 ---
 
-# Phase 2: WhatsApp and Qualification Verification Report
+# Phase 2: WhatsApp & Qualification Verification Report
 
-**Phase Goal:** System automatically qualifies leads via WhatsApp QA and scores them.
-**Verified:** 2026-03-03T13:51:00Z
-**Status:** gaps_found
+**Phase Goal:** System automatically qualifies leads via WhatsApp Q&A and scores them.
+**Verified:** 2026-03-03T12:19:16Z
+**Status:** human_needed
+**Re-verification:** Yes - re-verifying previous passed status
 
 ## Goal Achievement
 
 ### Observable Truths
 
-| #   | Truth   | Status     | Evidence       |
-| --- | ------- | ---------- | -------------- |
-| 1   | Admin can create QA questions with answer options, point values, weights, and activate/deactivate them | VERIFIED | Full admin UI at /admin/qa |
-| 2   | When lead is created, system sends first QA question via WhatsApp (Green API integration) | VERIFIED | sendPollAfterDelay wired in createLead, leads collection has all Phase 2 fields |
-| 3   | When lead responds via WhatsApp, system receives answer, calculates score, saves answer with timestamp | VERIFIED | Full webhook with answer parsing and score calculation |
-| 4   | System displays lead's total score, quality status (qualified/pending), and score breakdown per question | VERIFIED | ScoreDisplay component with QualityBadge |
-| 5   | User can view full WhatsApp conversation history on lead detail page with message direction (incoming/outgoing) and status | VERIFIED | WhatsAppConversation component with ChatBubble, auto-refresh |
+| # | Truth | Status | Evidence |
+|---|-------|--------|----------|
+| 1 | Admin can create QA questions with answer options, point values, weights, and activate/deactivate them | VERIFIED | Full admin UI at /admin/qa with QuestionBuilder (275 lines), QuestionList (248 lines), Zustand store (123 lines) |
+| 2 | When lead is created, system sends first QA question via WhatsApp (Green API integration) | VERIFIED | sendPollAfterDelay() in lib/api/leads.ts (lines 152-210) wired in createLead (lines 88-91), sends after 60s |
+| 3 | When lead responds via WhatsApp, system receives answer, calculates score, saves answer with timestamp, and sends next question | VERIFIED | Full webhook at app/api/whatsapp/webhook/route.ts (195 lines) with parsePollAnswer, saveAnswer, score calculation |
+| 4 | System displays lead's total score, quality status (qualified/pending), and score breakdown per question on lead detail page | VERIFIED | ScoreDisplay component (40 lines), QAAnswersTable (76 lines), wired in leads/[id]/page.tsx (lines 78-82) |
+| 5 | User can view full WhatsApp conversation history on lead detail page with message direction (incoming/outgoing) and status | VERIFIED | WhatsAppConversation component (117 lines) with auto-refresh, ChatBubble (118 lines) with status badges, wired in leads/[id]/page.tsx (line 112) |
 
 **Score:** 5/5 truths verified
 
 ### Required Artifacts
 
-| Artifact | Status | Details |
-| -------- | ------ | ------- |
-| pb_migrations/*_qa_questions.js | VERIFIED | Full schema with 2 seeded questions |
-| pb_migrations/*_qa_answers.js | VERIFIED | Complete schema |
-| pb_migrations/*_whatsapp_messages.js | VERIFIED | Complete schema |
-| types/qa.ts | VERIFIED | All interfaces defined |
-| lib/api/qa.ts | VERIFIED | CRUD operations (131 lines) |
-| lib/api/whatsapp.ts | VERIFIED | Green API integration (96 lines) |
-| lib/whatsapp/poll-parser.ts | VERIFIED | Multiple format support (85 lines) |
-| lib/whatsapp/message-formatter.ts | VERIFIED | All message types (47 lines) |
-| app/api/whatsapp/webhook/route.ts | VERIFIED | Full webhook (194 lines) |
-| app/api/leads/[id]/send-poll/route.ts | VERIFIED | Admin endpoint (116 lines) |
-| app/(dashboard)/admin/qa/page.tsx | VERIFIED | Full UI (227 lines) |
-| components/admin/qa/QuestionBuilder.tsx | VERIFIED | Full form (275 lines) |
-| components/leads/ScoreDisplay.tsx | VERIFIED | Complete component (40 lines) |
-| components/leads/WhatsAppConversation.tsx | VERIFIED | Auto-refresh (117 lines) |
-| lib/api/leads.ts (sendPollAfterDelay) | VERIFIED | Wired in createLead |
-| pb_migrations/*_updated_leads.js | VERIFIED | Phase 2 fields added (qa_sent, qa_sent_at, qa_completed, qa_completed_at, total_score) |
-| types/lead.ts | VERIFIED | Lead interface includes all Phase 2 fields |
-| pb_schema.json | VERIFIED | leads collection schema updated with total_score |
+All Phase 2 artifacts verified as EXISTS, SUBSTANTIVE, and WIRED.
+
+**Data Model Collections:**
+- qa_questions: question_text, options (json), points (json), order, is_active
+- qa_answers: lead_id, question_id, selected_answer, points_earned, answered_at
+- whatsapp_messages: lead_id, direction, message_text, message_type, status, sent_at, green_api_id
+- leads (Phase 2 fields): qa_sent, qa_sent_at, qa_completed, qa_completed_at, total_score
+
+**Key Files Verified:**
+- types/qa.ts (53 lines) - All interfaces defined
+- lib/config/qa.ts (82 lines) - QA_CONFIG with 80 point threshold, helper functions
+- lib/api/qa.ts (131 lines) - Full CRUD operations
+- lib/api/whatsapp.ts (96 lines) - Green API integration
+- lib/whatsapp/poll-parser.ts (86 lines) - Multiple format support
+- app/api/whatsapp/webhook/route.ts (195 lines) - Complete webhook handler
+- app/(dashboard)/admin/qa/page.tsx (227 lines) - Admin UI with permission check
+- components/leads/ScoreDisplay.tsx (40 lines) - Score and quality display
+- components/leads/WhatsAppConversation.tsx (117 lines) - Message history with auto-refresh
+- components/leads/ChatBubble.tsx (118 lines) - Message bubble with direction and status
 
 ### Key Link Verification
 
-| From | To | Status | Details |
-| ---- | --- | ------ | ------- |
-| createLead | sendPollAfterDelay | VERIFIED | Line 89-91 in lib/api/leads.ts |
-| sendPollAfterDelay | updateLead (qa_sent) | VERIFIED | Field exists in leads collection |
-| webhook | saveAnswer | VERIFIED | Line 126-132 in webhook/route.ts |
-| webhook | updateLead (total_score) | VERIFIED | Field exists in leads collection |
+All critical wiring verified:
+
+**Truth 1 - Admin QA Management:**
+- /admin/qa page -> useQAStore -> lib/api/qa -> PocketBase qa_questions collection
+- QuestionBuilder -> createQuestion/updateQuestion -> PocketBase
+- QuestionList -> toggleQuestionActive/reorderQuestions -> PocketBase
+
+**Truth 2 - Lead Creation -> WhatsApp Poll:**
+- createLead -> sendPollAfterDelay (60s delay) -> fetchActiveQuestions
+- formatPollMessage -> sendWhatsAppMessage -> Green API
+- logWhatsAppMessage -> whatsapp_messages collection
+- updateLead(qa_sent=true) -> leads collection
+
+**Truth 3 - WhatsApp Webhook -> Answer Processing:**
+- webhook POST -> parsePollAnswer (supports "1a2b", "ab", "1a 2b")
+- validateAnswers -> saveAnswer (loop) -> qa_answers collection
+- calculateLeadTotalScore -> updateLead(quality based on 80 threshold)
+- formatBookingLinkMessage/formatLowQualityMessage -> sendWhatsAppMessage (response)
+
+**Truth 4 - Score Display:**
+- leads/[id]/page -> getLeadAnswers -> ScoreDisplay (passes total_score, quality, breakdown)
+- QAAnswersTable -> getLeadAnswers -> render table with question/answer/points
+
+**Truth 5 - WhatsApp Conversation:**
+- leads/[id]/page -> WhatsAppConversation -> getLeadWhatsAppMessages
+- ChatBubble -> displays direction (incoming/outgoing), status, timestamp
+
+### Anti-Patterns Found
+
+**No blocker anti-patterns detected.** All code is substantive with proper implementations. Only UI placeholders found (input placeholders), no TODO/FIXME stubs.
 
 ### Gaps Summary
 
-**All gaps resolved!**
+**No gaps found.** All 5 success criteria fully implemented with complete end-to-end wiring.
 
-**Resolution:** The leads collection now has all Phase 2 fields:
+### Implementation Quality
 
-- qa_sent (boolean) ✓
-- qa_sent_at (date) ✓
-- qa_completed (boolean) ✓
-- qa_completed_at (date) ✓
-- total_score (number) ✓
+**Strengths:**
+1. Complete end-to-end flow from lead creation to WhatsApp messaging
+2. Multiple answer format support (1a2b, 1a 2b, ab)
+3. Auto-refresh for real-time message updates (30s interval)
+4. Admin permission checks for QA management
+5. Manual poll trigger for testing
+6. Message type and status classification
+7. Quality threshold configuration (80 points)
 
-**Evidence:**
+**Human Testing Required:**
+- Green API credentials configuration
+- Real phone number for lead testing
+- Webhook endpoint accessibility
+- Cal.com booking link validity
 
-- pb_schema.json updated with total_score field
-- types/lead.ts interface includes all Phase 2 fields
-- Migration pb_migrations/1772537355_updated_leads.js exists with all required fields
-
-_Verified: 2026-03-03T13:51:00Z_
-_Reverified: 2026-03-03T14:40:00Z_
+---
+_Verified: 2026-03-03T12:19:16Z_
 _Verifier: Claude (gsd-verifier)_
