@@ -44,3 +44,9 @@ export interface WhatsAppMessage {
   sent_at?: string;
   green_api_id?: string;
 }
+
+export interface QAAnswerWithQuestion extends QAAnswer {
+  expand?: {
+    question_id?: QAQuestion;
+  };
+}

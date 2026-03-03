@@ -100,12 +100,13 @@ export async function saveAnswer(answer: QAAnswer): Promise<QAAnswer> {
 }
 
 /**
- * Get lead's answers
+ * Get lead's answers with question expansion
  */
 export async function getLeadAnswers(leadId: string): Promise<QAAnswer[]> {
   const response = await pb.collection('qa_answers').getList<QAAnswer>(1, 100, {
     filter: `lead_id = "${leadId}"`,
-    sort: 'answered_at'
+    sort: 'answered_at',
+    expand: 'question_id'
   });
 
   return response.items;
@@ -117,4 +118,13 @@ export async function getLeadAnswers(leadId: string): Promise<QAAnswer[]> {
 export async function calculateLeadTotalScore(leadId: string): Promise<number> {
   const answers = await getLeadAnswers(leadId);
   return answers.reduce((total, answer) => total + (answer.points_earned || 0), 0);
+}
+
+/**
+ * Extended answer type with question data
+ */
+export interface QAAnswerWithQuestion extends QAAnswer {
+  expand?: {
+    question_id?: QAQuestion;
+  };
 }
