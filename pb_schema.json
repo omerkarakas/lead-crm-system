@@ -291,6 +291,56 @@
           }
         }
       ]
+    },
+    {
+      "id": "qa_questions_collection",
+      "name": "qa_questions",
+      "type": "base",
+      "schema": [
+        {
+          "id": "qa_questions_question_text",
+          "name": "question_text",
+          "type": "text",
+          "required": true,
+          "options": {
+            "min": 1,
+            "max": 500
+          }
+        },
+        {
+          "id": "qa_questions_options",
+          "name": "options",
+          "type": "json",
+          "required": true,
+          "options": {}
+        },
+        {
+          "id": "qa_questions_points",
+          "name": "points",
+          "type": "json",
+          "required": true,
+          "options": {}
+        },
+        {
+          "id": "qa_questions_order",
+          "name": "order",
+          "type": "number",
+          "required": true,
+          "options": {
+            "min": 0,
+            "max": 1000
+          },
+          "default": 0
+        },
+        {
+          "id": "qa_questions_is_active",
+          "name": "is_active",
+          "type": "bool",
+          "required": true,
+          "options": {},
+          "default": true
+        }
+      ]
     }
   ]
 }

@@ -13,6 +13,9 @@ export const PERMISSIONS = {
   // Notes and tags
   CAN_ADD_NOTES: 'can_add_notes',
   CAN_MANAGE_TAGS: 'can_manage_tags',
+
+  // QA management
+  CAN_MANAGE_QA_QUESTIONS: 'can_manage_qa_questions',
 } as const;
 
 export const ROLE_PERMISSIONS: Record<Role, string[]> = {
@@ -24,6 +27,7 @@ export const ROLE_PERMISSIONS: Record<Role, string[]> = {
     PERMISSIONS.CAN_VIEW_ALL_LEADS,
     PERMISSIONS.CAN_ADD_NOTES,
     PERMISSIONS.CAN_MANAGE_TAGS,
+    PERMISSIONS.CAN_MANAGE_QA_QUESTIONS,
   ],
   [Role.SALES]: [
     PERMISSIONS.CAN_CREATE_LEADS,
@@ -70,4 +74,8 @@ export function canAddNotes(role: Role): boolean {
 
 export function canManageTags(role: Role): boolean {
   return hasPermission(role, PERMISSIONS.CAN_MANAGE_TAGS);
+}
+
+export function canManageQAQuestions(role: Role): boolean {
+  return hasPermission(role, PERMISSIONS.CAN_MANAGE_QA_QUESTIONS);
 }
