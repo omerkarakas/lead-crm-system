@@ -28,7 +28,7 @@ export interface UpdateQAQuestionDto {
 export interface QAAnswer {
   id?: string;
   lead_id: string;
-  question_id: string;
+  question_id?: string;
   selected_answer: string;  // "a", "b", or "c"
   points_earned: number;
   answered_at?: string;

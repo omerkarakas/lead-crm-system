@@ -85,19 +85,36 @@ export async function reorderQuestions(questions: QAQuestion[]): Promise<void> {
 }
 
 /**
- * Save an answer (for future use when we create answers collection)
+ * Save an answer to qa_answers collection
  */
 export async function saveAnswer(answer: QAAnswer): Promise<QAAnswer> {
-  // This will be implemented when we create the qa_answers collection
-  // For now, return a mock response
-  return answer;
+  const record = await pb.collection('qa_answers').create<QAAnswer>({
+    lead_id: answer.lead_id,
+    question_id: answer.question_id,
+    selected_answer: answer.selected_answer,
+    points_earned: answer.points_earned,
+    answered_at: answer.answered_at || new Date().toISOString()
+  });
+
+  return record;
 }
 
 /**
- * Get lead's answers (for future use)
+ * Get lead's answers
  */
 export async function getLeadAnswers(leadId: string): Promise<QAAnswer[]> {
-  // This will be implemented when we create the qa_answers collection
-  // For now, return empty array
-  return [];
+  const response = await pb.collection('qa_answers').getList<QAAnswer>(1, 100, {
+    filter: `lead_id = "${leadId}"`,
+    sort: 'answered_at'
+  });
+
+  return response.items;
+}
+
+/**
+ * Calculate total score for a lead from their answers
+ */
+export async function calculateLeadTotalScore(leadId: string): Promise<number> {
+  const answers = await getLeadAnswers(leadId);
+  return answers.reduce((total, answer) => total + (answer.points_earned || 0), 0);
 }
