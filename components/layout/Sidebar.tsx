@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuthStore } from '@/lib/stores/auth';
-import { canManageUsers } from '@/lib/utils/permissions';
+import { canManageUsers, canManageQAQuestions } from '@/lib/utils/permissions';
 import { Role } from '@/types/user';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -13,6 +13,7 @@ import {
   X,
   Calendar,
   Megaphone,
+  MessageSquare,
 } from 'lucide-react';
 import { useState } from 'react';
 import Link from 'next/link';
@@ -31,6 +32,12 @@ const navItems: NavItem[] = [
     label: 'Müşteri Adayları',
     icon: <LayoutDashboard className="h-4 w-4" />,
     permission: () => true, // All users can access leads
+  },
+  {
+    href: '/admin/qa',
+    label: 'Nitelik Soruları',
+    icon: <MessageSquare className="h-4 w-4" />,
+    permission: canManageQAQuestions,
   },
   {
     href: '/users',
