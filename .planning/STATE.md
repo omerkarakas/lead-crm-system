@@ -11,10 +11,10 @@ See: .planning/PROJECT.md (updated 2025-03-01)
 
 Phase: 3 of 6 (Email Communication)
 Plan: 3 of TBD
-Status: In progress (checkpoint reached)
-Last activity: 2026-03-04 — Executing Plan 03-03: Email Sending UI and History
+Status: In progress (completed)
+Last activity: 2026-03-04 — Completed Plan 03-03: Email Sending UI and History
 
-Progress: [██████████░░] 46% (2/6 phases complete, 14/24 plans, 2/3 auto tasks done)
+Progress: [██████████░░] 46% (2/6 phases complete, 15/24 plans complete)
 
 ## Performance Metrics
 
@@ -112,6 +112,7 @@ Recent decisions affecting current work:
 | Tab-based navigation | WhatsApp/Email/Notes tabs on lead detail page | 2026-03-04 |
 | Zustand persist middleware | localStorage for last-used template retention | 2026-03-04 |
 | Email history list pattern | Minimal info (Date, Subject, Status) with click-to-view modal | 2026-03-04 |
+| Email templates permission fix | Allow all authenticated users to view templates (not just admin) | 2026-03-04 |
 
 ### Pending Todos
 
@@ -134,6 +135,8 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-04 (Phase 3 Plan 3: Email Sending UI and History)
-Stopped at: Checkpoint reached - awaiting human verification
+Stopped at: Completed 03-03 - Email Sending UI and History
 Resume file: None
 Dev server: Running at http://localhost:3000
+
+**Note**: PocketBase migration `1772612029_updated_email_templates.js` pending - requires server restart to fix template permissions for non-admin users.

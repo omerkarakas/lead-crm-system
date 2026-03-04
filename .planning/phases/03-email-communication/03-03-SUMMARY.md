@@ -86,8 +86,9 @@ Each task was committed atomically:
 
 1. **Task 1: Build email sending dialog component with quick send** - `39c9eeb` (feat)
 2. **Task 2: Build email history and email content modal components** - `f6ea138` (feat)
+3. **Bug fix: Email templates permissions** - `fc37b2b` (fix)
 
-**Plan metadata:** Pending (checkpoint reached)
+**Plan metadata:** `7adcfed` (docs: complete plan)
 
 ## Files Created/Modified
 
@@ -122,10 +123,21 @@ Each task was committed atomically:
 - **Verification:** Server running at http://localhost:3000, ready for user verification
 - **Committed in:** N/A (runtime action, not committed)
 
+**2. [Rule 1 - Bug] Fixed email_templates permission rules blocking non-admin users**
+- **Found during:** Post-checkpoint bug report
+- **Issue:** Email template list showed only "Özel (Manuel)" - templates not loading for Sales/Marketing users
+- **Root cause:** PocketBase collection had `listRule: "@request.auth.role = 'admin'"` and `viewRule: "@request.auth.role = 'admin'"`, preventing non-admin users from fetching templates
+- **Fix:** Created migration `1772612029_updated_email_templates.js` to change rules to `@request.auth.role != ''` (allow all authenticated users to view templates)
+- **Files modified:** pb_migrations/1772612029_updated_email_templates.js
+- **Verification:** Migration will be applied on PocketBase restart
+- **Committed in:** `fc37b2b` (fix)
+
 ---
 
-**Total deviations:** 1 auto-fixed (1 blocking)
-**Impact on plan:** Server startup required for checkpoint verification. User can now verify the UI at http://localhost:3000
+**Total deviations:** 2 auto-fixed (1 blocking, 1 bug)
+**Impact on plan:**
+- Server startup required for checkpoint verification
+- Permission bug fix required for correct functionality - non-admin users couldn't access templates needed to send emails
 
 ## Issues Encountered
 
@@ -137,6 +149,11 @@ Each task was committed atomically:
    - Fixed by running `npm install @radix-ui/react-tabs`
    - Tabs component now compiles successfully
 
+3. **Email template permission bug** (post-checkpoint)
+   - Templates not loading for non-admin users due to PocketBase permission rules
+   - Fixed with migration to allow all authenticated users to view templates
+   - Migration `1772612029_updated_email_templates.js` must be applied via PocketBase restart
+
 ## Authentication Gates
 
 None encountered during this plan execution.
@@ -147,6 +164,8 @@ None encountered during this plan execution.
 1. Get API key from https://resend.com/api-keys
 2. Add `RESEND_API_KEY=your_key_here` to `.env.local`
 3. Optionally configure `RESEND_FROM_EMAIL` and `RESEND_FROM_NAME`
+
+**Migration required**: The PocketBase migration `pb_migrations/1772612029_updated_email_templates.js` must be applied by restarting PocketBase server. This fixes the template permission issue allowing non-admin users to fetch templates.
 
 Without API key, email sending will fail gracefully with error toast, but UI will function for testing.
 
