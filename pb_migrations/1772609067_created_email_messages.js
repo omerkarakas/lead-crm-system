@@ -95,22 +95,10 @@ migrate((app) => {
     ]
   });
 
-  const emailMessagesCollectionIndex = emailMessagesCollection.name + "_index";
-
   // Create the collection
   app.save(emailMessagesCollection);
 
-  // Add index on lead_id for faster queries
-  app.save(new Index({
-    name: emailMessagesCollectionIndex,
-    collectionId: emailMessagesCollection.id,
-    fields: [
-      {
-        name: "lead_id",
-        type: "relation"
-      }
-    ]
-  }));
+  // Note: PocketBase automatically creates indexes for relation fields
 }, (app) => {
   // Rollback: delete the collection
   const emailMessagesCollection = app.findCollectionByName("email_messages");
