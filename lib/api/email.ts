@@ -243,3 +243,42 @@ export async function getEmailMessageCount(leadId: string): Promise<number> {
     return 0;
   }
 }
+
+/**
+ * Get last used template for a lead
+ * Returns the template_id from the most recent outgoing email
+ */
+export async function getLastUsedTemplate(leadId: string): Promise<string | null> {
+  try {
+    const response = await pb.collection('email_messages').getList<EmailMessage>(1, 1, {
+      filter: `lead_id = "${leadId}" && direction = "outgoing"`,
+      sort: '-sent_at'
+    });
+
+    if (response.items.length > 0 && response.items[0].template_id) {
+      return response.items[0].template_id;
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Get last used template error:', error);
+    return null;
+  }
+}
+
+/**
+ * Get email history for a lead (outgoing emails only, newest first)
+ */
+export async function getEmailHistory(leadId: string): Promise<EmailMessage[]> {
+  try {
+    const response = await pb.collection('email_messages').getList<EmailMessage>(1, 100, {
+      filter: `lead_id = "${leadId}" && direction = "outgoing"`,
+      sort: '-sent_at'
+    });
+
+    return response.items;
+  } catch (error) {
+    console.error('Get email history error:', error);
+    return [];
+  }
+}
