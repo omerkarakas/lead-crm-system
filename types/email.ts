@@ -51,3 +51,32 @@ export interface ResendErrorResponse {
   message?: string;
   statusCode?: number;
 }
+
+// Email Template types
+export interface EmailTemplate {
+  id: string;
+  name: string;
+  subject: string;
+  body: string;
+  category: string;
+  is_active: boolean;
+  is_deleted: boolean;
+  created: string;
+  updated: string;
+}
+
+export interface CreateEmailTemplateDto {
+  name: string;
+  subject: string;
+  body: string;
+  category?: string;
+  is_active?: boolean;
+}
+
+export interface UpdateEmailTemplateDto {
+  name?: string;
+  subject?: string;
+  body?: string;
+  category?: string;
+  is_active?: boolean;
+}
