@@ -6,6 +6,7 @@ import type {
 } from '@/types/email';
 import { sendEmail } from '@/lib/api/email';
 import type { Lead } from '@/types/lead';
+import { LeadSource, LeadStatus, LeadQuality } from '@/types/lead';
 
 /**
  * Fetch all active templates (not deleted)
@@ -136,12 +137,13 @@ export async function sendTestEmail(
     company: 'Örnek Şirket A.Ş.',
     website: 'https://ornek-sirket.com',
     message: 'Örnek mesaj içeriği',
-    source: 'web_form' as const,
-    status: 'new' as const,
+    source: LeadSource.WEB_FORM,
+    status: LeadStatus.NEW,
     score: 0,
-    quality: 'pending' as const,
+    quality: LeadQuality.PENDING,
     tags: [],
     qa_sent: false,
+    qa_completed: false,
     created: new Date().toISOString(),
     updated: new Date().toISOString(),
   };

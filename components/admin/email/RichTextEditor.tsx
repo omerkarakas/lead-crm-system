@@ -60,11 +60,11 @@ export const RichTextEditor = forwardRef<any, RichTextEditorProps>(
 
     // Expose editor instance via ref
     useEffect(() => {
-      if (ref && typeof ref === 'object') {
+      if (ref && typeof ref === 'object' && 'current' in ref) {
         (ref as React.MutableRefObject<any>).current = editor;
       }
-      if (editorRef && typeof editorRef === 'object') {
-        editorRef.current = editor;
+      if (editorRef && typeof editorRef === 'object' && 'current' in editorRef) {
+        (editorRef as React.MutableRefObject<any>).current = editor;
       }
     }, [editor, ref, editorRef]);
 

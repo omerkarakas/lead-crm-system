@@ -217,7 +217,7 @@ export default function AdminEmailTemplatesPage() {
             </DialogDescription>
           </DialogHeader>
           <TemplateForm
-            template={editingTemplate}
+            template={editingTemplate || undefined}
             categories={categories}
             onSave={handleSave}
             onCancel={() => {
