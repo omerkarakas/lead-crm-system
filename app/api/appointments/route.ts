@@ -118,9 +118,16 @@ export async function POST(req: NextRequest) {
 
     console.log('[POST /api/appointments] Created appointment:', appointment);
 
-    // Send confirmation message (fire-and-forget - don't fail if confirmation errors)
+    // Update lead status to 'booked' and send confirmation message (fire-and-forget)
     if (appointment.lead_id) {
-      const { sendAppointmentConfirmation } = await import('@/lib/api/appointments');
+      const { sendAppointmentConfirmation, updateLeadStatusToBooked } = await import('@/lib/api/appointments');
+
+      // Update lead status to 'booked'
+      updateLeadStatusToBooked(appointment.lead_id).catch(error => {
+        console.error('[POST /api/appointments] Lead status update error:', error);
+      });
+
+      // Send confirmation message
       sendAppointmentConfirmation(appointment.id).catch(error => {
         console.error('[POST /api/appointments] Confirmation error:', error);
       });
