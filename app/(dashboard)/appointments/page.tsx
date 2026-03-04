@@ -9,6 +9,7 @@ import { Loader2, CalendarPlus } from 'lucide-react';
 import { AppointmentFilters, AppointmentFilters as FiltersType } from '@/components/appointments/AppointmentFilters';
 import { AppointmentList } from '@/components/appointments/AppointmentList';
 import { AppointmentDetailModal } from '@/components/appointments/AppointmentDetailModal';
+import { AppointmentModal } from '@/components/appointments/AppointmentModal';
 import { fetchAppointments, updateAppointmentStatus, sendAppointmentConfirmation } from '@/lib/api/appointments';
 import { Badge } from '@/components/ui/badge';
 import { X } from 'lucide-react';
@@ -32,6 +33,13 @@ export default function AppointmentsPage() {
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment & { expand?: { lead_id?: any } } | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+
+  // Create modal state
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  // Edit modal state
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
 
   // Initialize filters from URL params on mount
   useEffect(() => {
@@ -61,51 +69,51 @@ export default function AppointmentsPage() {
   }, [checkAuth]);
 
   // Fetch appointments when filters or page changes
-  useEffect(() => {
+  const fetchAppointmentsData = useCallback(async () => {
     if (!isFilterInitialized) return;
 
-    const fetchAppointmentsData = async () => {
-      setLoading(true);
-      try {
-        const response = await fetchAppointments({
-          page: currentPage,
-          perPage: 20,
-          startDate: filters.startDate,
-          endDate: filters.endDate,
-          status: filters.status,
-          search: filters.search,
-          sort: '-scheduled_at',
-        });
+    setLoading(true);
+    try {
+      const response = await fetchAppointments({
+        page: currentPage,
+        perPage: 20,
+        startDate: filters.startDate,
+        endDate: filters.endDate,
+        status: filters.status,
+        search: filters.search,
+        sort: '-scheduled_at',
+      });
 
-        // Expand lead data for each appointment
-        const appointmentsWithLeads = await Promise.all(
-          response.items.map(async (apt) => {
-            if (apt.lead_id) {
-              try {
-                // Fetch lead data
-                const leadResponse = await fetch(`/api/leads/${apt.lead_id}`).then(r => r.json());
-                return { ...apt, expand: { lead_id: leadResponse } };
-              } catch (error) {
-                console.error('Error fetching lead for appointment:', error);
-                return apt;
-              }
+      // Expand lead data for each appointment
+      const appointmentsWithLeads = await Promise.all(
+        response.items.map(async (apt) => {
+          if (apt.lead_id) {
+            try {
+              // Fetch lead data
+              const leadResponse = await fetch(`/api/leads/${apt.lead_id}`).then(r => r.json());
+              return { ...apt, expand: { lead_id: leadResponse } };
+            } catch (error) {
+              console.error('Error fetching lead for appointment:', error);
+              return apt;
             }
-            return apt;
-          })
-        );
+          }
+          return apt;
+        })
+      );
 
-        setAppointments(appointmentsWithLeads);
-        setTotalPages(response.totalPages);
-        setTotalItems(response.totalItems);
-      } catch (error) {
-        console.error('Error fetching appointments:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+      setAppointments(appointmentsWithLeads);
+      setTotalPages(response.totalPages);
+      setTotalItems(response.totalItems);
+    } catch (error) {
+      console.error('Error fetching appointments:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [currentPage, filters, isFilterInitialized]);
 
+  useEffect(() => {
     fetchAppointmentsData();
-  }, [filters, currentPage, isFilterInitialized]);
+  }, [fetchAppointmentsData]);
 
   // Update URL when filters change
   useEffect(() => {
@@ -201,6 +209,21 @@ export default function AppointmentsPage() {
     }
   }, [currentPage, filters]);
 
+  const handleOpenCreateModal = useCallback(() => {
+    setIsCreateModalOpen(true);
+  }, []);
+
+  const handleOpenEditModal = useCallback((appointment: Appointment) => {
+    setEditingAppointment(appointment);
+    setIsEditModalOpen(true);
+    setIsDetailModalOpen(false); // Close detail modal when opening edit
+  }, []);
+
+  const handleCloseEditModal = useCallback(() => {
+    setIsEditModalOpen(false);
+    setEditingAppointment(null);
+  }, []);
+
   // Active filter badges
   const activeFilters = useMemo(() => {
     const badges: { key: string; label: string; value: string }[] = [];
@@ -235,8 +258,8 @@ export default function AppointmentsPage() {
             Randevularınızı görüntüleyin, arayın ve filtreleyin.
           </p>
         </div>
-        <Button>
-          <CalendarAdd className="mr-2 h-4 w-4" />
+        <Button onClick={handleOpenCreateModal}>
+          <CalendarPlus className="mr-2 h-4 w-4" />
           Yeni Randevu
         </Button>
       </div>
@@ -290,9 +313,25 @@ export default function AppointmentsPage() {
         open={isDetailModalOpen}
         onClose={handleCloseDetailModal}
         appointment={selectedAppointment}
+        onEdit={handleOpenEditModal}
         onUpdateStatus={handleUpdateStatus}
         onSendConfirmation={handleSendConfirmation}
         loading={actionLoading}
+      />
+
+      {/* Create Modal */}
+      <AppointmentModal
+        open={isCreateModalOpen}
+        onOpenChange={setIsCreateModalOpen}
+        onSuccess={fetchAppointmentsData}
+      />
+
+      {/* Edit Modal */}
+      <AppointmentModal
+        open={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
+        onSuccess={fetchAppointmentsData}
+        appointment={editingAppointment || undefined}
       />
     </div>
   );
