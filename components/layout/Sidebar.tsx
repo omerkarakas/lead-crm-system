@@ -56,7 +56,7 @@ const navItems: NavItem[] = [
     href: '/appointments',
     label: 'Randevular',
     icon: <Calendar className="h-4 w-4" />,
-    permission: (role) => role === Role.ADMIN || role === Role.SALES,
+    permission: () => true,
   },
   {
     href: '/campaigns',

@@ -1,20 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerPb } from '@/lib/pocketbase/server';
-import { fetchAppointment, updateAppointment, deleteAppointment, cancelScheduledReminders } from '@/lib/api/appointments';
-import type { UpdateAppointmentDto } from '@/types/appointment';
+import { cancelScheduledReminders } from '@/lib/api/appointments';
+import type { Appointment, UpdateAppointmentDto } from '@/types/appointment';
 
 /**
  * GET /api/appointments/[id] - Get single appointment by ID
  */
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const pb = await getServerPb();
-    const { id } = params;
+    const { id } = await params;
 
-    const appointment = await fetchAppointment(id);
+    const appointment = await pb.collection<Appointment>('appointments').getOne(id);
 
     return NextResponse.json({
       success: true,
@@ -42,17 +42,17 @@ export async function GET(
  */
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const pb = await getServerPb();
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json() as UpdateAppointmentDto;
 
     console.log('[PATCH /api/appointments/[id]] Request body:', body);
 
-    // Update appointment
-    const updatedAppointment = await updateAppointment(id, body);
+    // Update appointment using server-side PocketBase
+    const updatedAppointment = await pb.collection<Appointment>('appointments').update(id, body);
 
     console.log('[PATCH /api/appointments/[id]] Updated appointment:', updatedAppointment);
 
@@ -84,13 +84,13 @@ export async function PATCH(
  */
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const pb = await getServerPb();
-    const { id } = params;
+    const { id } = await params;
 
-    await deleteAppointment(id);
+    await pb.collection('appointments').delete(id);
 
     console.log('[DELETE /api/appointments/[id]] Deleted appointment:', id);
 

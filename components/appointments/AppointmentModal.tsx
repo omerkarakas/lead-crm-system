@@ -33,9 +33,15 @@ export function AppointmentModal({
   const [leads, setLeads] = useState<Lead[]>([]);
   const [leadsLoading, setLeadsLoading] = useState(false);
 
-  // Fetch leads when modal opens
+  // Fetch leads when modal opens (both for create and edit)
   useEffect(() => {
-    if (open && !appointment && !preSelectedLeadId) {
+    if (open) {
+      // Skip fetching if we have preSelectedLeadId without leads array
+      if (preSelectedLeadId && !appointment) {
+        // Leads passed directly, no need to fetch
+        return;
+      }
+
       setLeadsLoading(true);
       fetch('/api/leads?perPage=100')
         .then((res) => res.json())

@@ -12,7 +12,6 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import {
   Calendar,
   Clock,
@@ -137,7 +136,7 @@ export function AppointmentDetailModal({
             </div>
           )}
 
-          <Separator />
+          <div className="h-px bg-border my-4" />
 
           {/* Date and Time */}
           <div className="space-y-3">
@@ -160,7 +159,7 @@ export function AppointmentDetailModal({
           {/* Location */}
           {(appointment.location || appointment.meeting_url) && (
             <>
-              <Separator />
+              <div className="h-px bg-border my-4" />
               <div className="space-y-3">
                 <h3 className="text-sm font-semibold text-muted-foreground">Konum</h3>
                 {appointment.location && (
@@ -186,7 +185,7 @@ export function AppointmentDetailModal({
             </>
           )}
 
-          <Separator />
+          <div className="h-px bg-border my-4" />
 
           {/* Status */}
           <div className="space-y-3">
@@ -199,7 +198,7 @@ export function AppointmentDetailModal({
           {/* Notes */}
           {appointment.notes && (
             <>
-              <Separator />
+              <div className="h-px bg-border my-4" />
               <div className="space-y-3">
                 <h3 className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
                   <FileText className="h-4 w-4" />
@@ -211,7 +210,7 @@ export function AppointmentDetailModal({
           )}
 
           {/* Timestamps */}
-          <Separator />
+          <div className="h-px bg-border my-4" />
           <div className="space-y-2 text-xs text-muted-foreground">
             <div>Oluşturulma: {new Date(appointment.created).toLocaleString('tr-TR')}</div>
             <div>Güncelleme: {new Date(appointment.updated).toLocaleString('tr-TR')}</div>
