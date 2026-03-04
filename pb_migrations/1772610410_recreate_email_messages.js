@@ -1,113 +1,150 @@
 /// <reference path="../pb_data/types.d.ts" />
 migrate((app) => {
-  // First, delete the broken collection if it exists
-  const existingCollection = app.findCollectionByName("email_messages");
-  if (existingCollection) {
-    app.delete(existingCollection);
-  }
-
-  // Create the collection properly
-  const emailMessagesCollection = new Collection({
-    id: "email_messages_collection",
-    name: "email_messages",
-    type: "base",
-    schema: [
+  const collection = new Collection({
+    "createRule": "",
+    "deleteRule": "",
+    "fields": [
       {
-        id: "email_messages_lead_id",
-        name: "lead_id",
-        type: "relation",
-        required: true,
-        options: {
-          collectionId: "leads_collection",
-          cascadeDelete: true,
-          minSelect: 1,
-          maxSelect: 1
-        }
+        "autogeneratePattern": "[a-z0-9]{15}",
+        "hidden": false,
+        "id": "text1772610410",
+        "max": 15,
+        "min": 15,
+        "name": "id",
+        "pattern": "^[a-z0-9]+$",
+        "presentable": false,
+        "primaryKey": true,
+        "required": true,
+        "system": true,
+        "type": "text"
       },
       {
-        id: "email_messages_to_email",
-        name: "to_email",
-        type: "email",
-        required: true,
-        options: {}
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "relation1772610411",
+        "name": "lead_id",
+        "presentable": false,
+        "required": true,
+        "system": false,
+        "type": "relation",
+        "collectionId": "pbc_leads",
+        "cascadeDelete": true,
+        "minSelect": 1,
+        "maxSelect": 1
       },
       {
-        id: "email_messages_subject",
-        name: "subject",
-        type: "text",
-        required: true,
-        options: {
-          min: 1,
-          max: 500
-        }
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "email1772610412",
+        "max": 255,
+        "min": 1,
+        "name": "to_email",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": true,
+        "system": false,
+        "type": "email"
       },
       {
-        id: "email_messages_body",
-        name: "body",
-        type: "text",
-        required: true,
-        options: {
-          min: 1,
-          max: 50000
-        }
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "text1772610413",
+        "max": 500,
+        "min": 1,
+        "name": "subject",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": true,
+        "system": false,
+        "type": "text"
       },
       {
-        id: "email_messages_template_id",
-        name: "template_id",
-        type: "text",
-        required: false,
-        options: {
-          min: 1,
-          max: 100
-        }
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "text1772610414",
+        "max": 50000,
+        "min": 1,
+        "name": "body",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": true,
+        "system": false,
+        "type": "text"
       },
       {
-        id: "email_messages_direction",
-        name: "direction",
-        type: "select",
-        required: true,
-        options: {
-          values: ["incoming", "outgoing"],
-          maxSelect: 1
-        },
-        default: "outgoing"
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "text1772610415",
+        "max": 100,
+        "min": 0,
+        "name": "template_id",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
       },
       {
-        id: "email_messages_status",
-        name: "status",
-        type: "select",
-        required: true,
-        options: {
-          values: ["pending", "sent", "delivered", "failed"],
-          maxSelect: 1
-        },
-        default: "pending"
+        "hidden": false,
+        "id": "select1772610416",
+        "name": "direction",
+        "presentable": false,
+        "required": true,
+        "system": false,
+        "type": "select",
+        "values": ["incoming", "outgoing"]
       },
       {
-        id: "email_messages_sent_at",
-        name: "sent_at",
-        type: "date",
-        required: false
+        "hidden": false,
+        "id": "select1772610417",
+        "name": "status",
+        "presentable": false,
+        "required": true,
+        "system": false,
+        "type": "select",
+        "values": ["pending", "sent", "delivered", "failed"]
       },
       {
-        id: "email_messages_resend_message_id",
-        name: "resend_message_id",
-        type: "text",
-        required: false,
-        options: {
-          min: 1,
-          max: 500
-        }
+        "hidden": false,
+        "id": "date1772610418",
+        "name": "sent_at",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "date"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "text1772610419",
+        "max": 500,
+        "min": 0,
+        "name": "resend_message_id",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
       }
-    ]
+    ],
+    "id": "pbc_email_messages",
+    "indexes": [],
+    "listRule": "",
+    "name": "email_messages",
+    "system": false,
+    "type": "base",
+    "updateRule": "",
+    "viewRule": ""
   });
 
-  app.save(emailMessagesCollection);
+  return app.save(collection);
 }, (app) => {
-  // Rollback: delete the collection
-  const emailMessagesCollection = app.findCollectionByName("email_messages");
+  const collection = app.findCollectionByNameOrId("pbc_email_messages");
 
-  if (emailMessagesCollection) {
-    app.delete(emailMessagesCollection);
-  }
-});
+  return app.delete(collection);
+})

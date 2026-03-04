@@ -1,14 +1,1 @@
-{
-  "/_not-found/page": "app/_not-found/page.js",
-  "/api/whatsapp/webhook/route": "app/api/whatsapp/webhook/route.js",
-  "/api/leads/[id]/send-poll/route": "app/api/leads/[id]/send-poll/route.js",
-  "/login/page": "app/login/page.js",
-  "/reset-password/page": "app/reset-password/page.js",
-  "/forgot-password/page": "app/forgot-password/page.js",
-  "/page": "app/page.js",
-  "/(dashboard)/admin/qa/page": "app/(dashboard)/admin/qa/page.js",
-  "/(dashboard)/leads/edit/[id]/page": "app/(dashboard)/leads/edit/[id]/page.js",
-  "/(dashboard)/leads/page": "app/(dashboard)/leads/page.js",
-  "/(dashboard)/leads/[id]/page": "app/(dashboard)/leads/[id]/page.js",
-  "/(dashboard)/users/page": "app/(dashboard)/users/page.js"
-}
+{}

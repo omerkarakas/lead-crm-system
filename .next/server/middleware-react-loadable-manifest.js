@@ -1,1 +1,1 @@
-self.__REACT_LOADABLE_MANIFEST='{"components\\\\auth\\\\ForgotPasswordForm.tsx -> @/lib/api/auth":{"id":3414,"files":["static/chunks/261-17e827cc481345f6.js","static/chunks/414.3fa0dbf72404de37.js"]},"components\\\\auth\\\\ResetPasswordForm.tsx -> @/lib/api/auth":{"id":3414,"files":["static/chunks/261-17e827cc481345f6.js","static/chunks/414.3fa0dbf72404de37.js"]}}';
+self.__REACT_LOADABLE_MANIFEST="{}"
