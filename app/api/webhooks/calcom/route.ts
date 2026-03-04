@@ -4,7 +4,8 @@ import {
   matchLeadToAppointment,
   updateLeadStatusToBooked,
   getAppointmentByCalcomId,
-  updateAppointmentStatus
+  updateAppointmentStatus,
+  sendAppointmentConfirmation
 } from '@/lib/api/appointments';
 import type { AppointmentStatus, CalcomBookingPayload } from '@/types/appointment';
 
@@ -93,6 +94,11 @@ export async function POST(req: NextRequest) {
       if (appointmentStatus === 'scheduled') {
         await updateLeadStatusToBooked(lead.id);
       }
+
+      // Send confirmation message (fire-and-forget - don't fail webhook if confirmation errors)
+      sendAppointmentConfirmation(appointment.id).catch(error => {
+        console.error('[Cal.com Webhook] Confirmation error:', error);
+      });
 
       return NextResponse.json({
         success: true,
