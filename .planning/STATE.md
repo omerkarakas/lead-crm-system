@@ -10,19 +10,19 @@ See: .planning/PROJECT.md (updated 2025-03-01)
 ## Current Position
 
 Phase: 4 of 6 (Appointments)
-Plan: 1 of 4
+Plan: 3 of 4
 Status: In progress
-Last activity: 2026-03-04 — Completed 04-01: Appointments Collection and Cal.com Webhook
+Last activity: 2026-03-04 — Completed 04-03: Appointment Confirmation and Reminders
 
-Progress: [████████░░░] 54% (3/6 phases complete, 19/24 plans complete)
+Progress: [█████████░░] 58% (3/6 phases complete, 20/24 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 19
+- Total plans completed: 20
 - Average duration: 11 min
-- Total execution time: 2 hours 24 min
+- Total execution time: 2 hours 29 min
 
 **By Phase:**
 
@@ -31,10 +31,17 @@ Progress: [████████░░░] 54% (3/6 phases complete, 19/24 pl
 | 01-foundation            | 4 of 4    | 60 min    | 15 min   |
 | 02-whatsapp-qualification | 4 of 4    | 62 min    | 15.5 min  |
 | 03-email-communication   | 3 of 3    | 17 min    | 5.7 min  |
-| 04-appointments          | 1 of 4    | 5 min     | 5 min    |
+| 04-appointments          | 3 of 4    | 10 min    | 3.3 min  |
 
 **Recent Trend:**
 
+- WhatsApp confirmation messages with Turkish formatting
+- 24-hour and 2-hour reminder message scheduling
+- Cancellation and reschedule notice messaging
+- Cron endpoint for automated reminder processing
+- Status-based reminder filtering (scheduled only)
+- Phone number normalization with +90 country code
+- Fire-and-forget messaging pattern for WhatsApp errors
 - Appointments collection with Cal.com integration fields
 - Cal.com webhook endpoint for booking events
 - Phone-first lead matching with email fallback
@@ -124,6 +131,12 @@ Recent decisions affecting current work:
 | Failed booking tracking | Create appointments with null lead_id for manual reconciliation | 2026-03-04 |
 | Webhook idempotency | Check for existing appointment via calcom_booking_id before creating | 2026-03-04 |
 | Lead status auto-update | Automatically update lead status to 'booked' when appointment created | 2026-03-04 |
+| Fire-and-forget messaging | Log WhatsApp errors but don't throw to prevent cascade failures | 2026-03-04 |
+| WhatsApp confirmation flow | Send confirmation on appointment creation (manual and webhook) | 2026-03-04 |
+| Turkish appointment messages | WhatsApp confirmations/reminders in Turkish with DD.MM.YYYY format | 2026-03-04 |
+| 24h and 2h reminders | Automated reminder scheduling with status-based filtering | 2026-03-04 |
+| Phone number normalization | Format phone numbers with +90 country code for Green API | 2026-03-04 |
+| Optional cron secret | CRON_SECRET env var for production cron endpoint security | 2026-03-04 |
 
 ### Pending Todos
 
@@ -145,9 +158,9 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-04 (Phase 4 Plan 1: Appointments Collection and Cal.com Webhook)
-Stopped at: Completed 04-01 - Appointments Collection and Cal.com Webhook
+Last session: 2026-03-04 (Phase 4 Plan 3: Appointment Confirmation and Reminders)
+Stopped at: Completed 04-03 - Appointment Confirmation and Reminders
 Resume file: None
 Dev server: Running at http://localhost:3000
 
-**Note**: Phase 4 in progress. Next plan: 04-02 (Appointment UI).
+**Note**: Phase 4 in progress. Next plan: 04-04 (Appointment UI).
