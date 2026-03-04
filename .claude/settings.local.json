@@ -23,7 +23,9 @@
       "Bash(cat \"c:/Dev/claude/moka-crm/.planning/phases/02-whatsapp-qualification/\"*PLAN.md)",
       "Bash(cat \"c:/Dev/claude/moka-crm/.planning/phases/02-whatsapp-qualification/\"*SUMMARY.md)",
       "Bash(cat \"c:/Dev/claude/moka-crm/.planning/phases/02-whatsapp-qualification/\"*VERIFICATION.md)",
-      "Bash(\"c:/Dev/claude/moka-crm/.planning/phases/02-whatsapp-qualification/02-VERIFICATION.md\":*)"
+      "Bash(\"c:/Dev/claude/moka-crm/.planning/phases/02-whatsapp-qualification/02-VERIFICATION.md\":*)",
+      "Bash(grep:*)",
+      "Bash(sqlite3:*)"
     ]
   }
 }
