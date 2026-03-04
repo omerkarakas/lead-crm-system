@@ -7,7 +7,7 @@ migrate((app) => {
       {
         "autogeneratePattern": "[a-z0-9]{15}",
         "hidden": false,
-        "id": "text1772610410",
+        "id": "text1772610649",
         "max": 15,
         "min": 15,
         "name": "id",
@@ -21,13 +21,13 @@ migrate((app) => {
       {
         "autogeneratePattern": "",
         "hidden": false,
-        "id": "relation1772610411",
+        "id": "relation1772610650",
         "name": "lead_id",
         "presentable": false,
         "required": true,
         "system": false,
         "type": "relation",
-        "collectionId": "pbc_leads",
+        "collectionId": "pbc_3705076665",
         "cascadeDelete": true,
         "minSelect": 1,
         "maxSelect": 1
@@ -35,7 +35,7 @@ migrate((app) => {
       {
         "autogeneratePattern": "",
         "hidden": false,
-        "id": "email1772610412",
+        "id": "email1772610651",
         "max": 255,
         "min": 1,
         "name": "to_email",
@@ -49,7 +49,7 @@ migrate((app) => {
       {
         "autogeneratePattern": "",
         "hidden": false,
-        "id": "text1772610413",
+        "id": "text1772610652",
         "max": 500,
         "min": 1,
         "name": "subject",
@@ -63,7 +63,7 @@ migrate((app) => {
       {
         "autogeneratePattern": "",
         "hidden": false,
-        "id": "text1772610414",
+        "id": "text1772610653",
         "max": 50000,
         "min": 1,
         "name": "body",
@@ -77,7 +77,7 @@ migrate((app) => {
       {
         "autogeneratePattern": "",
         "hidden": false,
-        "id": "text1772610415",
+        "id": "text1772610654",
         "max": 100,
         "min": 0,
         "name": "template_id",
@@ -90,7 +90,7 @@ migrate((app) => {
       },
       {
         "hidden": false,
-        "id": "select1772610416",
+        "id": "select1772610655",
         "name": "direction",
         "presentable": false,
         "required": true,
@@ -100,7 +100,7 @@ migrate((app) => {
       },
       {
         "hidden": false,
-        "id": "select1772610417",
+        "id": "select1772610656",
         "name": "status",
         "presentable": false,
         "required": true,
@@ -110,7 +110,7 @@ migrate((app) => {
       },
       {
         "hidden": false,
-        "id": "date1772610418",
+        "id": "date1772610657",
         "name": "sent_at",
         "presentable": false,
         "required": false,
@@ -120,7 +120,7 @@ migrate((app) => {
       {
         "autogeneratePattern": "",
         "hidden": false,
-        "id": "text1772610419",
+        "id": "text1772610658",
         "max": 500,
         "min": 0,
         "name": "resend_message_id",
