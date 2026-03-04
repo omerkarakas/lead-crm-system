@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, Mail } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,18 +17,21 @@ import {
 import { useLeadsStore } from '@/lib/stores/leads';
 import { toast } from 'sonner';
 import { LeadModal } from './LeadModal';
+import { SendEmailDialog } from './SendEmailDialog';
 
 interface LeadDetailActionsProps {
   leadId: string;
   leadName: string;
   lead: any; // Full lead object for editing
+  onEmailSent?: () => void;
 }
 
-export function LeadDetailActions({ leadId, leadName, lead }: LeadDetailActionsProps) {
+export function LeadDetailActions({ leadId, leadName, lead, onEmailSent }: LeadDetailActionsProps) {
   const router = useRouter();
   const { deleteLead } = useLeadsStore();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showEmailDialog, setShowEmailDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleEdit = () => {
@@ -49,9 +52,20 @@ export function LeadDetailActions({ leadId, leadName, lead }: LeadDetailActionsP
     }
   };
 
+  const handleEmailSent = () => {
+    setShowEmailDialog(false);
+    onEmailSent?.();
+    // Dispatch event for EmailHistory to refresh
+    window.dispatchEvent(new CustomEvent('email-sent'));
+  };
+
   return (
     <>
       <div className="flex gap-2">
+        <Button variant="default" size="sm" onClick={() => setShowEmailDialog(true)}>
+          <Mail className="mr-2 h-4 w-4" />
+          Email gönder
+        </Button>
         <Button variant="outline" size="sm" onClick={handleEdit}>
           <Pencil className="mr-2 h-4 w-4" />
           Düzenle
@@ -88,6 +102,14 @@ export function LeadDetailActions({ leadId, leadName, lead }: LeadDetailActionsP
         onOpenChange={setShowEditModal}
         lead={lead}
         mode="edit"
+      />
+
+      <SendEmailDialog
+        leadId={leadId}
+        lead={lead}
+        open={showEmailDialog}
+        onOpenChange={setShowEmailDialog}
+        onSuccess={handleEmailSent}
       />
     </>
   );

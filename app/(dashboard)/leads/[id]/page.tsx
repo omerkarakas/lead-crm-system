@@ -10,7 +10,9 @@ import { LeadDetailActions } from '@/components/leads/LeadDetailActions';
 import { ScoreDisplay } from '@/components/leads/ScoreDisplay';
 import { QAAnswersTable } from '@/components/leads/QAAnswersTable';
 import { ManualPollTrigger } from '@/components/leads/ManualPollTrigger';
+import { EmailHistory } from '@/components/leads/EmailHistory';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import pb from '@/lib/pocketbase';
@@ -109,8 +111,26 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
             </section>
           )}
 
-          <WhatsAppConversation leadId={lead.id} />
-          <NotesSection leadId={lead.id} />
+          {/* Tabs for WhatsApp, Email, Notes */}
+          <Tabs defaultValue="whatsapp" className="w-full">
+            <TabsList className="w-full justify-start">
+              <TabsTrigger value="whatsapp">WhatsApp</TabsTrigger>
+              <TabsTrigger value="email">E-posta</TabsTrigger>
+              <TabsTrigger value="notes">Notlar</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="whatsapp" className="mt-4">
+              <WhatsAppConversation leadId={lead.id} />
+            </TabsContent>
+
+            <TabsContent value="email" className="mt-4">
+              <EmailHistory leadId={lead.id} />
+            </TabsContent>
+
+            <TabsContent value="notes" className="mt-4">
+              <NotesSection leadId={lead.id} />
+            </TabsContent>
+          </Tabs>
         </div>
         <div className="space-y-6">
           <TagsManager leadId={lead.id} currentTags={lead.tags} />
