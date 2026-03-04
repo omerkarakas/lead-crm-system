@@ -1,5 +1,13 @@
 import pb from '@/lib/pocketbase';
 import { updateLead } from '@/lib/api/leads';
+import { sendWhatsAppMessage, logWhatsAppMessage } from '@/lib/api/whatsapp';
+import {
+  formatConfirmationMessage,
+  format24hReminderMessage,
+  format2hReminderMessage,
+  formatCancellationMessage,
+  formatRescheduledMessage
+} from '@/lib/whatsapp/appointment-messages';
 import type { Lead } from '@/types/lead';
 import type {
   Appointment,
@@ -7,6 +15,7 @@ import type {
   UpdateAppointmentDto,
   AppointmentStatus
 } from '@/types/appointment';
+import type { WhatsAppMessage } from '@/types/qa';
 
 /**
  * Create a new appointment record
@@ -248,4 +257,380 @@ export async function fetchAppointments(params: {
     totalPages: response.totalPages,
     items: response.items
   };
+}
+
+/**
+ * Format phone number for Green API (add country code if missing)
+ */
+function formatPhoneForWhatsApp(phone: string): string {
+  const cleanPhone = phone.replace(/\D/g, '');
+
+  // If starts with 90 and has 12 digits, use it with +
+  if (cleanPhone.startsWith('90') && cleanPhone.length === 12) {
+    return `+${cleanPhone}`;
+  }
+
+  // If has 10 digits, add +90 prefix
+  if (cleanPhone.length === 10) {
+    return `+90${cleanPhone}`;
+  }
+
+  // Already has + or other format
+  if (phone.startsWith('+')) {
+    return phone;
+  }
+
+  return `+${cleanPhone}`;
+}
+
+/**
+ * Send appointment confirmation message via WhatsApp
+ * Updates confirmation_sent flag after sending
+ */
+export async function sendAppointmentConfirmation(appointmentId: string): Promise<void> {
+  try {
+    // Fetch appointment with lead relation
+    const appointment = await pb.collection('appointments').getOne<Appointment>(appointmentId, {
+      expand: 'lead_id'
+    });
+
+    if (!appointment.lead_id) {
+      console.warn(`[sendAppointmentConfirmation] No lead associated with appointment ${appointmentId}`);
+      return;
+    }
+
+    const lead = appointment.expand?.lead_id as Lead;
+    if (!lead) {
+      console.warn(`[sendAppointmentConfirmation] Lead not found for appointment ${appointmentId}`);
+      return;
+    }
+
+    // Format confirmation message
+    const messageText = formatConfirmationMessage(lead.name, appointment);
+
+    // Format phone number for WhatsApp
+    const chatId = formatPhoneForWhatsApp(lead.phone) + '@c.us';
+
+    // Send WhatsApp message
+    const result = await sendWhatsAppMessage(chatId, messageText);
+
+    if (result) {
+      // Log message to whatsapp_messages collection
+      await logWhatsAppMessage({
+        lead_id: lead.id,
+        direction: 'outgoing',
+        message_text: messageText,
+        message_type: 'info',
+        status: 'sent',
+        sent_at: new Date().toISOString(),
+        green_api_id: result.idMessage
+      });
+
+      // Update confirmation_sent flag
+      await pb.collection('appointments').update(appointmentId, {
+        confirmation_sent: true
+      });
+
+      console.log(`[sendAppointmentConfirmation] Confirmation sent for appointment ${appointmentId}`);
+    }
+  } catch (error) {
+    console.error('[sendAppointmentConfirmation] Error:', error);
+    // Don't throw - handle errors gracefully
+  }
+}
+
+/**
+ * Send 24-hour reminder message via WhatsApp
+ * Updates reminder_24h_sent flag after sending
+ */
+export async function send24hReminder(appointmentId: string): Promise<void> {
+  try {
+    // Fetch appointment with lead relation
+    const appointment = await pb.collection('appointments').getOne<Appointment>(appointmentId, {
+      expand: 'lead_id'
+    });
+
+    if (!appointment.lead_id) {
+      console.warn(`[send24hReminder] No lead associated with appointment ${appointmentId}`);
+      return;
+    }
+
+    const lead = appointment.expand?.lead_id as Lead;
+    if (!lead) {
+      console.warn(`[send24hReminder] Lead not found for appointment ${appointmentId}`);
+      return;
+    }
+
+    // Format reminder message
+    const messageText = format24hReminderMessage(lead.name, appointment);
+
+    // Format phone number for WhatsApp
+    const chatId = formatPhoneForWhatsApp(lead.phone) + '@c.us';
+
+    // Send WhatsApp message
+    const result = await sendWhatsAppMessage(chatId, messageText);
+
+    if (result) {
+      // Log message to whatsapp_messages collection
+      await logWhatsAppMessage({
+        lead_id: lead.id,
+        direction: 'outgoing',
+        message_text: messageText,
+        message_type: 'info',
+        status: 'sent',
+        sent_at: new Date().toISOString(),
+        green_api_id: result.idMessage
+      });
+
+      // Update reminder_24h_sent flag
+      await pb.collection('appointments').update(appointmentId, {
+        reminder_24h_sent: true
+      });
+
+      console.log(`[send24hReminder] 24h reminder sent for appointment ${appointmentId}`);
+    }
+  } catch (error) {
+    console.error('[send24hReminder] Error:', error);
+    // Don't throw - handle errors gracefully
+  }
+}
+
+/**
+ * Send 2-hour reminder message via WhatsApp
+ * Updates reminder_2h_sent flag after sending
+ */
+export async function send2hReminder(appointmentId: string): Promise<void> {
+  try {
+    // Fetch appointment with lead relation
+    const appointment = await pb.collection('appointments').getOne<Appointment>(appointmentId, {
+      expand: 'lead_id'
+    });
+
+    if (!appointment.lead_id) {
+      console.warn(`[send2hReminder] No lead associated with appointment ${appointmentId}`);
+      return;
+    }
+
+    const lead = appointment.expand?.lead_id as Lead;
+    if (!lead) {
+      console.warn(`[send2hReminder] Lead not found for appointment ${appointmentId}`);
+      return;
+    }
+
+    // Format reminder message
+    const messageText = format2hReminderMessage(lead.name, appointment);
+
+    // Format phone number for WhatsApp
+    const chatId = formatPhoneForWhatsApp(lead.phone) + '@c.us';
+
+    // Send WhatsApp message
+    const result = await sendWhatsAppMessage(chatId, messageText);
+
+    if (result) {
+      // Log message to whatsapp_messages collection
+      await logWhatsAppMessage({
+        lead_id: lead.id,
+        direction: 'outgoing',
+        message_text: messageText,
+        message_type: 'info',
+        status: 'sent',
+        sent_at: new Date().toISOString(),
+        green_api_id: result.idMessage
+      });
+
+      // Update reminder_2h_sent flag
+      await pb.collection('appointments').update(appointmentId, {
+        reminder_2h_sent: true
+      });
+
+      console.log(`[send2hReminder] 2h reminder sent for appointment ${appointmentId}`);
+    }
+  } catch (error) {
+    console.error('[send2hReminder] Error:', error);
+    // Don't throw - handle errors gracefully
+  }
+}
+
+/**
+ * Send cancellation notice via WhatsApp
+ * No flag update (status changed to cancelled)
+ */
+export async function sendCancellationNotice(appointmentId: string): Promise<void> {
+  try {
+    // Fetch appointment with lead relation
+    const appointment = await pb.collection('appointments').getOne<Appointment>(appointmentId, {
+      expand: 'lead_id'
+    });
+
+    if (!appointment.lead_id) {
+      console.warn(`[sendCancellationNotice] No lead associated with appointment ${appointmentId}`);
+      return;
+    }
+
+    const lead = appointment.expand?.lead_id as Lead;
+    if (!lead) {
+      console.warn(`[sendCancellationNotice] Lead not found for appointment ${appointmentId}`);
+      return;
+    }
+
+    // Format cancellation message
+    const messageText = formatCancellationMessage(lead.name, appointment);
+
+    // Format phone number for WhatsApp
+    const chatId = formatPhoneForWhatsApp(lead.phone) + '@c.us';
+
+    // Send WhatsApp message
+    const result = await sendWhatsAppMessage(chatId, messageText);
+
+    if (result) {
+      // Log message to whatsapp_messages collection
+      await logWhatsAppMessage({
+        lead_id: lead.id,
+        direction: 'outgoing',
+        message_text: messageText,
+        message_type: 'info',
+        status: 'sent',
+        sent_at: new Date().toISOString(),
+        green_api_id: result.idMessage
+      });
+
+      console.log(`[sendCancellationNotice] Cancellation notice sent for appointment ${appointmentId}`);
+    }
+  } catch (error) {
+    console.error('[sendCancellationNotice] Error:', error);
+    // Don't throw - handle errors gracefully
+  }
+}
+
+/**
+ * Send rescheduled notice via WhatsApp
+ * Resets reminder flags (reminder_24h_sent = false, reminder_2h_sent = false)
+ */
+export async function sendRescheduledNotice(appointmentId: string): Promise<void> {
+  try {
+    // Fetch appointment with lead relation
+    const appointment = await pb.collection('appointments').getOne<Appointment>(appointmentId, {
+      expand: 'lead_id'
+    });
+
+    if (!appointment.lead_id) {
+      console.warn(`[sendRescheduledNotice] No lead associated with appointment ${appointmentId}`);
+      return;
+    }
+
+    const lead = appointment.expand?.lead_id as Lead;
+    if (!lead) {
+      console.warn(`[sendRescheduledNotice] Lead not found for appointment ${appointmentId}`);
+      return;
+    }
+
+    // Format rescheduled message
+    const messageText = formatRescheduledMessage(lead.name, appointment);
+
+    // Format phone number for WhatsApp
+    const chatId = formatPhoneForWhatsApp(lead.phone) + '@c.us';
+
+    // Send WhatsApp message
+    const result = await sendWhatsAppMessage(chatId, messageText);
+
+    if (result) {
+      // Log message to whatsapp_messages collection
+      await logWhatsAppMessage({
+        lead_id: lead.id,
+        direction: 'outgoing',
+        message_text: messageText,
+        message_type: 'info',
+        status: 'sent',
+        sent_at: new Date().toISOString(),
+        green_api_id: result.idMessage
+      });
+
+      // Reset reminder flags for new time
+      await pb.collection('appointments').update(appointmentId, {
+        reminder_24h_sent: false,
+        reminder_2h_sent: false
+      });
+
+      console.log(`[sendRescheduledNotice] Reschedule notice sent for appointment ${appointmentId}`);
+    }
+  } catch (error) {
+    console.error('[sendRescheduledNotice] Error:', error);
+    // Don't throw - handle errors gracefully
+  }
+}
+
+/**
+ * Send pending reminders
+ * Queries appointments needing reminders and sends them
+ * Returns counts of sent and errors
+ */
+export async function sendPendingReminders(): Promise<{ sent: number; errors: number }> {
+  let sent = 0;
+  let errors = 0;
+
+  try {
+    const now = new Date();
+
+    // Process 2-hour reminders (within next 2 hours)
+    const twoHoursFromNow = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+    const twoHourWindowStart = new Date(now.getTime() + 1 * 60 * 60 * 1000); // Start checking 1 hour from now
+
+    const twoHourReminders = await pb.collection('appointments').getList<Appointment>(1, 50, {
+      filter: `status = "scheduled" && scheduled_at >= "${twoHourWindowStart.toISOString()}" && scheduled_at <= "${twoHoursFromNow.toISOString()}" && reminder_2h_sent = false`,
+      sort: 'scheduled_at',
+      expand: 'lead_id'
+    });
+
+    for (const appointment of twoHourReminders.items) {
+      try {
+        await send2hReminder(appointment.id);
+        sent++;
+      } catch (error) {
+        console.error(`[sendPendingReminders] Error sending 2h reminder for ${appointment.id}:`, error);
+        errors++;
+      }
+    }
+
+    // Process 24-hour reminders (within next 24 hours but > 2 hours from now)
+    const twentyFourHoursFromNow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    const twentyFourHourWindowStart = new Date(now.getTime() + 23 * 60 * 60 * 1000); // Start checking 23 hours from now
+
+    const twentyFourHourReminders = await pb.collection('appointments').getList<Appointment>(1, 50, {
+      filter: `status = "scheduled" && scheduled_at >= "${twentyFourHourWindowStart.toISOString()}" && scheduled_at <= "${twentyFourHoursFromNow.toISOString()}" && reminder_24h_sent = false`,
+      sort: 'scheduled_at',
+      expand: 'lead_id'
+    });
+
+    for (const appointment of twentyFourHourReminders.items) {
+      try {
+        await send24hReminder(appointment.id);
+        sent++;
+      } catch (error) {
+        console.error(`[sendPendingReminders] Error sending 24h reminder for ${appointment.id}:`, error);
+        errors++;
+      }
+    }
+
+    console.log(`[sendPendingReminders] Sent ${sent} reminders, ${errors} errors`);
+  } catch (error) {
+    console.error('[sendPendingReminders] Error:', error);
+  }
+
+  return { sent, errors };
+}
+
+/**
+ * Cancel scheduled reminders for an appointment
+ * Called when appointment is cancelled or completed
+ * No actual reminder cancellation needed (status check prevents sending)
+ * For future: could integrate with job queue to cancel scheduled jobs
+ */
+export async function cancelScheduledReminders(appointmentId: string): Promise<void> {
+  try {
+    // Status change to cancelled/completed prevents reminders from being sent
+    // No additional action needed currently
+    console.log(`[cancelScheduledReminders] Reminders cancelled for appointment ${appointmentId}`);
+  } catch (error) {
+    console.error('[cancelScheduledReminders] Error:', error);
+  }
 }
