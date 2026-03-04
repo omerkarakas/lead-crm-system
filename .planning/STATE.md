@@ -5,24 +5,24 @@
 See: .planning/PROJECT.md (updated 2025-03-01)
 
 **Core value:** Lead-to-Customer dönüşümünü otomatize eden tek platform.
-**Current focus:** Phase 3 - Email Communication
+**Current focus:** Phase 4 - Appointments
 
 ## Current Position
 
-Phase: 3 of 6 (Email Communication)
-Plan: 3 of 3
-Status: Complete ✅
-Last activity: 2026-03-04 — Completed Phase 3: Email Communication
+Phase: 4 of 6 (Appointments)
+Plan: 1 of 4
+Status: In progress
+Last activity: 2026-03-04 — Completed 04-01: Appointments Collection and Cal.com Webhook
 
-Progress: [████████████] 50% (3/6 phases complete, 18/24 plans complete)
+Progress: [████████░░░] 54% (3/6 phases complete, 19/24 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 13
+- Total plans completed: 19
 - Average duration: 11 min
-- Total execution time: 2 hours 19 min
+- Total execution time: 2 hours 24 min
 
 **By Phase:**
 
@@ -30,10 +30,16 @@ Progress: [████████████] 50% (3/6 phases complete, 18/24
 |--------------------------|-----------|-----------|----------|
 | 01-foundation            | 4 of 4    | 60 min    | 15 min   |
 | 02-whatsapp-qualification | 4 of 4    | 62 min    | 15.5 min  |
-| 03-email-communication   | 2 of TBD  | 17 min    | 8.5 min  |
+| 03-email-communication   | 3 of 3    | 17 min    | 5.7 min  |
+| 04-appointments          | 1 of 4    | 5 min     | 5 min    |
 
 **Recent Trend:**
 
+- Appointments collection with Cal.com integration fields
+- Cal.com webhook endpoint for booking events
+- Phone-first lead matching with email fallback
+- Failed booking tracking with null lead_id
+- Lead status auto-update to 'booked' on appointment creation
 - Score display with breakdown by question and quality badge
 - QA answers table showing question/answer/points for each response
 - Admin-only manual poll trigger with "Tekrar Gönder" button
@@ -113,6 +119,11 @@ Recent decisions affecting current work:
 | Zustand persist middleware | localStorage for last-used template retention | 2026-03-04 |
 | Email history list pattern | Minimal info (Date, Subject, Status) with click-to-view modal | 2026-03-04 |
 | Email templates permission fix | Allow all authenticated users to view templates (not just admin) | 2026-03-04 |
+| Appointments collection schema | PocketBase collection with Cal.com integration fields and optional lead_id | 2026-03-04 |
+| Phone-first lead matching | Phone number matching with +90 prefix stripping, email fallback | 2026-03-04 |
+| Failed booking tracking | Create appointments with null lead_id for manual reconciliation | 2026-03-04 |
+| Webhook idempotency | Check for existing appointment via calcom_booking_id before creating | 2026-03-04 |
+| Lead status auto-update | Automatically update lead status to 'booked' when appointment created | 2026-03-04 |
 
 ### Pending Todos
 
@@ -134,9 +145,9 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-04 (Phase 3 Plan 3: Email Sending UI and History)
-Stopped at: Completed 03-03 - Email Sending UI and History
+Last session: 2026-03-04 (Phase 4 Plan 1: Appointments Collection and Cal.com Webhook)
+Stopped at: Completed 04-01 - Appointments Collection and Cal.com Webhook
 Resume file: None
 Dev server: Running at http://localhost:3000
 
-**Note**: Phase 3 complete. Next phase: Appointments (Cal.com integration).
+**Note**: Phase 4 in progress. Next plan: 04-02 (Appointment UI).
