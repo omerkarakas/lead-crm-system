@@ -12,15 +12,29 @@ import type {
  * Create a new appointment record
  */
 export async function createAppointment(data: CreateAppointmentDto): Promise<Appointment> {
-  const record = await pb.collection('appointments').create<Appointment>({
-    ...data,
+  const createData: Record<string, unknown> = {
+    calcom_booking_id: data.calcom_booking_id,
+    scheduled_at: data.scheduled_at,
     status: data.status || 'scheduled',
     source: data.source || 'calcom',
     duration: data.duration || 60,
     confirmation_sent: false,
     reminder_24h_sent: false,
     reminder_2h_sent: false
-  });
+  };
+
+  // Only add lead_id if provided (for failed bookings without lead match)
+  if (data.lead_id) {
+    createData.lead_id = data.lead_id;
+  }
+
+  // Optional fields
+  if (data.calcom_event_id) createData.calcom_event_id = data.calcom_event_id;
+  if (data.location) createData.location = data.location;
+  if (data.meeting_url) createData.meeting_url = data.meeting_url;
+  if (data.notes) createData.notes = data.notes;
+
+  const record = await pb.collection('appointments').create<Appointment>(createData);
 
   return record;
 }
@@ -31,29 +45,31 @@ export async function createAppointment(data: CreateAppointmentDto): Promise<App
  * - SECOND: If no match by phone, try email (case-insensitive match)
  */
 export async function matchLeadToAppointment(
-  phone: string,
+  phone: string | undefined,
   email: string
 ): Promise<Lead | null> {
   try {
-    // FIRST: Try to find lead by phone number
-    // Clean phone: remove non-numeric chars and strip +90 prefix if present
-    const cleanPhone = phone.replace(/\D/g, '');
-    const phoneWithoutPrefix = cleanPhone.startsWith('90') && cleanPhone.length === 12
-      ? cleanPhone.substring(2)
-      : cleanPhone;
+    // FIRST: Try to find lead by phone number (if provided)
+    if (phone && phone.trim() !== '') {
+      // Clean phone: remove non-numeric chars and strip +90 prefix if present
+      const cleanPhone = phone.replace(/\D/g, '');
+      const phoneWithoutPrefix = cleanPhone.startsWith('90') && cleanPhone.length === 12
+        ? cleanPhone.substring(2)
+        : cleanPhone;
 
-    // Try exact match with cleaned phone
-    const phoneResponse = await pb.collection('leads').getList<Lead>(1, 1, {
-      filter: `phone = "${phoneWithoutPrefix}" || phone = "+${phoneWithoutPrefix}" || phone = "0${phoneWithoutPrefix}"`,
-      sort: '-created'
-    });
+      // Try exact match with cleaned phone
+      const phoneResponse = await pb.collection('leads').getList<Lead>(1, 1, {
+        filter: `phone = "${phoneWithoutPrefix}" || phone = "+${phoneWithoutPrefix}" || phone = "0${phoneWithoutPrefix}"`,
+        sort: '-created'
+      });
 
-    if (phoneResponse.items.length > 0) {
-      return phoneResponse.items[0];
+      if (phoneResponse.items.length > 0) {
+        return phoneResponse.items[0];
+      }
     }
 
     // SECOND: If no match by phone, try email
-    if (email) {
+    if (email && email.trim() !== '') {
       const emailResponse = await pb.collection('leads').getList<Lead>(1, 1, {
         filter: `email ~ "${email.toLowerCase()}"`,
         sort: '-created'

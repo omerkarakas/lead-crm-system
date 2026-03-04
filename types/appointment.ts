@@ -21,7 +21,7 @@ export enum AppointmentSource {
  */
 export interface Appointment {
   id: string;
-  lead_id: string;
+  lead_id?: string;
   calcom_booking_id: string;
   calcom_event_id?: string;
   scheduled_at: string;
@@ -42,7 +42,7 @@ export interface Appointment {
  * DTO for creating appointment
  */
 export interface CreateAppointmentDto {
-  lead_id: string;
+  lead_id?: string;
   calcom_booking_id: string;
   calcom_event_id?: string;
   scheduled_at: string;

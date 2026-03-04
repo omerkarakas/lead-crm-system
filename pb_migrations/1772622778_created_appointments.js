@@ -11,12 +11,12 @@ migrate((app) => {
         id: "appointments_lead_id",
         name: "lead_id",
         type: "relation",
-        required: true,
+        required: false,
         presentable: false,
         options: {
           collectionId: "leads_collection",
           cascadeDelete: true,
-          minSelect: 1,
+          minSelect: 0,
           maxSelect: 1
         }
       },
