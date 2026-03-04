@@ -1,4 +1,4 @@
-import pb from '@/lib/pocketbase';
+import PocketBase from 'pocketbase';
 import type {
   Lead,
   CreateLeadDto,
@@ -11,6 +11,23 @@ import type {
 import { fetchActiveQuestions } from '@/lib/api/qa';
 import { sendWhatsAppMessage, logWhatsAppMessage } from '@/lib/api/whatsapp';
 import { formatPollMessage as formatWhatsAppPollMessage } from '@/lib/whatsapp/message-formatter';
+
+// Create dedicated PocketBase instance for Leads to prevent auto-cancellation
+const PB_URL = process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090';
+const pb = new PocketBase(PB_URL);
+
+// Load auth from cookie if available (client-side only)
+if (typeof window !== 'undefined') {
+  const cookies = document.cookie.split(';');
+  const pbCookie = cookies.find(c => c.trim().startsWith('pb_auth='));
+  if (pbCookie) {
+    try {
+      pb.authStore.loadFromCookie(pbCookie.trim());
+    } catch (e) {
+      console.warn('Failed to load auth from cookie:', e);
+    }
+  }
+}
 
 /**
  * Fetch all leads with pagination and filtering
@@ -70,6 +87,7 @@ export async function fetchLead(id: string): Promise<Lead> {
 
 /**
  * Create a new lead
+ * Note: Returns lead without triggering poll (poll must be triggered manually or via API)
  */
 export async function createLead(data: CreateLeadDto): Promise<Lead> {
   const userId = pb.authStore.model?.id;
@@ -85,11 +103,6 @@ export async function createLead(data: CreateLeadDto): Promise<Lead> {
     qa_completed: false,
   });
 
-  // Trigger background job (fire and forget)
-  sendPollAfterDelay(record.id).catch(err =>
-    console.error('Poll send background job error:', err)
-  );
-
   return record;
 }
 
@@ -101,10 +114,57 @@ export async function updateLead(id: string, data: UpdateLeadDto): Promise<Lead>
 }
 
 /**
- * Delete a lead
+ * Delete a lead and all related records (cascade delete)
  */
 export async function deleteLead(id: string): Promise<void> {
-  await pb.collection('leads').delete(id);
+  try {
+    // Delete related records first (PocketBase doesn't have cascade delete)
+    // Email messages
+    const emailMessages = await pb.collection('email_messages').getList(1, 100, {
+      filter: `lead_id = "${id}"`
+    });
+    for (const msg of emailMessages.items) {
+      await pb.collection('email_messages').delete(msg.id);
+    }
+
+    // WhatsApp messages
+    const whatsappMessages = await pb.collection('whatsapp_messages').getList(1, 100, {
+      filter: `lead_id = "${id}"`
+    });
+    for (const msg of whatsappMessages.items) {
+      await pb.collection('whatsapp_messages').delete(msg.id);
+    }
+
+    // QA answers
+    const qaAnswers = await pb.collection('qa_answers').getList(1, 100, {
+      filter: `lead_id = "${id}"`
+    });
+    for (const ans of qaAnswers.items) {
+      await pb.collection('qa_answers').delete(ans.id);
+    }
+
+    // Appointments
+    const appointments = await pb.collection('appointments').getList(1, 100, {
+      filter: `lead_id = "${id}"`
+    });
+    for (const apt of appointments.items) {
+      await pb.collection('appointments').delete(apt.id);
+    }
+
+    // Notes
+    const notes = await pb.collection('notes').getList(1, 100, {
+      filter: `leadId = "${id}"`
+    });
+    for (const note of notes.items) {
+      await pb.collection('notes').delete(note.id);
+    }
+
+    // Finally delete the lead
+    await pb.collection('leads').delete(id);
+  } catch (error) {
+    console.error('Delete lead error:', error);
+    throw error;
+  }
 }
 
 /**

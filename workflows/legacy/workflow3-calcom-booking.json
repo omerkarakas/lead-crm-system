@@ -1,0 +1,949 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "calcom-booking",
+        "options": {}
+      },
+      "id": "c1efc427-4bcc-49c5-8ea6-fe84dfb6c295",
+      "name": "Cal.com Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-624, 1264],
+      "webhookId": "calcom-booking"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "GOOGLE_SHEET_ID",
+              "value": "1yhU1LI11cJ2K8QA_CNjm_guodaA4qcwq_bCdgtswpKs"
+            },
+            {
+              "name": "SENDER_PHONE_NUMBER",
+              "value": "905545377751"
+            },
+            {
+              "name": "GREEN_API_INSTANCE_ID",
+              "value": "7105475201"
+            },
+            {
+              "name": "GREEN_API_TOKEN",
+              "value": "edfedf91ae2c4eedb03f82bcaf162a6bca65cd85e1894dc087"
+            },
+            {
+              "name": "CALCOM_MEETING_URL",
+              "value": "https://cal.mokadijital.com/moka/30min"
+            },
+            {
+              "name": "LEADS",
+              "value": "1120005493"
+            },
+            {
+              "name": "CONFIG",
+              "value": "0"
+            },
+            {
+              "name": "QUESTIONS",
+              "value": "2027137165"
+            },
+            {
+              "name": "ANSWERS",
+              "value": "1329572446"
+            },
+            {
+              "name": "APPOINTMENTS",
+              "value": "203824620"
+            },
+            {
+              "name": "MESSAGES",
+              "value": "16874217"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "adcdddba-c3b2-4196-b6fb-d4650bb3e960",
+      "name": "ENV",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [-432, 1264]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract booking info from Cal.com webhook\nconst webhookData = $('Cal.com Webhook').first().json;\n\n// Cal.com webhook payload structure\nconst payload = webhookData.body?.payload || webhookData.payload || {};\nconst triggerEvent = webhookData.body?.triggerEvent || webhookData.triggerEvent || '';\n\n// Extract attendee info\nconst attendees = payload.attendees || [];\nconst attendee = attendees[0] || {};\n\nconst attendeeEmail = attendee.email || '';\nconst attendeeName = attendee.name || '';\n\n// Extract booking details (UTC from Cal.com)\nconst startTimeUTC = payload.startTime || '';\nconst endTimeUTC = payload.endTime || '';\nconst title = payload.title || '';\n\n// Convert to Istanbul timezone (GMT+3) for storage\nfunction toIstanbulISO(utcDateStr) {\n  if (!utcDateStr) return '';\n  const date = new Date(utcDateStr);\n  return date.toLocaleString('sv-SE', { timeZone: 'Europe/Istanbul' }).replace(' ', 'T') + '+03:00';\n}\n\nconst startTime = toIstanbulISO(startTimeUTC);\nconst endTime = toIstanbulISO(endTimeUTC);\n\n// Calculate duration in minutes\nlet durationMinutes = 30; // default\nif (startTimeUTC && endTimeUTC) {\n  const start = new Date(startTimeUTC);\n  const end = new Date(endTimeUTC);\n  durationMinutes = Math.round((end - start) / (1000 * 60));\n}\n\n// Get meeting URL\nconst metadata = payload.metadata || {};\nconst meetingUrl = metadata.videoCallUrl || payload.meetingUrl || '';\n\n// Get Cal.com event ID\nconst calcomEventId = payload.uid || payload.id || '';\n\nreturn {\n  json: {\n    triggerEvent: triggerEvent,\n    attendeeEmail: attendeeEmail,\n    attendeeName: attendeeName,\n    startTime: startTime,\n    endTime: endTime,\n    durationMinutes: durationMinutes,\n    title: title,\n    meetingUrl: meetingUrl,\n    calcomEventId: calcomEventId,\n    rawPayload: payload\n  }\n};"
+      },
+      "id": "bf3af969-6c49-452b-84c3-b47732e58782",
+      "name": "Extract Booking Info",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-224, 1264]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "is-booking-created",
+              "leftValue": "={{ $json.triggerEvent }}",
+              "rightValue": "BOOKING_CREATED",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "4ba157a4-baf1-4789-b19c-18d909ea59fc",
+      "name": "Is Booking Created?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [-32, 1264]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1yhU1LI11cJ2K8QA_CNjm_guodaA4qcwq_bCdgtswpKs",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "id",
+          "value": 1120005493
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "email",
+              "lookupValue": "={{ $('Extract Booking Info').item.json.attendeeEmail }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fef353d1-2423-42e0-a0a4-0fe5f274bbbd",
+      "name": "Find Lead by Email",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [176, 1072],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gLQzXXPOARPBtPqJ",
+          "name": "Moka Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "lead-exists",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "947f0904-286a-43d0-9586-257cb12164bc",
+      "name": "Lead Found?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [384, 1072]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1yhU1LI11cJ2K8QA_CNjm_guodaA4qcwq_bCdgtswpKs",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "id",
+          "value": 16874217
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "=msg-booking-unknown-{{ Date.now() }}",
+            "lead_id": "",
+            "direction": "incoming",
+            "message_text": "=Cal.com booking from unknown email: {{ $('Extract Booking Info').item.json.attendeeEmail }}",
+            "message_type": "booking_unknown",
+            "green_api_id": "",
+            "status": "error",
+            "sent_at": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lead_id",
+              "displayName": "lead_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "direction",
+              "displayName": "direction",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message_text",
+              "displayName": "message_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message_type",
+              "displayName": "message_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "green_api_id",
+              "displayName": "green_api_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sent_at",
+              "displayName": "sent_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2f224967-7315-4773-a756-9c1e83061fed",
+      "name": "Log Unknown Lead",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [576, 1264],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gLQzXXPOARPBtPqJ",
+          "name": "Moka Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1yhU1LI11cJ2K8QA_CNjm_guodaA4qcwq_bCdgtswpKs",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "id",
+          "value": 203824620
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "=appt-{{ Date.now() }}",
+            "lead_id": "={{ $('Find Lead by Email').item.json.id }}",
+            "calcom_event_id": "={{ $('Extract Booking Info').item.json.calcomEventId }}",
+            "scheduled_at": "={{ $('Extract Booking Info').item.json.startTime }}",
+            "duration_minutes": "={{ $('Extract Booking Info').item.json.durationMinutes }}",
+            "meeting_type": "online",
+            "meeting_url": "={{ $('Extract Booking Info').item.json.meetingUrl }}",
+            "status": "scheduled",
+            "reminder_sent": "FALSE",
+            "created_at": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lead_id",
+              "displayName": "lead_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "calcom_event_id",
+              "displayName": "calcom_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "scheduled_at",
+              "displayName": "scheduled_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "duration_minutes",
+              "displayName": "duration_minutes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "meeting_type",
+              "displayName": "meeting_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "meeting_url",
+              "displayName": "meeting_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reminder_sent",
+              "displayName": "reminder_sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "418f858a-269c-466d-8b2c-279aacba064d",
+      "name": "Create Appointment",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [576, 960],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gLQzXXPOARPBtPqJ",
+          "name": "Moka Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1yhU1LI11cJ2K8QA_CNjm_guodaA4qcwq_bCdgtswpKs",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "id",
+          "value": 1120005493
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Find Lead by Email').item.json.id }}",
+            "status": "booked",
+            "updated_at": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": ["id"],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "800030ba-6a1f-466d-8ed2-25b94691d58c",
+      "name": "Update Lead Status",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [784, 960],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gLQzXXPOARPBtPqJ",
+          "name": "Moka Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format confirmation message\nconst lead = $('Find Lead by Email').first().json;\nconst booking = $('Extract Booking Info').first().json;\n\nconst leadName = lead.name || 'Degerli Musterimiz';\nconst leadPhone = lead.phone.toString();\n\n// Format date for Turkish locale\nconst startDate = new Date(booking.startTime);\nconst options = { \n  weekday: 'long', \n  year: 'numeric', \n  month: 'long', \n  day: 'numeric',\n  hour: '2-digit',\n  minute: '2-digit',\n  timeZone: 'Europe/Istanbul'\n};\n\nconst formattedDate = startDate.toLocaleDateString('tr-TR', options);\n\nconst message = `Randevunuz onaylandı!\\n\\nTarih: ${formattedDate}\\nSure: ${booking.durationMinutes} dakika\\nToplanti: Online\\n\\nToplanti linki: ${booking.meetingUrl || 'Mail ile gonderilecek'}\\n\\nToplantiyi takviminizde isaretlemeyi unutmayin.\\n\\nToplantiya ustteki linke tiklayarak katilirken bir bilgisayar kullaniyor olmaniz daha verimli olacaktir.\\n\\nGorusmek uzere!`;\n\n// Format phone for Green API\nconst chatId = leadPhone.replace(/\\D/g, '') + '@c.us';\n\nreturn {\n  json: {\n    chatId: chatId,\n    message: message,\n    leadId: lead.id,\n    leadName: leadName,\n    leadPhone: leadPhone\n  }\n};"
+      },
+      "id": "61923946-7e4a-47ea-bcd3-b67fe657306a",
+      "name": "Format Confirmation",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [976, 960]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.green-api.com/waInstance{{ $('ENV').item.json.GREEN_API_INSTANCE_ID }}/sendMessage/{{ $('ENV').item.json.GREEN_API_TOKEN }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chatId",
+              "value": "={{ $json.chatId }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "bd7d5a5b-cf76-49ff-9143-831db0c23fb6",
+      "name": "Send Confirmation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1184, 960]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1yhU1LI11cJ2K8QA_CNjm_guodaA4qcwq_bCdgtswpKs",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "id",
+          "value": 16874217
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "=msg-booking-{{ Date.now() }}",
+            "lead_id": "={{ $('Format Confirmation').item.json.leadId }}",
+            "direction": "outgoing",
+            "message_text": "={{ $('Format Confirmation').item.json.message }}",
+            "message_type": "booking_confirmation",
+            "green_api_id": "={{ $('Send Confirmation').item.json.idMessage || '' }}",
+            "status": "sent",
+            "sent_at": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lead_id",
+              "displayName": "lead_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "direction",
+              "displayName": "direction",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message_text",
+              "displayName": "message_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message_type",
+              "displayName": "message_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "green_api_id",
+              "displayName": "green_api_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sent_at",
+              "displayName": "sent_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "dba80c3a-2c07-4a53-81a8-34e78462b1e4",
+      "name": "Log Message",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [1376, 960],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gLQzXXPOARPBtPqJ",
+          "name": "Moka Google Sheets"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Cal.com Webhook": {
+      "main": [
+        [
+          {
+            "node": "ENV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ENV": {
+      "main": [
+        [
+          {
+            "node": "Extract Booking Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Booking Info": {
+      "main": [
+        [
+          {
+            "node": "Is Booking Created?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Booking Created?": {
+      "main": [
+        [
+          {
+            "node": "Find Lead by Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Find Lead by Email": {
+      "main": [
+        [
+          {
+            "node": "Lead Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead Found?": {
+      "main": [
+        [
+          {
+            "node": "Create Appointment",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Unknown Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Unknown Lead": {
+      "main": [[]]
+    },
+    "Create Appointment": {
+      "main": [
+        [
+          {
+            "node": "Update Lead Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Lead Status": {
+      "main": [
+        [
+          {
+            "node": "Format Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Confirmation": {
+      "main": [
+        [
+          {
+            "node": "Send Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Confirmation": {
+      "main": [
+        [
+          {
+            "node": "Log Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Message": {
+      "main": [[]]
+    }
+  },
+  "pinData": {
+    "Cal.com Webhook": [
+      {
+        "headers": {
+          "host": "ai.mokadijital.com",
+          "user-agent": "node",
+          "content-length": "2710",
+          "accept": "*/*",
+          "accept-encoding": "br, gzip, deflate",
+          "accept-language": "*",
+          "content-type": "application/json",
+          "sec-fetch-mode": "cors",
+          "x-cal-signature-256": "no-secret-provided",
+          "x-cal-webhook-version": "2021-10-20",
+          "x-forwarded-for": "172.18.0.1",
+          "x-forwarded-host": "ai.mokadijital.com",
+          "x-forwarded-port": "443",
+          "x-forwarded-proto": "https",
+          "x-forwarded-server": "d3aec7f97576",
+          "x-real-ip": "172.18.0.1"
+        },
+        "params": {},
+        "query": {},
+        "body": {
+          "triggerEvent": "BOOKING_CREATED",
+          "createdAt": "2026-01-21T13:02:09.919Z",
+          "payload": {
+            "bookerUrl": "https://cal.mokadijital.com",
+            "title": "30 Dakikalık Toplantı between Moka Dijital and Meryem Karakaş",
+            "startTime": "2026-01-27T07:00:00+00:00",
+            "endTime": "2026-01-27T07:30:00+00:00",
+            "additionalNotes": "",
+            "type": "30min",
+            "description": "",
+            "eventTypeId": 2,
+            "hideCalendarNotes": false,
+            "hideCalendarEventDetails": false,
+            "hideOrganizerEmail": false,
+            "schedulingType": null,
+            "seatsPerTimeSlot": null,
+            "seatsShowAttendees": true,
+            "seatsShowAvailabilityCount": true,
+            "customReplyToEmail": null,
+            "disableRescheduling": false,
+            "disableCancelling": false,
+            "organizer": {
+              "id": 1,
+              "name": "Moka Dijital",
+              "email": "mokadijital@gmail.com",
+              "username": "moka",
+              "timeZone": "Europe/Istanbul",
+              "language": {
+                "locale": "en"
+              },
+              "timeFormat": "h:mma",
+              "utcOffset": 180
+            },
+            "attendees": [
+              {
+                "email": "omerkarakas@hotmail.com",
+                "name": "Meryem Karakaş",
+                "firstName": "",
+                "lastName": "",
+                "timeZone": "Europe/Istanbul",
+                "language": {
+                  "locale": "tr"
+                },
+                "utcOffset": 180
+              }
+            ],
+            "customInputs": {},
+            "responses": {
+              "name": {
+                "label": "your_name",
+                "value": "Meryem Karakaş",
+                "isHidden": false
+              },
+              "email": {
+                "label": "email_address",
+                "value": "omerkarakas@hotmail.com",
+                "isHidden": false
+              },
+              "attendeePhoneNumber": {
+                "label": "phone_number",
+                "isHidden": true
+              },
+              "location": {
+                "label": "location",
+                "value": {
+                  "value": "integrations:google:meet",
+                  "optionValue": ""
+                },
+                "isHidden": false
+              },
+              "title": {
+                "label": "what_is_this_meeting_about",
+                "isHidden": true
+              },
+              "notes": {
+                "label": "additional_notes",
+                "isHidden": false
+              },
+              "guests": {
+                "label": "additional_guests",
+                "value": [],
+                "isHidden": false
+              },
+              "rescheduleReason": {
+                "label": "reason_for_reschedule",
+                "isHidden": false
+              }
+            },
+            "userFieldsResponses": {},
+            "location": "integrations:google:meet",
+            "conferenceCredentialId": 2,
+            "destinationCalendar": [
+              {
+                "id": 1,
+                "integration": "google_calendar",
+                "externalId": "mokadijital@gmail.com",
+                "primaryEmail": "mokadijital@gmail.com",
+                "userId": 1,
+                "eventTypeId": null,
+                "credentialId": 1,
+                "createdAt": "2026-01-03T20:20:45.156Z",
+                "updatedAt": "2026-01-20T18:04:32.548Z",
+                "delegationCredentialId": null,
+                "domainWideDelegationCredentialId": null,
+                "customCalendarReminder": 30
+              }
+            ],
+            "iCalUID": "eGqr8T1ySQpcHTwx2UgqzU@Cal.com",
+            "iCalSequence": 0,
+            "requiresConfirmation": false,
+            "oneTimePassword": null,
+            "hashedLink": null,
+            "uid": "eGqr8T1ySQpcHTwx2UgqzU",
+            "conferenceData": {
+              "createRequest": {
+                "requestId": "8a0ce172-f69a-51b5-8481-93feb73d58e2"
+              }
+            },
+            "appsStatus": [
+              {
+                "appName": "Google Calendar",
+                "type": "google_calendar",
+                "success": 1,
+                "failures": 0,
+                "errors": [],
+                "warnings": []
+              },
+              {
+                "appName": "Google Meet",
+                "type": "conferencing",
+                "success": 1,
+                "failures": 0,
+                "errors": []
+              }
+            ],
+            "eventTitle": "30 Dakikalık Toplantı",
+            "eventDescription": "",
+            "price": 0,
+            "currency": "usd",
+            "length": 30,
+            "bookingId": 9,
+            "metadata": {
+              "videoCallUrl": "https://meet.google.com/mbn-ravk-ist"
+            },
+            "status": "ACCEPTED"
+          }
+        },
+        "webhookUrl": "https://ai.mokadijital.com/webhook/calcom-booking",
+        "executionMode": "production"
+      }
+    ]
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9190640ec2e243efdae764eee94ddcff930d8feee7367836dfe2ac9ac5e94c3d"
+  }
+}

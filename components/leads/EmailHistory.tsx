@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Mail, Inbox } from 'lucide-react';
@@ -65,24 +65,45 @@ export function EmailHistory({ leadId, onRefresh }: EmailHistoryProps) {
   const [error, setError] = useState<string | null>(null);
   const [selectedEmail, setSelectedEmail] = useState<EmailMessage | null>(null);
   const [isContentModalOpen, setIsContentModalOpen] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  const loadEmails = async () => {
+  const loadEmails = useCallback(async () => {
+    // Cancel previous request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+
     try {
       setIsLoading(true);
       setError(null);
       const history = await getEmailHistory(leadId);
-      setEmails(history);
+      if (!abortController.signal.aborted) {
+        setEmails(history);
+      }
     } catch (err: any) {
-      setError(err.message || 'E-posta geçmişi yüklenirken hata oluştu');
-      toast.error('E-posta geçmişi yüklenirken hata oluştu');
+      if (err.name !== 'AbortError') {
+        setError(err.message || 'E-posta geçmişi yüklenirken hata oluştu');
+        toast.error('E-posta geçmişi yüklenirken hata oluştu');
+      }
     } finally {
-      setIsLoading(false);
+      if (!abortController.signal.aborted) {
+        setIsLoading(false);
+      }
     }
-  };
+  }, [leadId]);
 
   useEffect(() => {
     loadEmails();
-  }, [leadId]);
+
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, [loadEmails]);
 
   // Listen for refresh events
   useEffect(() => {

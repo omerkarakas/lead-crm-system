@@ -1,4 +1,4 @@
-import pb from '@/lib/pocketbase';
+import PocketBase from 'pocketbase';
 import { updateLead } from '@/lib/api/leads';
 import { sendWhatsAppMessage, logWhatsAppMessage } from '@/lib/api/whatsapp';
 import {
@@ -16,6 +16,23 @@ import type {
   AppointmentStatus
 } from '@/types/appointment';
 import type { WhatsAppMessage } from '@/types/qa';
+
+// Create dedicated PocketBase instance for Appointments to prevent auto-cancellation
+const PB_URL = process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090';
+const pb = new PocketBase(PB_URL);
+
+// Load auth from cookie if available (client-side only)
+if (typeof window !== 'undefined') {
+  const cookies = document.cookie.split(';');
+  const pbCookie = cookies.find(c => c.trim().startsWith('pb_auth='));
+  if (pbCookie) {
+    try {
+      pb.authStore.loadFromCookie(pbCookie.trim());
+    } catch (e) {
+      console.warn('Failed to load auth from cookie:', e);
+    }
+  }
+}
 
 /**
  * Create a new appointment record

@@ -85,20 +85,20 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Appointments
 
-- [ ] **APPT-01**: System receives Cal.com booking webhook
-- [ ] **APPT-02**: System matches booking to lead by email
-- [ ] **APPT-03**: System creates appointment record (lead_id, scheduled_at, duration, meeting_url)
-- [ ] **APPT-04**: System updates lead status to "booked" after appointment created
-- [ ] **APPT-05**: System sends WhatsApp confirmation after booking
-- [ ] **APPT-06**: User can view appointments list filtered by date range
-- [ ] **APPT-07**: User can view appointment details on lead detail page
-- [ ] **APPT-08**: System calculates reminder time (configurable hours before)
-- [ ] **APPT-09**: System sends WhatsApp reminder X hours before appointment
-- [ ] **APPT-10**: System marks reminder as sent after sending
-- [ ] **APPT-11**: User can manually create appointment for lead
-- [ ] **APPT-12**: User can edit appointment details
-- [ ] **APPT-13**: User can cancel appointment (updates status)
-- [ ] **APPT-14**: System displays appointment status (scheduled, completed, cancelled)
+- [x] **APPT-01**: System receives Cal.com booking webhook ✅
+- [x] **APPT-02**: System matches booking to lead by email ✅
+- [x] **APPT-03**: System creates appointment record (lead_id, scheduled_at, duration, meeting_url) ✅
+- [x] **APPT-04**: System updates lead status to "booked" after appointment created ✅
+- [x] **APPT-05**: System sends WhatsApp confirmation after booking ✅
+- [x] **APPT-06**: User can view appointments list filtered by date range ✅
+- [x] **APPT-07**: User can view appointment details on lead detail page ✅
+- [x] **APPT-08**: System calculates reminder time (configurable hours before) ✅
+- [x] **APPT-09**: System sends WhatsApp reminder X hours before appointment ✅
+- [x] **APPT-10**: System marks reminder as sent after sending ✅
+- [x] **APPT-11**: User can manually create appointment for lead ✅
+- [x] **APPT-12**: User can edit appointment details ✅
+- [x] **APPT-13**: User can cancel appointment (updates status) ✅
+- [x] **APPT-14**: System displays appointment status (scheduled, completed, cancelled) ✅
 
 ### Campaign & Nurturing
 
@@ -171,11 +171,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | AUTH-01 to AUTH-06 | Phase 1 | ✅ Complete |
 | LEAD-01 to LEAD-16 | Phase 1 | ✅ Complete |
-| LEAD-17, LEAD-18 | Phase 2 | Pending |
-| QUAL-01 to QUAL-17 | Phase 2 | Pending |
-| WHATS-01 to WHATS-10 | Phase 2 | Pending |
+| LEAD-17, LEAD-18 | Phase 6 | Pending |
+| QUAL-01 to QUAL-17 | Phase 2 | ✅ Complete |
+| WHATS-01 to WHATS-10 | Phase 2 | ✅ Complete |
 | EMAIL-01 to EMAIL-10 | Phase 3 | ✅ Complete |
-| APPT-01 to APPT-14 | Phase 4 | Pending |
+| APPT-01 to APPT-14 | Phase 4 | ✅ Complete |
 | QUAL-14, QUAL-15, CAMP-01 to CAMP-17 | Phase 5 | Pending |
 | LEAD-09, LEAD-10, LEAD-13, LEAD-14 | Phase 6 | Pending |
 
@@ -186,4 +186,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2025-03-01*
-*Last updated: 2026-03-04 - Phase 3 complete (EMAIL-01 to EMAIL-10)*
+*Last updated: 2026-03-04 - Phase 4 complete (APPT-01 to APPT-14)*

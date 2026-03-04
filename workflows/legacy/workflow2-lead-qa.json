@@ -1,0 +1,1891 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp-incoming",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "838fb089-b84f-4358-b75a-118c557536a4",
+      "name": "WhatsApp Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-5600, 4128],
+      "webhookId": "whatsapp-incoming"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "GOOGLE_SHEET_ID",
+              "value": "1yhU1LI11cJ2K8QA_CNjm_guodaA4qcwq_bCdgtswpKs"
+            },
+            {
+              "name": "SENDER_PHONE_NUMBER",
+              "value": "905545377751"
+            },
+            {
+              "name": "GREEN_API_INSTANCE_ID",
+              "value": "7105475201"
+            },
+            {
+              "name": "GREEN_API_TOKEN",
+              "value": "edfedf91ae2c4eedb03f82bcaf162a6bca65cd85e1894dc087"
+            },
+            {
+              "name": "CALCOM_MEETING_URL",
+              "value": "https://cal.mokadijital.com/moka/30min"
+            },
+            {
+              "name": "HIGH_SCORE_THRESHOLD",
+              "value": "250"
+            },
+            {
+              "name": "LEADS",
+              "value": "1120005493"
+            },
+            {
+              "name": "CONFIG",
+              "value": "0"
+            },
+            {
+              "name": "QUESTIONS",
+              "value": "2027137165"
+            },
+            {
+              "name": "ANSWERS",
+              "value": "1329572446"
+            },
+            {
+              "name": "APPOINTMENTS",
+              "value": "203824620"
+            },
+            {
+              "name": "MESSAGES",
+              "value": "16874217"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0de27282-5242-48b2-8cff-1e4a89f376fc",
+      "name": "ENV",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [-5376, 4128]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract phone number and message from Green API webhook\nconst webhookData = $('WhatsApp Webhook').first().json;\n\n// Green API webhook structure\nconst senderData = webhookData.body?.senderData || webhookData.senderData || {};\nconst messageData = webhookData.body?.messageData || webhookData.messageData || {};\n\n// Extract phone number (remove @c.us suffix)\nlet chatId = senderData.chatId || senderData.sender || '';\nlet phone = chatId.replace('@c.us', '');\n\n// Extract message text\nlet messageText = '';\nif (messageData.textMessageData) {\n  messageText = messageData.textMessageData.textMessage || '';\n} else if (messageData.extendedTextMessageData) {\n  messageText = messageData.extendedTextMessageData.text || '';\n}\n\n// Clean message (trim and lowercase for comparison)\nconst cleanMessage = messageText.trim().toLowerCase();\n\nreturn {\n  json: {\n    phone: phone,\n    chatId: chatId,\n    messageText: messageText,\n    cleanMessage: cleanMessage,\n    rawWebhook: webhookData\n  }\n};"
+      },
+      "id": "794f8646-6166-42a2-8521-01545633486f",
+      "name": "Extract Phone & Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-5152, 4128]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1yhU1LI11cJ2K8QA_CNjm_guodaA4qcwq_bCdgtswpKs",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "id",
+          "value": 1120005493
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "phone",
+              "lookupValue": "={{ $json.phone }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "61053ed0-047d-4058-9120-918455decda5",
+      "name": "Find Lead by Phone",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [-4928, 4128],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gLQzXXPOARPBtPqJ",
+          "name": "Moka Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "lead-exists",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "6a67867c-a42e-4af8-a6d8-28d13e4a98b1",
+      "name": "Lead Found?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [-4704, 4128]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1yhU1LI11cJ2K8QA_CNjm_guodaA4qcwq_bCdgtswpKs",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "id",
+          "value": 16874217
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "=msg-unknown-{{ Date.now() }}",
+            "lead_id": "",
+            "direction": "incoming",
+            "message_text": "={{ $('Extract Phone & Message').first().json.messageText }}",
+            "message_type": "unknown_sender",
+            "green_api_id": "",
+            "status": "received",
+            "sent_at": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lead_id",
+              "displayName": "lead_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "direction",
+              "displayName": "direction",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message_text",
+              "displayName": "message_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message_type",
+              "displayName": "message_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "green_api_id",
+              "displayName": "green_api_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sent_at",
+              "displayName": "sent_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2264a5fd-ad1a-4498-8139-86507f752db0",
+      "name": "Log Unknown Sender",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [-4480, 4224],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gLQzXXPOARPBtPqJ",
+          "name": "Moka Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": false,\n  \"message\": \"Unknown sender\",\n  \"phone\": \"{{ $('Extract Phone & Message').first().json.phone }}\"\n}",
+        "options": {}
+      },
+      "id": "e5f270b4-a841-4dc2-8154-37996850f62a",
+      "name": "Respond Unknown",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [-4256, 4224]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1yhU1LI11cJ2K8QA_CNjm_guodaA4qcwq_bCdgtswpKs",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "id",
+          "value": 2027137165
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "id",
+              "lookupValue": "={{ $('Find Lead by Phone').first().json.current_question_id }}"
+            },
+            {
+              "lookupColumn": "is_active",
+              "lookupValue": "true"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "856ead55-8202-4606-81a8-3b45b98b94c2",
+      "name": "Get Current Question",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [-4256, 4032],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gLQzXXPOARPBtPqJ",
+          "name": "Moka Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize Turkish characters to ASCII\nfunction normalizeTurkish(str) {\n  const map = { 'ç': 'c', 'Ç': 'C', 'ş': 's', 'Ş': 'S', 'ğ': 'g', 'Ğ': 'G', 'ü': 'u', 'Ü': 'U', 'ö': 'o', 'Ö': 'O', 'ı': 'i', 'İ': 'I' };\n  return str.replace(/[çÇşŞğĞüÜöÖıİ]/g, c => map[c] || c);\n}\n\n// Get data from previous nodes\nconst lead = $('Find Lead by Phone').first().json;\nconst question = $('Get Current Question').first().json;\nconst messageData = $('Extract Phone & Message').first().json;\nconst env = $('ENV').first().json;\n\n// Normalize answer (Turkish chars to ASCII)\nconst answer = normalizeTurkish(messageData.cleanMessage);\nconst currentQuestionId = parseInt(lead.current_question_id) || 1;\n\n// Check if user wants to go back (including 'o' and 'O')\nconst goBackCommands = ['0', 'o', 'O', 'geri', 'back', 'onceki', 'önceki'];\nconst isGoingBack = goBackCommands.includes(answer.trim());\n\n// If going back and not on first question\nif (isGoingBack) {\n  const prevQuestionId = currentQuestionId - 1;\n  const canGoBack = prevQuestionId >= 1;\n  \n  return {\n    json: {\n      leadId: lead.id,\n      leadPhone: lead.phone,\n      leadName: lead.name,\n      leadEmail: lead.email,\n      chatId: messageData.phone + '@c.us',\n      \n      isGoingBack: true,\n      isInvalidAnswer: false,\n      canGoBack: canGoBack,\n      currentQuestionId: currentQuestionId,\n      prevQuestionId: prevQuestionId,\n      previousTotal: parseInt(lead.total_score) || 0,\n      \n      highScoreThreshold: parseInt(env.HIGH_SCORE_THRESHOLD) || 150\n    }\n  };\n}\n\n// Normal answer flow\nconst questionWeight = parseInt(question.weight) || 1;\n\n// Parse scoring rules\nlet score = 0;\nlet matchedOption = null;\n\ntry {\n  const scoringRules = JSON.parse(question.scoring_rules || '{}');\n  const rules = scoringRules.rules || [];\n  \n  // Try to match answer to options\n  const options = JSON.parse(question.options || '[]');\n  \n  // Check if answer is a letter (a, b, c, d)\n  const letterIndex = answer.charCodeAt(0) - 97; // 'a' = 0, 'b' = 1, etc.\n  \n  if (letterIndex >= 0 && letterIndex < options.length && answer.length === 1) {\n    matchedOption = options[letterIndex];\n    \n    // Find score for this option\n    for (const rule of rules) {\n      if (rule.answer.toLowerCase() === matchedOption.toLowerCase() || \n          rule.answer.toLowerCase() === answer) {\n        score = (rule.score || 0) * questionWeight;\n        break;\n      }\n    }\n  } else {\n    // Direct text match\n    for (const rule of rules) {\n      if (rule.answer.toLowerCase() === answer) {\n        score = (rule.score || 0) * questionWeight;\n        matchedOption = answer;\n        break;\n      }\n    }\n  }\n} catch (e) {\n  // If parsing fails, give 0 score\n  score = 0;\n}\n\n// Check if answer is invalid (no match found)\nif (matchedOption === null) {\n  return {\n    json: {\n      leadId: lead.id,\n      leadPhone: lead.phone,\n      leadName: lead.name,\n      leadEmail: lead.email,\n      chatId: messageData.phone + '@c.us',\n      \n      isGoingBack: false,\n      isInvalidAnswer: true,\n      currentQuestionId: currentQuestionId,\n      answerText: messageData.messageText,\n      previousTotal: parseInt(lead.total_score) || 0,\n      \n      highScoreThreshold: parseInt(env.HIGH_SCORE_THRESHOLD) || 150\n    }\n  };\n}\n\n// Calculate new total score\nconst currentTotal = parseInt(lead.total_score) || 0;\nconst newTotal = currentTotal + score;\n\nconst nextQuestionId = currentQuestionId + 1;\n\nreturn {\n  json: {\n    leadId: lead.id,\n    leadPhone: lead.phone,\n    leadName: lead.name,\n    leadEmail: lead.email,\n    chatId: messageData.phone + '@c.us',\n    \n    isGoingBack: false,\n    isInvalidAnswer: false,\n    questionId: currentQuestionId,\n    answerText: messageData.messageText,\n    matchedOption: matchedOption,\n    answerScore: score,\n    \n    previousTotal: currentTotal,\n    newTotal: newTotal,\n    nextQuestionId: nextQuestionId,\n    \n    highScoreThreshold: parseInt(env.HIGH_SCORE_THRESHOLD) || 150\n  }\n};"
+      },
+      "id": "11db80a6-31a7-497d-ae79-5c2e25c8deff",
+      "name": "Calculate Score",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-4032, 4032]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1yhU1LI11cJ2K8QA_CNjm_guodaA4qcwq_bCdgtswpKs",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "id",
+          "value": 1329572446
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "=ans-{{ $json.leadId }}-{{ $json.questionId }}-{{ Date.now() }}",
+            "lead_id": "={{ $json.leadId }}",
+            "question_id": "={{ $json.questionId }}",
+            "answer_text": "={{ $json.answerText }}",
+            "score": "={{ $json.answerScore }}",
+            "answered_at": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lead_id",
+              "displayName": "lead_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "question_id",
+              "displayName": "question_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "answer_text",
+              "displayName": "answer_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "score",
+              "displayName": "score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "answered_at",
+              "displayName": "answered_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "18c21518-fa65-43d9-8c62-329d2e427fe8",
+      "name": "Save Answer",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [-3584, 4224],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gLQzXXPOARPBtPqJ",
+          "name": "Moka Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1yhU1LI11cJ2K8QA_CNjm_guodaA4qcwq_bCdgtswpKs",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "id",
+          "value": 2027137165
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "id",
+              "lookupValue": "={{ $('Calculate Score').first().json.nextQuestionId }}"
+            },
+            {
+              "lookupColumn": "is_active",
+              "lookupValue": "true"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "80aa6235-28c4-486a-b8a5-f7a58718df2f",
+      "name": "Get Next Question",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [-3360, 4224],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gLQzXXPOARPBtPqJ",
+          "name": "Moka Google Sheets"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "has-next-question",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "92ec2da9-0633-42d2-9a59-3a87870734d2",
+      "name": "More Questions?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [-3136, 4224]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format next question message\nconst nextQuestion = $('Get Next Question').first().json;\nconst scoreData = $('Calculate Score').first().json;\n\nlet questionText = nextQuestion.question_text || '';\nlet options = '';\n\nif (nextQuestion.options) {\n  try {\n    const optionsArray = JSON.parse(nextQuestion.options);\n    options = optionsArray.map((opt, i) => {\n      const letter = String.fromCharCode(97 + i); // a, b, c, d...\n      return `${letter}) ${opt}`;\n    }).join('\\n');\n  } catch (e) {\n    options = nextQuestion.options;\n  }\n}\n\nconst questionNumber = scoreData.nextQuestionId;\n// Add back hint for questions after the first one\nconst backHint = questionNumber > 1 ? '\\n(0 ile geri donebilirsiniz)' : '';\nconst message = `${questionNumber}. ${questionText}\\n${options}${backHint}`;\n\nreturn {\n  json: {\n    chatId: scoreData.chatId,\n    message: message,\n    leadId: scoreData.leadId,\n    nextQuestionId: scoreData.nextQuestionId,\n    newTotal: scoreData.newTotal,\n    isLastQuestion: false\n  }\n};"
+      },
+      "id": "19e8c961-d25b-44cb-aa37-f2c036579beb",
+      "name": "Format Next Question",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-2912, 4128]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.green-api.com/waInstance{{ $('ENV').first().json.GREEN_API_INSTANCE_ID }}/sendMessage/{{ $('ENV').first().json.GREEN_API_TOKEN }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chatId",
+              "value": "={{ $json.chatId }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d7aaffe1-5801-44ce-bc37-68aedcf9ed62",
+      "name": "Send Next Question",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-2688, 4128]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1yhU1LI11cJ2K8QA_CNjm_guodaA4qcwq_bCdgtswpKs",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "id",
+          "value": 1120005493
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Format Next Question').first().json.leadId }}",
+            "current_question_id": "={{ $('Format Next Question').first().json.nextQuestionId }}",
+            "total_score": "={{ $('Format Next Question').first().json.newTotal }}",
+            "status": "questioning",
+            "updated_at": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": ["id"],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "current_question_id",
+              "displayName": "current_question_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "total_score",
+              "displayName": "total_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4cc285b2-73c2-4fe8-aae6-d733135e6047",
+      "name": "Update Lead (Next Q)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [-2464, 4128],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gLQzXXPOARPBtPqJ",
+          "name": "Moka Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1yhU1LI11cJ2K8QA_CNjm_guodaA4qcwq_bCdgtswpKs",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "id",
+          "value": 16874217
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "=msg-{{ Date.now() }}",
+            "lead_id": "={{ $('Format Next Question').first().json.leadId }}",
+            "direction": "outgoing",
+            "message_text": "={{ $('Format Next Question').first().json.message }}",
+            "message_type": "question",
+            "green_api_id": "={{ $('Send Next Question').first().json.idMessage || '' }}",
+            "status": "sent",
+            "sent_at": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lead_id",
+              "displayName": "lead_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "direction",
+              "displayName": "direction",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message_text",
+              "displayName": "message_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message_type",
+              "displayName": "message_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "green_api_id",
+              "displayName": "green_api_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sent_at",
+              "displayName": "sent_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "74c05fde-fc80-4553-89a3-64943590c804",
+      "name": "Log Next Question",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [-2240, 4128],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gLQzXXPOARPBtPqJ",
+          "name": "Moka Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Next question sent\",\n  \"leadId\": \"{{ $('Format Next Question').first().json.leadId }}\",\n  \"nextQuestionId\": {{ $('Format Next Question').first().json.nextQuestionId }}\n}",
+        "options": {}
+      },
+      "id": "81ef03a1-410b-4f72-b65d-4d525caafea1",
+      "name": "Respond Next Q",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [-2016, 4128]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1yhU1LI11cJ2K8QA_CNjm_guodaA4qcwq_bCdgtswpKs",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "id",
+          "value": 0
+        },
+        "options": {}
+      },
+      "id": "e1f2g3h4-get-config-messages",
+      "name": "Get Config Messages",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [-3136, 4416],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gLQzXXPOARPBtPqJ",
+          "name": "Moka Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Last question - calculate final score and determine quality\nconst scoreData = $('Calculate Score').first().json;\nconst env = $('ENV').first().json;\nconst configRows = $('Get Config Messages').all();\n\n// Get messages from Config\nlet highQualityMsg = '';\nlet lowQualityMsg = '';\nfor (const row of configRows) {\n  if (row.json.key === 'high_quality_message') highQualityMsg = row.json.value || '';\n  if (row.json.key === 'low_quality_message') lowQualityMsg = row.json.value || '';\n}\n\nconst finalScore = scoreData.newTotal;\nconst threshold = scoreData.highScoreThreshold;\nconst isHighQuality = finalScore >= threshold;\n\nlet message = '';\nlet quality = '';\nlet status = '';\n\nif (isHighQuality) {\n  quality = 'high';\n  status = 'scored';\n  const email = encodeURIComponent(scoreData.leadEmail || '');\n  const phone = encodeURIComponent(scoreData.leadPhone || '');\n  const name = encodeURIComponent(scoreData.leadName || '');\n  const fullUrl = `${env.CALCOM_MEETING_URL}?email=${email}&attendeePhoneNumber=${phone}&name=${name}`;\n  \n  // Replace {url} placeholder in config message, or use default\n  if (highQualityMsg && highQualityMsg.includes('{url}')) {\n    message = highQualityMsg.replace('{url}', fullUrl);\n  } else if (highQualityMsg) {\n    message = highQualityMsg;\n  } else {\n    message = `Tebrikler! Degerlendirmeniz tamamlandi ve sizinle gorusmek istiyoruz!\\n\\nAsagidaki linkten uygun bir zaman secebilirsiniz:\\n${fullUrl}`;\n  }\n} else {\n  quality = 'low';\n  status = 'nurturing';\n  message = lowQualityMsg || 'Tesekkurler! Bilgilerinizi aldik. Su an icin hizmetlerimiz ihtiyaclarinizla tam ortusmuyor olabilir. Sizi e-posta listemize ekledik, size ozel firsatlardan haberdar edecegiz!';\n}\n\nreturn {\n  json: {\n    chatId: scoreData.chatId,\n    message: message,\n    leadId: scoreData.leadId,\n    finalScore: finalScore,\n    quality: quality,\n    status: status,\n    isHighQuality: isHighQuality\n  }\n};"
+      },
+      "id": "0c58342f-3a53-4608-a36d-6e0019c51ba8",
+      "name": "Calculate Final Score",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-2912, 4416]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.green-api.com/waInstance{{ $('ENV').first().json.GREEN_API_INSTANCE_ID }}/sendMessage/{{ $('ENV').first().json.GREEN_API_TOKEN }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chatId",
+              "value": "={{ $json.chatId }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "dcad5f27-7546-4240-b2d0-46dad73b1157",
+      "name": "Send Final Message",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-2688, 4320]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1yhU1LI11cJ2K8QA_CNjm_guodaA4qcwq_bCdgtswpKs",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "id",
+          "value": 1120005493
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Calculate Final Score').first().json.leadId }}",
+            "total_score": "={{ $('Calculate Final Score').first().json.finalScore }}",
+            "quality": "={{ $('Calculate Final Score').first().json.quality }}",
+            "status": "={{ $('Calculate Final Score').first().json.status }}",
+            "updated_at": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": ["id"],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "total_score",
+              "displayName": "total_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "quality",
+              "displayName": "quality",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9b4e3720-4cfe-463d-a8fc-eae68425e2db",
+      "name": "Update Lead (Final)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [-2464, 4320],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gLQzXXPOARPBtPqJ",
+          "name": "Moka Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1yhU1LI11cJ2K8QA_CNjm_guodaA4qcwq_bCdgtswpKs",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "id",
+          "value": 16874217
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "=msg-final-{{ Date.now() }}",
+            "lead_id": "={{ $('Calculate Final Score').first().json.leadId }}",
+            "direction": "outgoing",
+            "message_text": "={{ $('Calculate Final Score').first().json.message }}",
+            "message_type": "={{ $('Calculate Final Score').first().json.isHighQuality ? 'high_quality' : 'nurturing' }}",
+            "green_api_id": "={{ $('Send Final Message').first().json.idMessage || '' }}",
+            "status": "sent",
+            "sent_at": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lead_id",
+              "displayName": "lead_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "direction",
+              "displayName": "direction",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message_text",
+              "displayName": "message_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message_type",
+              "displayName": "message_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "green_api_id",
+              "displayName": "green_api_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sent_at",
+              "displayName": "sent_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "87548ab0-e2fa-47f7-ba28-f1c05374cbb5",
+      "name": "Log Final Message",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [-2240, 4320],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gLQzXXPOARPBtPqJ",
+          "name": "Moka Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Lead scoring completed\",\n  \"leadId\": \"{{ $('Calculate Final Score').first().json.leadId }}\",\n  \"finalScore\": {{ $('Calculate Final Score').first().json.finalScore }},\n  \"quality\": \"{{ $('Calculate Final Score').first().json.quality }}\"\n}",
+        "options": {}
+      },
+      "id": "d8c6d22f-c66d-472a-b457-25e51c63907b",
+      "name": "Respond Final",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [-2016, 4320]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "is-going-back",
+              "leftValue": "={{ $json.isGoingBack }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "33913174-9421-439d-a6ac-abede5bf0eb6",
+      "name": "Is Going Back?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [-3808, 4032]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "is-invalid-answer",
+              "leftValue": "={{ $json.isInvalidAnswer }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-invalid-check-node",
+      "name": "Is Invalid Answer?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [-3584, 4128]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format current question message for invalid answer retry\nconst question = $('Get Current Question').first().json;\nconst scoreData = $('Calculate Score').first().json;\n\nlet questionText = question.question_text || '';\nlet options = '';\n\nif (question.options) {\n  try {\n    const optionsArray = JSON.parse(question.options);\n    options = optionsArray.map((opt, i) => {\n      const letter = String.fromCharCode(97 + i);\n      return `${letter}) ${opt}`;\n    }).join('\\n');\n  } catch (e) {\n    options = question.options;\n  }\n}\n\nconst questionNumber = scoreData.currentQuestionId;\nconst backHint = questionNumber > 1 ? '\\n(0 ile geri donebilirsiniz)' : '';\nconst invalidHint = 'Lutfen gecerli bir secenek girin (a, b, c veya d).\\n\\n';\nconst message = `${invalidHint}${questionNumber}. ${questionText}\\n${options}${backHint}`;\n\nreturn {\n  json: {\n    chatId: scoreData.chatId,\n    message: message,\n    leadId: scoreData.leadId,\n    currentQuestionId: scoreData.currentQuestionId\n  }\n};"
+      },
+      "id": "b2c3d4e5-format-retry-question",
+      "name": "Format Retry Question",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-3360, 4320]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.green-api.com/waInstance{{ $('ENV').first().json.GREEN_API_INSTANCE_ID }}/sendMessage/{{ $('ENV').first().json.GREEN_API_TOKEN }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chatId",
+              "value": "={{ $json.chatId }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c3d4e5f6-send-retry-question",
+      "name": "Send Retry Question",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-3136, 4320]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Invalid answer - question repeated\",\n  \"leadId\": \"{{ $('Format Retry Question').first().json.leadId }}\",\n  \"questionId\": {{ $('Format Retry Question').first().json.currentQuestionId }}\n}",
+        "options": {}
+      },
+      "id": "d4e5f6g7-respond-retry",
+      "name": "Respond Retry",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [-2912, 4320]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "can-go-back",
+              "leftValue": "={{ $json.canGoBack }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "36a3d7a0-7636-4605-a302-3a2972ed5406",
+      "name": "Can Go Back?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [-3584, 3936]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1yhU1LI11cJ2K8QA_CNjm_guodaA4qcwq_bCdgtswpKs",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "id",
+          "value": 1329572446
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "lead_id",
+              "lookupValue": "={{ $('Calculate Score').first().json.leadId }}"
+            },
+            {
+              "lookupColumn": "question_id",
+              "lookupValue": "={{ $('Calculate Score').first().json.prevQuestionId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7f88e85d-2bd7-4046-bbf4-098b5c771e86",
+      "name": "Get Previous Answer",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [-3360, 3840],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gLQzXXPOARPBtPqJ",
+          "name": "Moka Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "value": "1yhU1LI11cJ2K8QA_CNjm_guodaA4qcwq_bCdgtswpKs",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "id",
+          "value": 1329572446
+        }
+      },
+      "id": "758b15f2-9812-42e3-8b59-8edfa9f85324",
+      "name": "Delete Previous Answer",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [-3136, 3840],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gLQzXXPOARPBtPqJ",
+          "name": "Moka Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1yhU1LI11cJ2K8QA_CNjm_guodaA4qcwq_bCdgtswpKs",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "id",
+          "value": 2027137165
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "id",
+              "lookupValue": "={{ $('Calculate Score').first().json.prevQuestionId }}"
+            },
+            {
+              "lookupColumn": "is_active",
+              "lookupValue": "true"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "678260a1-2600-4fae-8ce5-1fb980254d2b",
+      "name": "Get Previous Question",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [-2912, 3840],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gLQzXXPOARPBtPqJ",
+          "name": "Moka Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format previous question message\nconst prevQuestion = $('Get Previous Question').first().json;\nconst scoreData = $('Calculate Score').first().json;\nconst prevAnswer = $('Get Previous Answer').first().json;\n\nlet questionText = prevQuestion.question_text || '';\nlet options = '';\n\nif (prevQuestion.options) {\n  try {\n    const optionsArray = JSON.parse(prevQuestion.options);\n    options = optionsArray.map((opt, i) => {\n      const letter = String.fromCharCode(97 + i);\n      return `${letter}) ${opt}`;\n    }).join('\\n');\n  } catch (e) {\n    options = prevQuestion.options;\n  }\n}\n\nconst questionNumber = scoreData.prevQuestionId;\nconst backHint = questionNumber > 1 ? '\\n(0 ile geri donebilirsiniz)' : '';\nconst message = `${questionNumber}. ${questionText}\\n${options}${backHint}`;\n\n// Calculate new total by subtracting previous answer score\nconst prevAnswerScore = parseInt(prevAnswer.score) || 0;\nconst newTotal = scoreData.previousTotal - prevAnswerScore;\n\nreturn {\n  json: {\n    chatId: scoreData.chatId,\n    message: message,\n    leadId: scoreData.leadId,\n    prevQuestionId: scoreData.prevQuestionId,\n    newTotal: newTotal < 0 ? 0 : newTotal\n  }\n};"
+      },
+      "id": "42d6e00b-bc50-4eb6-9b65-8d2dee07be5d",
+      "name": "Format Previous Question",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-2688, 3840]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.green-api.com/waInstance{{ $('ENV').first().json.GREEN_API_INSTANCE_ID }}/sendMessage/{{ $('ENV').first().json.GREEN_API_TOKEN }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chatId",
+              "value": "={{ $json.chatId }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e71d9d20-b8e7-4383-843f-701aae679dee",
+      "name": "Send Previous Question",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-2464, 3840]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1yhU1LI11cJ2K8QA_CNjm_guodaA4qcwq_bCdgtswpKs",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "id",
+          "value": 1120005493
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Format Previous Question').first().json.leadId }}",
+            "current_question_id": "={{ $('Format Previous Question').first().json.prevQuestionId }}",
+            "total_score": "={{ $('Format Previous Question').first().json.newTotal }}",
+            "updated_at": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": ["id"],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "current_question_id",
+              "displayName": "current_question_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "total_score",
+              "displayName": "total_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a718ff8e-f803-4f4a-bae8-f035ba076757",
+      "name": "Update Lead (Back)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [-2240, 3840],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gLQzXXPOARPBtPqJ",
+          "name": "Moka Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Went back to previous question\",\n  \"leadId\": \"{{ $('Format Previous Question').first().json.leadId }}\",\n  \"questionId\": {{ $('Format Previous Question').first().json.prevQuestionId }}\n}",
+        "options": {}
+      },
+      "id": "dab0864e-e85f-4efb-ae3f-4e892d87b565",
+      "name": "Respond Back",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [-2016, 3840]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.green-api.com/waInstance{{ $('ENV').first().json.GREEN_API_INSTANCE_ID }}/sendMessage/{{ $('ENV').first().json.GREEN_API_TOKEN }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chatId",
+              "value": "={{ $('Calculate Score').first().json.chatId }}"
+            },
+            {
+              "name": "message",
+              "value": "Bu ilk soru, daha geriye gidemezsiniz."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c8ca18cb-e572-47cb-92d7-42be4a0fe247",
+      "name": "Send Cant Go Back",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-3360, 4032]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": false,\n  \"message\": \"Cannot go back - already at first question\"\n}",
+        "options": {}
+      },
+      "id": "73c0f760-1616-455c-b227-bf73e1fd2f8b",
+      "name": "Respond Cant Go Back",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [-3136, 4032]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b57e8c33-d460-4ef4-be4d-586e26ece565",
+              "leftValue": "=[\"new\",\"questioning\"]",
+              "rightValue": "={{ $json.status }}",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [-4480, 4048],
+      "id": "5b24b040-d82d-4d82-b6a7-ac01b1ed4f50",
+      "name": "Is Current?"
+    }
+  ],
+  "connections": {
+    "WhatsApp Webhook": {
+      "main": [
+        [
+          {
+            "node": "ENV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ENV": {
+      "main": [
+        [
+          {
+            "node": "Extract Phone & Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Phone & Message": {
+      "main": [
+        [
+          {
+            "node": "Find Lead by Phone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Lead by Phone": {
+      "main": [
+        [
+          {
+            "node": "Lead Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead Found?": {
+      "main": [
+        [
+          {
+            "node": "Is Current?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Unknown Sender",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Unknown Sender": {
+      "main": [
+        [
+          {
+            "node": "Respond Unknown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Current Question": {
+      "main": [
+        [
+          {
+            "node": "Calculate Score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Score": {
+      "main": [
+        [
+          {
+            "node": "Is Going Back?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Answer": {
+      "main": [
+        [
+          {
+            "node": "Get Next Question",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Next Question": {
+      "main": [
+        [
+          {
+            "node": "More Questions?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "More Questions?": {
+      "main": [
+        [
+          {
+            "node": "Format Next Question",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Config Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Config Messages": {
+      "main": [
+        [
+          {
+            "node": "Calculate Final Score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Next Question": {
+      "main": [
+        [
+          {
+            "node": "Send Next Question",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Next Question": {
+      "main": [
+        [
+          {
+            "node": "Update Lead (Next Q)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Lead (Next Q)": {
+      "main": [
+        [
+          {
+            "node": "Log Next Question",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Next Question": {
+      "main": [
+        [
+          {
+            "node": "Respond Next Q",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Final Score": {
+      "main": [
+        [
+          {
+            "node": "Send Final Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Final Message": {
+      "main": [
+        [
+          {
+            "node": "Update Lead (Final)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Lead (Final)": {
+      "main": [
+        [
+          {
+            "node": "Log Final Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Final Message": {
+      "main": [
+        [
+          {
+            "node": "Respond Final",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Going Back?": {
+      "main": [
+        [
+          {
+            "node": "Can Go Back?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Is Invalid Answer?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Invalid Answer?": {
+      "main": [
+        [
+          {
+            "node": "Format Retry Question",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Save Answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Retry Question": {
+      "main": [
+        [
+          {
+            "node": "Send Retry Question",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Retry Question": {
+      "main": [
+        [
+          {
+            "node": "Respond Retry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Can Go Back?": {
+      "main": [
+        [
+          {
+            "node": "Get Previous Answer",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Cant Go Back",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Previous Answer": {
+      "main": [
+        [
+          {
+            "node": "Delete Previous Answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Previous Answer": {
+      "main": [
+        [
+          {
+            "node": "Get Previous Question",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Previous Question": {
+      "main": [
+        [
+          {
+            "node": "Format Previous Question",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Previous Question": {
+      "main": [
+        [
+          {
+            "node": "Send Previous Question",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Previous Question": {
+      "main": [
+        [
+          {
+            "node": "Update Lead (Back)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Lead (Back)": {
+      "main": [
+        [
+          {
+            "node": "Respond Back",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Cant Go Back": {
+      "main": [
+        [
+          {
+            "node": "Respond Cant Go Back",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Current?": {
+      "main": [
+        [
+          {
+            "node": "Get Current Question",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "pinData": {
+    "WhatsApp Webhook": [
+      {
+        "headers": {
+          "host": "ai.mokadijital.com",
+          "user-agent": "GREEN-API",
+          "content-length": "442",
+          "accept": "application/json, text/plain, */*",
+          "content-type": "application/json; charset=utf-8",
+          "x-forwarded-for": "104.248.252.93",
+          "x-forwarded-host": "ai.mokadijital.com",
+          "x-forwarded-port": "443",
+          "x-forwarded-proto": "https",
+          "x-forwarded-server": "d3aec7f97576",
+          "x-real-ip": "104.248.252.93",
+          "accept-encoding": "gzip"
+        },
+        "params": {},
+        "query": {},
+        "body": {
+          "typeWebhook": "incomingMessageReceived",
+          "instanceData": {
+            "idInstance": 7105475201,
+            "wid": "905545377751@c.us",
+            "typeInstance": "whatsapp"
+          },
+          "timestamp": 1769001348,
+          "idMessage": "AC693B02FCFD6636B97EDA1B09A91241",
+          "senderData": {
+            "chatId": "905057476731@c.us",
+            "chatName": "Meryem",
+            "sender": "905057476731@c.us",
+            "senderName": "Meryem",
+            "senderContactName": ""
+          },
+          "messageData": {
+            "typeMessage": "textMessage",
+            "textMessageData": {
+              "textMessage": "Ok glcm toplantıya"
+            }
+          }
+        },
+        "webhookUrl": "https://ai.mokadijital.com/webhook/whatsapp-incoming",
+        "executionMode": "production"
+      }
+    ]
+  },
+  "meta": {
+    "instanceId": "9190640ec2e243efdae764eee94ddcff930d8feee7367836dfe2ac9ac5e94c3d"
+  }
+}

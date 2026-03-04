@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Note, CreateNoteDto } from '@/types/lead';
 import * as notesApi from '@/lib/api/leads';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,21 +20,43 @@ export function NotesSection({ leadId }: NotesSectionProps) {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [newNote, setNewNote] = useState('');
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const fetchNotes = useCallback(async () => {
+    // Cancel previous request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+
     try {
       setLoading(true);
       const fetchedNotes = await notesApi.getNotes(leadId);
-      setNotes(fetchedNotes);
+      if (!abortController.signal.aborted) {
+        setNotes(fetchedNotes);
+      }
     } catch (error: any) {
-      toast.error('Notlar yüklenirken hata oluştu');
+      if ((error as Error).name !== 'AbortError') {
+        console.error('Notes fetch error:', error);
+        toast.error('Notlar yüklenirken hata oluştu');
+      }
     } finally {
-      setLoading(false);
+      if (!abortController.signal.aborted) {
+        setLoading(false);
+      }
     }
   }, [leadId]);
 
   useEffect(() => {
     fetchNotes();
+
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [fetchNotes]);
 
   const handleSubmitNote = async () => {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Appointment, AppointmentStatus } from '@/types/appointment';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -35,16 +35,31 @@ export function LeadAppointments({ leadId, onCreateAppointment }: LeadAppointmen
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment & { expand?: { lead_id?: any } } | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const fetchAppointments = useCallback(async () => {
+    // Cancel previous request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+
     setLoading(true);
     try {
       const data = await getAppointmentsByLead(leadId);
-      setAppointments(data);
+      if (!abortController.signal.aborted) {
+        setAppointments(data);
+      }
     } catch (error) {
-      console.error('Error fetching appointments:', error);
+      if ((error as Error).name !== 'AbortError') {
+        console.error('Error fetching appointments:', error);
+      }
     } finally {
-      setLoading(false);
+      if (!abortController.signal.aborted) {
+        setLoading(false);
+      }
     }
   }, [leadId]);
 
@@ -53,7 +68,13 @@ export function LeadAppointments({ leadId, onCreateAppointment }: LeadAppointmen
 
     // Auto-refresh every 30 seconds
     const interval = setInterval(fetchAppointments, 30000);
-    return () => clearInterval(interval);
+
+    return () => {
+      clearInterval(interval);
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [fetchAppointments]);
 
   const handleDetail = useCallback((appointment: Appointment) => {
@@ -123,7 +144,7 @@ export function LeadAppointments({ leadId, onCreateAppointment }: LeadAppointmen
         {/* Create Appointment Button */}
         <div className="flex justify-end">
           <Button size="sm" onClick={onCreateAppointment}>
-            <CalendarAdd className="mr-2 h-4 w-4" />
+            <CalendarPlus className="mr-2 h-4 w-4" />
             Randevu Oluştur
           </Button>
         </div>

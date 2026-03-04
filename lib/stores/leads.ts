@@ -20,7 +20,7 @@ interface LeadsState {
 
   fetchLeads: (params?: LeadsListParams) => Promise<void>;
   fetchLead: (id: string) => Promise<Lead>;
-  createLead: (data: CreateLeadDto) => Promise<void>;
+  createLead: (data: CreateLeadDto) => Promise<Lead>;
   updateLead: (id: string, data: UpdateLeadDto) => Promise<void>;
   deleteLead: (id: string) => Promise<void>;
   setFilters: (filters: Partial<LeadsState['filters']>) => void;
@@ -76,9 +76,10 @@ export const useLeadsStore = create<LeadsState>((set, get) => ({
   createLead: async (data: CreateLeadDto) => {
     set({ loading: true, error: null });
     try {
-      await leadsApi.createLead(data);
+      const createdLead = await leadsApi.createLead(data);
       await get().fetchLeads();
       set({ loading: false });
+      return createdLead;
     } catch (error: any) {
       set({
         error: error.message || 'Lead oluşturulurken hata oluştu',

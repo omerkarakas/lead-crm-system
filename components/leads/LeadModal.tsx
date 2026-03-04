@@ -53,7 +53,19 @@ export function LeadModal({ open, onOpenChange, lead, mode = 'create' }: LeadMod
           status: data.status,
           tags: data.tags || [],
         };
-        await createLead(createData);
+        const createdLead = await createLead(createData);
+
+        // Trigger poll sending immediately after lead creation
+        try {
+          await fetch(`/api/leads/${createdLead.id}/send-poll`, {
+            method: 'POST',
+          });
+          console.log('Poll triggered for lead:', createdLead.id);
+        } catch (pollError) {
+          console.error('Failed to trigger poll:', pollError);
+          // Don't fail lead creation if poll fails
+        }
+
         toast.success(`${data.name} başarıyla oluşturuldu.`);
       } else if (lead) {
         const updateData: UpdateLeadDto = {

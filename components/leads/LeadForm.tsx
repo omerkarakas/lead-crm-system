@@ -32,8 +32,8 @@ const leadFormSchema = z
     name: z.string().min(2, 'İsim en az 2 karakter olmalıdır'),
     phone: z.string().min(10, 'Geçerli bir telefon numarası girin'),
     email: z.string().email('Geçerli bir e-posta adresi girin').optional().or(z.literal('')),
-    company: z.string().optional(),
-    website: z.string().url('Geçerli bir URL girin').optional().or(z.literal('')),
+    company: z.string().min(2, 'Şirket adı en az 2 karakter olmalıdır'),
+    website: z.string().optional(),
     message: z.string().optional(),
     source: z.nativeEnum(LeadSource, { required_error: 'Lütfen bir kaynak seçin' }),
     status: z.nativeEnum(LeadStatus, { required_error: 'Lütfen bir durum seçin' }),
@@ -41,18 +41,24 @@ const leadFormSchema = z
   })
   .refine(
     (data) => {
-      if (data.website && data.website !== '' && data.website.trim() !== '') {
-        try {
-          new URL(data.website);
-          return true;
-        } catch {
-          return false;
-        }
+      // Website boşsa geç
+      if (!data.website || data.website.trim() === '') {
+        return true;
       }
-      return true;
+      // Protokol yoksa ekle ve kontrol et
+      let urlToCheck = data.website.trim();
+      if (!urlToCheck.match(/^https?:\/\//i)) {
+        urlToCheck = 'https://' + urlToCheck;
+      }
+      try {
+        new URL(urlToCheck);
+        return true;
+      } catch {
+        return false;
+      }
     },
     {
-      message: 'Geçerli bir URL girin',
+      message: 'Geçerli bir website adresi girin (örn: google.com)',
       path: ['website'],
     }
   );
@@ -208,7 +214,7 @@ export function LeadForm({
             <FormItem>
               <FormLabel>Website</FormLabel>
               <FormControl>
-                <Input placeholder="https://www.example.com" {...field} />
+                <Input placeholder="google.com veya https://www.example.com" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

@@ -25,7 +25,9 @@
       "Bash(cat \"c:/Dev/claude/moka-crm/.planning/phases/02-whatsapp-qualification/\"*VERIFICATION.md)",
       "Bash(\"c:/Dev/claude/moka-crm/.planning/phases/02-whatsapp-qualification/02-VERIFICATION.md\":*)",
       "Bash(grep:*)",
-      "Bash(sqlite3:*)"
+      "Bash(sqlite3:*)",
+      "Bash(printf %s\\\\n:*)",
+      "Bash(cat:*)"
     ]
   }
 }

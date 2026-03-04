@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2025-03-01)
 
 ## Current Position
 
-Phase: 4 of 6 (Appointments)
-Plan: 4 of 4
-Status: Phase complete
-Last activity: 2026-03-04 — Completed 04-04: Appointment Filtering, View Toggle, and Lead Integration
+Phase: 4.1 of 6 (Phase 4 Testing & Verification - INSERTED)
+Plan: Not started
+Status: Phase inserted, needs planning
+Last activity: 2026-03-04 — Phase 4.1 inserted for testing verification
 
-Progress: [██████████] 67% (4/6 phases complete, 21/24 plans complete)
+Progress: [████████░░] 67% (4/6 phases complete, 24/24 plans complete + testing phase inserted)
 
 ## Performance Metrics
 
@@ -160,7 +160,7 @@ None yet.
 
 [Issues that affect future work]
 
-- None currently blocking
+- **Phase 4 was approved without testing** — Need to verify Lead Scoring, WhatsApp, and Cal.com integrations before Phase 5
 - Previous concern resolved: Auth redirect issue fixed with server-side token validation
 - Notes stored in lead record - may need separate notes collection for Phase 6 (activity timeline)
 - No file upload capability yet (needed for lead attachments in future phases)
@@ -168,11 +168,18 @@ None yet.
 - Welcome message stored in localStorage - consider moving to PocketBase config collection
 - Background job uses setTimeout - should use proper job queue (Bull, Faktory, Vercel Cron) for production
 
+### Roadmap Evolution
+
+- **Phase 4.1 inserted** (2026-03-04): Testing & Verification phase after Phase 4
+  - Reason: Phase 4 integrations (Lead Scoring, WhatsApp, Cal.com) need verification
+  - Focus: Unit tests, integration tests, end-to-end flow verification
+  - Blocks: Phase 5 until testing is complete
+
 ## Session Continuity
 
-Last session: 2026-03-04 (Phase 4 Plan 4: Appointment Filtering, View Toggle, and Lead Integration)
-Stopped at: Completed 04-04 - Appointment Filtering, View Toggle, and Lead Integration
+Last session: 2026-03-04 (Phase 4.1 inserted - Testing & Verification)
+Stopped at: Phase 4.1 created, needs planning
 Resume file: None
 Dev server: Running at http://localhost:3000
 
-**Note**: Phase 4 complete. All 4 plans executed. Ready for Phase 5 (Sales Pipeline) or Phase 6 (Activity Timeline).
+**Note**: Phase 4 complete but not tested. Phase 4.1 inserted for verification before proceeding to Phase 5.

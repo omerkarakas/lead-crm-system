@@ -1,8 +1,26 @@
-import pb from '@/lib/pocketbase';
+import PocketBase from 'pocketbase';
 import type { WhatsAppMessage } from '@/types/qa';
 
+// Read from env (works in Next.js both server and client side)
 const GREEN_API_INSTANCE_ID = process.env.GREEN_API_INSTANCE_ID || '';
 const GREEN_API_TOKEN = process.env.GREEN_API_TOKEN || '';
+const PB_URL = process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090';
+
+// Create dedicated PocketBase instance for WhatsApp to prevent auto-cancellation
+const pb = new PocketBase(PB_URL);
+
+// Load auth from cookie if available (client-side only)
+if (typeof window !== 'undefined') {
+  const cookies = document.cookie.split(';');
+  const pbCookie = cookies.find(c => c.trim().startsWith('pb_auth='));
+  if (pbCookie) {
+    try {
+      pb.authStore.loadFromCookie(pbCookie.trim());
+    } catch (e) {
+      console.warn('Failed to load auth from cookie:', e);
+    }
+  }
+}
 
 /**
  * Send WhatsApp message via Green API

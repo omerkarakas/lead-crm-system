@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { ChatBubble } from './ChatBubble';
 import { getLeadWhatsAppMessages } from '@/lib/api/whatsapp';
 import { WhatsAppMessage } from '@/types/qa';
@@ -16,26 +16,44 @@ export function WhatsAppConversation({ leadId }: WhatsAppConversationProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  const loadMessages = async (showRefreshing = false) => {
+  const loadMessages = useCallback(async (showRefreshing = false) => {
+    // Cancel previous request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // Create new abort controller
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+
     try {
       if (showRefreshing) setIsRefreshing(true);
       const data = await getLeadWhatsAppMessages(leadId);
-      setMessages(data);
-      setError(null);
-    } catch (err) {
-      setError('Mesajlar yüklenirken hata oluştu');
-      console.error('Error loading messages:', err);
+      // Only update if this request wasn't aborted
+      if (!abortController.signal.aborted) {
+        setMessages(data);
+        setError(null);
+      }
+    } catch (err: any) {
+      // Don't show error for aborted requests
+      if (err.name !== 'AbortError') {
+        setError('Mesajlar yüklenirken hata oluştu');
+        console.error('Error loading messages:', err);
+      }
     } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
+      if (!abortController.signal.aborted) {
+        setIsLoading(false);
+        setIsRefreshing(false);
+      }
     }
-  };
+  }, [leadId]);
 
   // Initial load
   useEffect(() => {
     loadMessages();
-  }, [leadId]);
+  }, [loadMessages]);
 
   // Auto-refresh every 30 seconds
   useEffect(() => {
@@ -43,8 +61,14 @@ export function WhatsAppConversation({ leadId }: WhatsAppConversationProps) {
       loadMessages(true);
     }, 30000); // 30 seconds
 
-    return () => clearInterval(interval);
-  }, [leadId]);
+    return () => {
+      clearInterval(interval);
+      // Cancel any pending request on unmount
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, [loadMessages]);
 
   const handleManualRefresh = () => {
     loadMessages(true);

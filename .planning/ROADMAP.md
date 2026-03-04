@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Foundation** - Authentication, roles, and basic lead management ✅ Completed 2026-03-02
 - [x] **Phase 2: WhatsApp & Qualification** - QA system with automated WhatsApp scoring ✅ Completed 2026-03-03
 - [x] **Phase 3: Email Communication** - Email sending, templates, and manual messaging ✅ Completed 2026-03-04
-- [ ] **Phase 4: Appointments** - Cal.com integration with booking workflow
+- [x] **Phase 4: Appointments** - Cal.com integration with booking workflow ✅ Completed 2026-03-04
 - [ ] **Phase 5: Campaigns & Nurturing** - Multi-channel sequences and automation
 - [ ] **Phase 6: Polish & Integration** - Webhooks, activity timeline, and final touches
 
@@ -106,13 +106,41 @@ Plans:
 3. User can view appointments list filtered by date range with status (scheduled, completed, cancelled)
 4. User can manually create, edit, and cancel appointments from UI
 
-**Plans**: TBD
+**Plans**: 4 plans in 4 waves
 
 Plans:
-- [ ] 04-01: Cal.com webhook integration
-- [ ] 04-02: Appointment CRUD and status management
-- [ ] 04-03: WhatsApp confirmations and reminders
-- [ ] 04-04: Appointment list view with filtering
+- [x] 04-01-PLAN.md — Cal.com webhook integration (appointments collection, webhook endpoint, lead matching) ✅
+- [x] 04-02-PLAN.md — Appointment CRUD and status management (API endpoints, form, list view, manual appointments) ✅
+- [x] 04-03-PLAN.md — WhatsApp confirmations and reminders (message templates, automated sending, cron job) ✅
+- [x] 04-04-PLAN.md — Appointment list view with filtering (advanced filters, view toggle, detail modal, lead integration) ✅
+
+### Phase 4.1: Phase 4 Testing & Verification (INSERTED)
+
+**Goal**: Verify Lead Scoring, WhatsApp messaging, and Cal.com appointment integration through comprehensive testing.
+
+**Depends on**: Phase 4 (Appointments)
+
+**Type**: Testing & Verification Phase
+
+**Success Criteria** (what must be TRUE):
+1. Lead scoring system works correctly (poll sending, answer parsing, score calculation, quality determination)
+2. WhatsApp messaging works end-to-end (Green API webhook, message logging, delivery)
+3. Cal.com webhook integration works (booking processing, lead matching, appointment creation, status updates)
+
+**Focus Areas**:
+- Lead Qualification: QA poll flow, score calculation, quality threshold (80 points)
+- WhatsApp Communication: Poll messages, confirmation/reminder messages, error handling
+- Cal.com Integration: Webhook processing, idempotency, lead matching by phone/email
+
+**Plans**: TBD (run /gsd:plan-phase 4.1 to create test plans)
+
+Plans:
+- [ ] 04.1-01: Lead scoring unit tests (poll parser, score calculator, quality threshold)
+- [ ] 04.1-02: WhatsApp integration tests (webhook, message sending, logging)
+- [ ] 04.1-03: Cal.com webhook tests (booking processing, lead matching, idempotency)
+- [ ] 04.1-04: End-to-end integration tests (full flow verification)
+
+**Reason for Insertion**: Phase 4 was approved without proper testing. This phase ensures all integrations work correctly before proceeding to Phase 5.
 
 ### Phase 5: Campaigns & Nurturing
 
@@ -168,6 +196,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 1. Foundation | 4/4 | ✅ Complete | 2026-03-02 |
 | 2. WhatsApp & Qualification | 4/4 | ✅ Complete | 2026-03-03 |
 | 3. Email Communication | 3/3 | ✅ Complete | 2026-03-04 |
-| 4. Appointments | 0/4 | Not started | - |
+| 4. Appointments | 4/4 | ✅ Complete | 2026-03-04 |
 | 5. Campaigns & Nurturing | 0/5 | Not started | - |
 | 6. Polish & Integration | 0/3 | Not started | - |

@@ -1,0 +1,637 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lead-registration",
+        "options": {}
+      },
+      "id": "4027317a-ed60-4d40-9462-6079730809f1",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [3184, 544],
+      "webhookId": "lead-registration"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "GOOGLE_SHEET_ID",
+              "value": "1yhU1LI11cJ2K8QA_CNjm_guodaA4qcwq_bCdgtswpKs"
+            },
+            {
+              "name": "GREEN_API_INSTANCE_ID",
+              "value": "7105475201"
+            },
+            {
+              "name": "GREEN_API_TOKEN",
+              "value": "edfedf91ae2c4eedb03f82bcaf162a6bca65cd85e1894dc087"
+            },
+            {
+              "name": "CALCOM_MEETING_URL",
+              "value": "https://cal.mokadijital.com/moka/30min"
+            },
+            {
+              "name": "LEADS",
+              "value": "1120005493"
+            },
+            {
+              "name": "CONFIG",
+              "value": "0"
+            },
+            {
+              "name": "QUESTIONS",
+              "value": "2027137165"
+            },
+            {
+              "name": "ANSWERS",
+              "value": "1329572446"
+            },
+            {
+              "name": "APPOINTMENTS",
+              "value": "203824620"
+            },
+            {
+              "name": "MESSAGES",
+              "value": "16874217"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f77538ef-2d1d-45d5-b383-b30d0ac05f8e",
+      "name": "ENV",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [3408, 544]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1yhU1LI11cJ2K8QA_CNjm_guodaA4qcwq_bCdgtswpKs",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "id",
+          "value": 1120005493
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $runIndex }}-{{ Date.now() }}",
+            "created_at": "={{ $now.toISO() }}",
+            "updated_at": "={{ $now.toISO() }}",
+            "name": "={{ $('Webhook').item.json.body.name }}",
+            "phone": "={{ $('Webhook').item.json.body.phone }}",
+            "email": "={{ $('Webhook').item.json.body.email }}",
+            "company": "={{ $('Webhook').item.json.body.company || '' }}",
+            "website": "={{ $('Webhook').item.json.body.website || '' }}",
+            "message": "={{ $('Webhook').item.json.body.message || '' }}",
+            "status": "new",
+            "current_question_id": "1",
+            "total_score": "0",
+            "quality": "pending",
+            "source": "={{ $('Webhook').item.json.body.source || 'web_form' }}",
+            "source_page": "={{ $('Webhook').item.json.body.service }}"
+          },
+          "matchingColumns": ["id"],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "company",
+              "displayName": "company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "website",
+              "displayName": "website",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "current_question_id",
+              "displayName": "current_question_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "total_score",
+              "displayName": "total_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "quality",
+              "displayName": "quality",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source_page",
+              "displayName": "source_page",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "d2123f71-51f4-4af8-a6ec-a31f6db68115",
+      "name": "Insert Lead",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [3632, 544],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gLQzXXPOARPBtPqJ",
+          "name": "Moka Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "id": "1ddd7d59-1de6-425d-aa7d-d1080ba58bdb",
+      "name": "Wait 10s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [3856, 544],
+      "webhookId": "d529e755-373e-4e12-8001-8c150fa98b32"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1yhU1LI11cJ2K8QA_CNjm_guodaA4qcwq_bCdgtswpKs",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "id",
+          "value": 2027137165
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "id",
+              "lookupValue": "1"
+            },
+            {
+              "lookupColumn": "is_active",
+              "lookupValue": "true"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f98c2822-0e67-466a-acff-284ab3172733",
+      "name": "Get First Question",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [4080, 544],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gLQzXXPOARPBtPqJ",
+          "name": "Moka Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1yhU1LI11cJ2K8QA_CNjm_guodaA4qcwq_bCdgtswpKs",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "id",
+          "value": 0
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "key",
+              "lookupValue": "welcome_message"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "428b2974-1dee-4672-9e2e-65fae5faa47f",
+      "name": "Get Welcome Message",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [4304, 544],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gLQzXXPOARPBtPqJ",
+          "name": "Moka Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get data from previous nodes\nconst webhook = $('Webhook').first().json;\nconst question = $('Get First Question').first().json;\nconst config = $('Get Welcome Message').first().json;\nconst env = $('ENV').first().json;\n\n// Get lead name\nconst leadName = webhook.body.name || 'Değerli Müşterimiz';\nconst leadPhone = webhook.body.phone;\n\n// Format welcome message\nlet welcomeMessage = config.value || 'Merhaba {name}! Moka Dijital\\'e başvurunuz için teşekkür ederiz.';\nwelcomeMessage = welcomeMessage.replace('{name}', leadName);\n\n// Format question\nlet questionText = question.question_text || '';\nlet options = '';\n\nif (question.options) {\n  try {\n    const optionsArray = JSON.parse(question.options);\n    options = optionsArray.map((opt, i) => {\n      const letter = String.fromCharCode(97 + i); // a, b, c, d...\n      return `${letter}) ${opt}`;\n    }).join('\\n');\n  } catch (e) {\n    options = question.options;\n  }\n}\n\n// Combine message\nconst fullMessage = `${welcomeMessage}\\n\\nSize birkaç soru sormak istiyoruz:\\n\\n1. ${questionText}\\n${options}`;\n\n// Format phone for Green API (add @c.us suffix)\nconst chatId = leadPhone.replace(/\\D/g, '') + '@c.us';\n\nreturn {\n  json: {\n    chatId: chatId,\n    message: fullMessage,\n    leadPhone: leadPhone,\n    leadName: leadName,\n    leadId: $('Insert Lead').first().json.id || `${$runIndex}-${Date.now()}`\n  }\n};"
+      },
+      "id": "3f80ee02-7afe-4310-add7-28c3a7d7aa60",
+      "name": "Format Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [4528, 544]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.green-api.com/waInstance{{ $('ENV').item.json.GREEN_API_INSTANCE_ID }}/sendMessage/{{ $('ENV').item.json.GREEN_API_TOKEN }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chatId",
+              "value": "={{ $json.chatId }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a8be2716-74dd-49c0-bd35-15b79ff1faaa",
+      "name": "Send WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [4752, 544]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1yhU1LI11cJ2K8QA_CNjm_guodaA4qcwq_bCdgtswpKs",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "id",
+          "value": 16874217
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "=msg-{{ Date.now() }}",
+            "lead_id": "={{ $('Format Message').item.json.leadId }}",
+            "direction": "outgoing",
+            "message_text": "={{ $('Format Message').item.json.message }}",
+            "message_type": "question",
+            "green_api_id": "={{ $json.idMessage || '' }}",
+            "status": "sent",
+            "sent_at": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lead_id",
+              "displayName": "lead_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "direction",
+              "displayName": "direction",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message_text",
+              "displayName": "message_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message_type",
+              "displayName": "message_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "green_api_id",
+              "displayName": "green_api_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sent_at",
+              "displayName": "sent_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b6b34ca6-d7bf-4e2c-bfea-2149d8518965",
+      "name": "Log Message",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [4976, 544],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gLQzXXPOARPBtPqJ",
+          "name": "Moka Google Sheets"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "ENV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ENV": {
+      "main": [
+        [
+          {
+            "node": "Insert Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Lead": {
+      "main": [
+        [
+          {
+            "node": "Wait 10s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 10s": {
+      "main": [
+        [
+          {
+            "node": "Get First Question",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get First Question": {
+      "main": [
+        [
+          {
+            "node": "Get Welcome Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Welcome Message": {
+      "main": [
+        [
+          {
+            "node": "Format Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Message": {
+      "main": [
+        [
+          {
+            "node": "Send WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Log Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {
+    "Webhook": [
+      {
+        "headers": {
+          "host": "ai.mokadijital.com",
+          "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
+          "content-length": "420",
+          "accept": "*/*",
+          "accept-encoding": "gzip, deflate, br, zstd",
+          "accept-language": "tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7",
+          "content-type": "application/json",
+          "origin": "http://localhost:3000",
+          "priority": "u=1, i",
+          "referer": "http://localhost:3000/",
+          "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Windows\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "cross-site",
+          "x-forwarded-for": "176.40.240.220",
+          "x-forwarded-host": "ai.mokadijital.com",
+          "x-forwarded-port": "443",
+          "x-forwarded-proto": "https",
+          "x-forwarded-server": "b490b3b525e5",
+          "x-real-ip": "176.40.240.220"
+        },
+        "params": {},
+        "query": {},
+        "body": {
+          "name": "Omer Karakas",
+          "phone": "905545377751",
+          "email": "omerkarakas@hotmail.com",
+          "company": "Ömer Karakaş",
+          "website": "abc.com",
+          "message": "asdf",
+          "gizlilik": true,
+          "service": "Genel Danışmanlık",
+          "metadata": {
+            "timestamp": "2026-02-16T15:51:01.254Z",
+            "page": "/",
+            "source": "contact_form",
+            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
+            "referrer": ""
+          }
+        },
+        "webhookUrl": "https://ai.mokadijital.com/webhook/lead-registration",
+        "executionMode": "production"
+      }
+    ]
+  },
+  "meta": {
+    "instanceId": "9190640ec2e243efdae764eee94ddcff930d8feee7367836dfe2ac9ac5e94c3d"
+  }
+}

@@ -1,0 +1,570 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "id": "d5e5be15-6884-463e-b758-ca78f9a12e96",
+      "name": "Every Hour",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [704, -32]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "GOOGLE_SHEET_ID",
+              "value": "1yhU1LI11cJ2K8QA_CNjm_guodaA4qcwq_bCdgtswpKs"
+            },
+            {
+              "name": "SENDER_PHONE_NUMBER",
+              "value": "905545377751"
+            },
+            {
+              "name": "GREEN_API_INSTANCE_ID",
+              "value": "7105475201"
+            },
+            {
+              "name": "GREEN_API_TOKEN",
+              "value": "edfedf91ae2c4eedb03f82bcaf162a6bca65cd85e1894dc087"
+            },
+            {
+              "name": "CALCOM_MEETING_URL",
+              "value": "https://cal.mokadijital.com/moka/30min"
+            },
+            {
+              "name": "REMINDER_HOURS_BEFORE",
+              "value": "24"
+            },
+            {
+              "name": "LEADS",
+              "value": "1120005493"
+            },
+            {
+              "name": "CONFIG",
+              "value": "0"
+            },
+            {
+              "name": "QUESTIONS",
+              "value": "2027137165"
+            },
+            {
+              "name": "ANSWERS",
+              "value": "1329572446"
+            },
+            {
+              "name": "APPOINTMENTS",
+              "value": "203824620"
+            },
+            {
+              "name": "MESSAGES",
+              "value": "16874217"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "feaa553e-474a-4c54-a028-2a668d5edc29",
+      "name": "ENV",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [928, -32]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1yhU1LI11cJ2K8QA_CNjm_guodaA4qcwq_bCdgtswpKs",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "id",
+          "value": 0
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "key",
+              "lookupValue": "reminder_hours_before"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b7bd96c6-dfe1-4d33-8d41-d8bcf3a3b8ce",
+      "name": "Get Reminder Config",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [1152, -32],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gLQzXXPOARPBtPqJ",
+          "name": "Moka Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Calculate reminder window\nconst config = $('Get Reminder Config').first().json;\nconst env = $('ENV').first().json;\n\n// Get reminder hours from config or default\nconst reminderHours = parseInt(config.value) || parseInt(env.REMINDER_HOURS_BEFORE) || 24;\n\n// Current time in Istanbul timezone (scheduled_at is stored in Istanbul timezone)\nconst now = new Date();\n\n// Convert to Istanbul timezone string for comparison\nfunction toIstanbulISO(date) {\n  return date.toLocaleString('sv-SE', { timeZone: 'Europe/Istanbul' }).replace(' ', 'T') + '+03:00';\n}\n\n// Calculate window: appointments between now + reminderHours and now + reminderHours + 1\nconst windowStart = new Date(now.getTime() + (reminderHours * 60 * 60 * 1000));\nconst windowEnd = new Date(windowStart.getTime() + (60 * 60 * 1000)); // 1 hour window\n\nreturn {\n  json: {\n    reminderHours: reminderHours,\n    windowStart: toIstanbulISO(windowStart),\n    windowEnd: toIstanbulISO(windowEnd),\n    currentTime: toIstanbulISO(now)\n  }\n};"
+      },
+      "id": "52e60fdb-e043-4199-aa92-0fafbb55a9a4",
+      "name": "Calculate Window",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1376, -32]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1yhU1LI11cJ2K8QA_CNjm_guodaA4qcwq_bCdgtswpKs",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "id",
+          "value": 203824620
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "status",
+              "lookupValue": "scheduled"
+            },
+            {
+              "lookupColumn": "reminder_sent",
+              "lookupValue": "false"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1ee3ca2c-8787-437b-b97e-15d899d71eb1",
+      "name": "Get Pending Appointments",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [1600, -32],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gLQzXXPOARPBtPqJ",
+          "name": "Moka Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Filter appointments within reminder window\nconst window = $('Calculate Window').first().json;\nconst appointments = $('Get Pending Appointments').all();\n\nconst windowStart = new Date(window.windowStart);\nconst windowEnd = new Date(window.windowEnd);\n\nconst filteredAppointments = [];\n\nfor (const item of appointments) {\n  const appt = item.json;\n  const scheduledAt = new Date(appt.scheduled_at);\n  \n  // Check if appointment is within the reminder window\n  if (scheduledAt >= windowStart && scheduledAt <= windowEnd) {\n    filteredAppointments.push({\n      json: {\n        appointmentId: appt.id,\n        leadId: appt.lead_id,\n        scheduledAt: appt.scheduled_at,\n        durationMinutes: appt.duration_minutes,\n        meetingUrl: appt.meeting_url,\n        meetingType: appt.meeting_type\n      }\n    });\n  }\n}\n\n// If no appointments, return empty to stop flow\nif (filteredAppointments.length === 0) {\n  return [{ json: { noAppointments: true } }];\n}\n\nreturn filteredAppointments;"
+      },
+      "id": "3ad1019e-3876-47f8-b8a5-3b7b40e89759",
+      "name": "Filter Appointments",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1824, -32]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "has-appointments",
+              "leftValue": "={{ $json.noAppointments }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "4c298a94-4ee2-41a4-8913-747651ee828a",
+      "name": "Has Appointments?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [2048, -32]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1yhU1LI11cJ2K8QA_CNjm_guodaA4qcwq_bCdgtswpKs",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "id",
+          "value": 1120005493
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "id",
+              "lookupValue": "={{ $json.leadId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fe43dde9-29d8-4082-9485-c1ba38585854",
+      "name": "Get Lead Info",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [2272, -32],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gLQzXXPOARPBtPqJ",
+          "name": "Moka Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format reminder message\nconst lead = $('Get Lead Info').first().json;\nconst appointment = $('Has Appointments?').first().json;\nconst env = $('ENV').first().json;\n\nconst leadName = lead.name || 'Degerli Musterimiz';\nconst leadPhone = lead.phone.toString();\n\n// Format date\nconst scheduledDate = new Date(appointment.scheduledAt);\nconst options = { \n  weekday: 'long', \n  year: 'numeric', \n  month: 'long', \n  day: 'numeric',\n  hour: '2-digit',\n  minute: '2-digit',\n  timeZone: 'Europe/Istanbul'\n};\nconst formattedDate = scheduledDate.toLocaleDateString('tr-TR', options);\n\nconst message = `Randevu Hatirlatmasi\\n\\nMerhaba ${leadName}!\\n\\nYarin saat ${scheduledDate.toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul'})}'de online gorusmemiz var.\\n\\nTarih: ${formattedDate}\\nLink: ${appointment.meetingUrl || 'Mail ile paylasilan'}\\n\\nGorusmek uzere!`;\n\n// Format phone for Green API\nconst chatId = leadPhone.replace(/\\D/g, '') + '@c.us';\n\nreturn {\n  json: {\n    chatId: chatId,\n    message: message,\n    leadId: lead.id,\n    leadName: leadName,\n    leadPhone: leadPhone,\n    appointmentId: appointment.appointmentId\n  }\n};"
+      },
+      "id": "ff7bf8a9-dd9a-4276-b362-4a42a8b14c11",
+      "name": "Format Reminder",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2496, -32]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.green-api.com/waInstance{{ $('ENV').first().json .GREEN_API_INSTANCE_ID }}/sendMessage/{{ $('ENV').first().json.GREEN_API_TOKEN }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chatId",
+              "value": "={{ $json.chatId }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "880776e9-c77a-499b-81ad-c0d21cccc002",
+      "name": "Send Reminder",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2720, -32]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1yhU1LI11cJ2K8QA_CNjm_guodaA4qcwq_bCdgtswpKs",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "id",
+          "value": 203824620
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Format Reminder').item.json.appointmentId }}",
+            "reminder_sent": "true"
+          },
+          "matchingColumns": ["id"],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reminder_sent",
+              "displayName": "reminder_sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f50397f8-e7a5-48a8-8733-6b960e9e4570",
+      "name": "Mark Reminder Sent",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [2944, -32],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gLQzXXPOARPBtPqJ",
+          "name": "Moka Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1yhU1LI11cJ2K8QA_CNjm_guodaA4qcwq_bCdgtswpKs",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "id",
+          "value": 16874217
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "=msg-reminder-{{ Date.now() }}",
+            "lead_id": "={{ $('Format Reminder').first().json.leadId }}",
+            "direction": "outgoing",
+            "message_text": "={{ $('Format Reminder').first().json.message }}",
+            "message_type": "reminder",
+            "green_api_id": "={{ $('Send Reminder').first().json.idMessage || '' }}",
+            "status": "sent",
+            "sent_at": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lead_id",
+              "displayName": "lead_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "direction",
+              "displayName": "direction",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message_text",
+              "displayName": "message_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message_type",
+              "displayName": "message_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "green_api_id",
+              "displayName": "green_api_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sent_at",
+              "displayName": "sent_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "480fc634-b352-4d45-ab76-4d5f2126510f",
+      "name": "Log Message",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [3168, -32],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gLQzXXPOARPBtPqJ",
+          "name": "Moka Google Sheets"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Every Hour": {
+      "main": [
+        [
+          {
+            "node": "ENV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ENV": {
+      "main": [
+        [
+          {
+            "node": "Get Reminder Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Reminder Config": {
+      "main": [
+        [
+          {
+            "node": "Calculate Window",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Window": {
+      "main": [
+        [
+          {
+            "node": "Get Pending Appointments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Pending Appointments": {
+      "main": [
+        [
+          {
+            "node": "Filter Appointments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Appointments": {
+      "main": [
+        [
+          {
+            "node": "Has Appointments?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Appointments?": {
+      "main": [
+        [
+          {
+            "node": "Get Lead Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Lead Info": {
+      "main": [
+        [
+          {
+            "node": "Format Reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Reminder": {
+      "main": [
+        [
+          {
+            "node": "Send Reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Reminder": {
+      "main": [
+        [
+          {
+            "node": "Mark Reminder Sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Reminder Sent": {
+      "main": [
+        [
+          {
+            "node": "Log Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "9190640ec2e243efdae764eee94ddcff930d8feee7367836dfe2ac9ac5e94c3d"
+  }
+}
