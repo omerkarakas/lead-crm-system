@@ -11,11 +11,15 @@ import { ScoreDisplay } from '@/components/leads/ScoreDisplay';
 import { QAAnswersTable } from '@/components/leads/QAAnswersTable';
 import { ManualPollTrigger } from '@/components/leads/ManualPollTrigger';
 import { EmailHistory } from '@/components/leads/EmailHistory';
+import { LeadAppointments } from '@/components/appointments/LeadAppointments';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import pb from '@/lib/pocketbase';
+
+// Client component for appointments tab to handle state
+import { ClientAppointmentTab } from '@/components/leads/ClientAppointmentTab';
 
 interface LeadDetailPageProps {
   params: {
@@ -31,9 +35,18 @@ async function getLead(id: string): Promise<Lead> {
   }
 }
 
+async function getLeadData(id: string) {
+  try {
+    const lead = await fetchLead(id);
+    const answers = await getLeadAnswers(id);
+    return { lead, answers };
+  } catch (error) {
+    notFound();
+  }
+}
+
 export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
-  const lead = await getLead(params.id);
-  const answers = await getLeadAnswers(lead.id);
+  const { lead, answers } = await getLeadData(params.id);
 
   // Get current user for role check
   const user = pb.authStore.model as any;
@@ -111,11 +124,12 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
             </section>
           )}
 
-          {/* Tabs for WhatsApp, Email, Notes */}
+          {/* Tabs for WhatsApp, Email, Appointments, Notes */}
           <Tabs defaultValue="whatsapp" className="w-full">
             <TabsList className="w-full justify-start">
               <TabsTrigger value="whatsapp">WhatsApp</TabsTrigger>
               <TabsTrigger value="email">E-posta</TabsTrigger>
+              <TabsTrigger value="appointments">Randevular</TabsTrigger>
               <TabsTrigger value="notes">Notlar</TabsTrigger>
             </TabsList>
 
@@ -125,6 +139,10 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
 
             <TabsContent value="email" className="mt-4">
               <EmailHistory leadId={lead.id} />
+            </TabsContent>
+
+            <TabsContent value="appointments" className="mt-4">
+              <ClientAppointmentTab leadId={lead.id} leadName={lead.name} />
             </TabsContent>
 
             <TabsContent value="notes" className="mt-4">
