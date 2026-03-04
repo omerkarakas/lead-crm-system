@@ -1,6 +1,6 @@
 # Phase 3: Email Communication - Context
 
-**Gathered:** 2026-03-03
+**Gathered:** 2026-03-04
 **Status:** Ready for planning
 
 <domain>
@@ -18,7 +18,7 @@ This phase covers:
 **Out of scope:**
 - Automated email sequences (Phase 5)
 - Email campaigns (Phase 5)
-- Email attachments/future phases
+- Email attachments (future phase)
 
 </domain>
 
@@ -31,20 +31,33 @@ This phase covers:
 - From email/name configurable in settings
 - Reason: Resend has excellent DX, good React ecosystem support, reasonable pricing
 
-### Email UI Pattern
-- **Send from lead detail page** — "Email gönder" button on lead detail opens a modal/dialog
-- Modal includes: template selector, subject (editable), body (editable with preview), send button
-- **Template management** — Admin-only page at `/admin/email-templates`
-- Email history section on lead detail (below WhatsApp section, above notes)
+### Email Sending UI
+- **Location:** Lead detail page → "Email gönder" button
+- **Form fields:** Template selector + editable subject + editable body (flexible approach)
+- **Preview:** Live HTML preview shown while composing
+- **Quick send:** One-click send option for last-used template
+- **Modal/Page layout:** Claude's discretion (modal preferred for quick actions)
 
-### Template Management
-- PocketBase collection: `email_templates`
-- Fields: name, subject, body, category, is_active, created_at, updated_at
-- Categories: welcome, follow_up, qualification, generic (expandable)
-- Admin UI: Table with actions (edit, delete, toggle active), create button opens modal
-- Template variables use `{{variable}}` syntax (e.g., `{{name}}`, `{{company}}`)
+### Template Editor
+- **Editor type:** Rich text WYSIWYG editor (Word-like visual experience)
+- **Variable insertion:** Dropdown/selector for available variables (not manual typing)
+- **Test/Preview:** Send test email to own address for validation
+- **Categories:** Admin can add new categories beyond base list (Welcome, Follow-up, Qualification, Generic)
 
-### Variables & Placeholders
+### Template Organization
+- **Filtering:** Category filter + Name search
+- **View toggle:** Table view / Card view — user can switch between them
+- **Active/Inactive:** Toggle switch for quick enable/disable
+- **Deletion:** Archive (not hard delete) — templates can be restored
+
+### Email History Display
+- **Location:** Separate "Email" tab on lead detail page
+- **List info:** Minimal — Date, Subject, Status badge
+- **Status display:** Colored badge (sent/delivered/failed) — similar to WhatsApp style
+- **Content viewing:** Click opens modal with full email content
+- **Position:** WhatsApp section → Email tab (same level as other tabs)
+
+### Template Variables
 Supported template variables:
 - `{{name}}` — Lead's full name
 - `{{first_name}}` — Lead's first name (derived from name)
@@ -64,20 +77,24 @@ Supported template variables:
 
 ### Claude's Discretion
 - Exact modal layout and styling (shadcn/ui Dialog pattern)
-- Email template preview rendering (rich text vs plain text)
+- Tab implementation detail (separate tabs vs section-based navigation)
+- Rich text editor library choice
+- Email preview rendering approach
 - Error handling for failed sends (retry logic, user feedback)
-- Template categories organization (tags vs dropdown vs separate lists)
 
 </decisions>
 
 <specifics>
 ## Specific Ideas
 
-- Keep email sending simple — modal dialog, not a full page
-- Templates should feel like WhatsApp questions — simple CRUD with table view
-- Email history should match WhatsApp conversation style visually (but no bubbles, just list)
-- Turkish language support for template content
-- Resend API is simple: `POST https://api.resend.com/emails` with `{ from, to, subject, html }`
+- Keep email sending simple — modal dialog for quick actions
+- Rich text editor should feel familiar (Word/Google Docs-like)
+- Variable insertion should be intuitive — dropdown with descriptions
+- Test email feature is important for template validation
+- Tab-based navigation on lead detail for clean separation (Info | WhatsApp | Email | Notes)
+- Status badges should match WhatsApp visual style for consistency
+- Archive instead of delete — prevent accidental template loss
+- Table/Card toggle — table for power users, cards for visual browsing
 
 </specifics>
 
@@ -89,11 +106,12 @@ Supported template variables:
 - Email delivery tracking via webhooks — Phase 5
 - BCC/CC support — future enhancement
 - Email reply tracking — future phase
-- Rich text editor for templates — Phase 5 (plain text/Markdown for now)
+- Email templates with conditional logic — Phase 5
+- Bulk email sending — Phase 5
 
 </deferred>
 
 ---
 
 *Phase: 03-email-communication*
-*Context gathered: 2026-03-03*
+*Context gathered: 2026-03-04*
