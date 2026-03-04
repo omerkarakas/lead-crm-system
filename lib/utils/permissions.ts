@@ -16,6 +16,9 @@ export const PERMISSIONS = {
 
   // QA management
   CAN_MANAGE_QA_QUESTIONS: 'can_manage_qa_questions',
+
+  // Email templates management
+  CAN_MANAGE_EMAIL_TEMPLATES: 'can_manage_email_templates',
 } as const;
 
 export const ROLE_PERMISSIONS: Record<Role, string[]> = {
@@ -28,6 +31,7 @@ export const ROLE_PERMISSIONS: Record<Role, string[]> = {
     PERMISSIONS.CAN_ADD_NOTES,
     PERMISSIONS.CAN_MANAGE_TAGS,
     PERMISSIONS.CAN_MANAGE_QA_QUESTIONS,
+    PERMISSIONS.CAN_MANAGE_EMAIL_TEMPLATES,
   ],
   [Role.SALES]: [
     PERMISSIONS.CAN_CREATE_LEADS,
@@ -78,4 +82,8 @@ export function canManageTags(role: Role): boolean {
 
 export function canManageQAQuestions(role: Role): boolean {
   return hasPermission(role, PERMISSIONS.CAN_MANAGE_QA_QUESTIONS);
+}
+
+export function canManageEmailTemplates(role: Role): boolean {
+  return hasPermission(role, PERMISSIONS.CAN_MANAGE_EMAIL_TEMPLATES);
 }
