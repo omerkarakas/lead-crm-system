@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updateProposalResponse } from '@/lib/api/proposals';
 import { getProposalByToken } from '@/lib/api/proposals';
+import { updateLeadStatusBasedOnProposal } from '@/lib/utils/status';
 import pb from '@/lib/pocketbase';
 import { sendWhatsAppMessage, logWhatsAppMessage } from '@/lib/api/whatsapp';
 
@@ -49,6 +50,10 @@ export async function POST(request: NextRequest) {
     // Update proposal response
     await updateProposalResponse(pb, body.token, body.response as any, body.comment);
 
+    // Update lead status immediately based on proposal response (per CONTEXT)
+    const statusUpdate = await updateLeadStatusBasedOnProposal(pb, proposal.lead_id);
+    console.log('[POST /api/proposals/respond] Status update:', statusUpdate);
+
     // Get lead info for notification
     const lead = await pb.collection('leads').getOne(proposal.lead_id);
 
@@ -82,6 +87,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'Proposal response recorded',
+      statusUpdate: statusUpdate.updated ? {
+        previousStatus: statusUpdate.previousStatus,
+        newStatus: statusUpdate.newStatus,
+        reason: statusUpdate.reason
+      } : null
     });
   } catch (error: any) {
     console.error('POST /api/proposals/respond error:', error);

@@ -38,6 +38,8 @@ export interface Lead {
   qa_sent_at?: string;
   qa_completed: boolean;
   qa_completed_at?: string;
+  offer_response?: string;
+  offer_responded_at?: string;
   utm_source?: string;
   utm_medium?: string;
   utm_campaign?: string;
@@ -85,6 +87,8 @@ export interface UpdateLeadDto {
   qa_sent_at?: string;
   qa_completed?: boolean;
   qa_completed_at?: string;
+  offer_response?: string;
+  offer_responded_at?: string;
   utm_source?: string;
   utm_medium?: string;
   utm_campaign?: string;
