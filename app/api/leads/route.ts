@@ -172,9 +172,9 @@ export async function createOrUpdateLead(
     return { lead, action: 'updated' };
   } else {
     // Create new lead
-    lead = await pocketbase.collection('leads').create({
+    const createData: any = {
       ...data,
-      createdBy: userId,
+      createdBy: userId, // Will be undefined if no auth, that's ok
       status: data.status || 'new',
       score: data.score ?? 0,
       quality: data.quality || 'pending',
@@ -182,7 +182,12 @@ export async function createOrUpdateLead(
       qa_sent: false,
       qa_completed: false,
       ...utmParams,
-    }) as Lead;
+    };
+
+    // Debug log to see what we're creating
+    console.log('[createOrUpdateLead] Creating lead with data:', JSON.stringify(createData, null, 2));
+
+    lead = await pocketbase.collection('leads').create(createData) as Lead;
 
     console.log('[createOrUpdateLead] New lead created:', lead.id);
     return { lead, action: 'created' };
