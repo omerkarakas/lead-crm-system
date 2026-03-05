@@ -164,13 +164,13 @@ Plans:
 - Status Automation: Appointment completion triggers lead status update (CUSTOMER/LOST)
 - UI Integration: "Teklif" tab on appointment detail/lead detail
 
-**Plans**: TBD
+**Plans**: 4 plans in 2 waves
 
 Plans:
-- [ ] 04.2-01: Proposal template management (collection, UI, editor)
-- [ ] 04.2-02: Proposal generation and sending (fill variables, generate link, WhatsApp send)
-- [ ] 04.2-03: Response tracking and status updates (lead response handling)
-- [ ] 04.2-04: Status automation (appointment completion → CUSTOMER/LOST) and UI integration
+- [ ] 04.2-01-PLAN.md — Proposal template management (collection, UI, editor)
+- [ ] 04.2-02-PLAN.md — Proposal generation and sending (fill variables, generate link, WhatsApp send)
+- [ ] 04.2-03-PLAN.md — Response tracking and status updates (lead response handling)
+- [ ] 04.2-04-PLAN.md — Status automation (appointment completion → CUSTOMER/LOST) and UI integration
 
 **Reason for Insertion**: Proposal workflow is critical part of sales process after appointment booking.
 
