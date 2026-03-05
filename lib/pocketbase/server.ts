@@ -1,6 +1,8 @@
 import PocketBase from 'pocketbase';
 import { cookies } from 'next/headers';
 
+'use server';
+
 /**
  * Create a server-side PocketBase instance authenticated from cookies
  */
