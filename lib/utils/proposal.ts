@@ -131,12 +131,12 @@ export function formatProposalResponse(response: string): string {
 /**
  * Get badge color variant for proposal response
  */
-export function getProposalResponseBadgeVariant(response: string): 'default' | 'success' | 'destructive' | 'outline' {
+export function getProposalResponseBadgeVariant(response: string): 'default' | 'secondary' | 'destructive' | 'outline' {
   switch (response) {
     case 'cevap_bekleniyor':
       return 'outline';
     case 'kabul':
-      return 'success';
+      return 'secondary'; // Use secondary instead of success
     case 'red':
       return 'destructive';
     default:

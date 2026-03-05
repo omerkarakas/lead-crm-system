@@ -12,6 +12,7 @@ import { QAAnswersTable } from '@/components/leads/QAAnswersTable';
 import { ManualPollTrigger } from '@/components/leads/ManualPollTrigger';
 import { EmailHistory } from '@/components/leads/EmailHistory';
 import { LeadAppointments } from '@/components/appointments/LeadAppointments';
+import { LeadDetailProposalsTab } from '@/components/leads/LeadDetailProposalsTab';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft } from 'lucide-react';
@@ -124,12 +125,13 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
             </section>
           )}
 
-          {/* Tabs for WhatsApp, Email, Appointments, Notes */}
+          {/* Tabs for WhatsApp, Email, Appointments, Proposals, Notes */}
           <Tabs defaultValue="whatsapp" className="w-full">
             <TabsList className="w-full justify-start">
               <TabsTrigger value="whatsapp">WhatsApp</TabsTrigger>
               <TabsTrigger value="email">E-posta</TabsTrigger>
               <TabsTrigger value="appointments">Randevular</TabsTrigger>
+              <TabsTrigger value="proposals">Teklif</TabsTrigger>
               <TabsTrigger value="notes">Notlar</TabsTrigger>
             </TabsList>
 
@@ -143,6 +145,15 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
 
             <TabsContent value="appointments" className="mt-4">
               <ClientAppointmentTab leadId={lead.id} leadName={lead.name} />
+            </TabsContent>
+
+            <TabsContent value="proposals" className="mt-4">
+              <LeadDetailProposalsTab
+                leadId={lead.id}
+                leadName={lead.name}
+                leadPhone={lead.phone}
+                leadCompany={lead.company}
+              />
             </TabsContent>
 
             <TabsContent value="notes" className="mt-4">

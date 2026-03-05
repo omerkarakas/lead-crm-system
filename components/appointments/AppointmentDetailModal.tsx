@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Calendar,
   Clock,
@@ -25,6 +26,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { formatAppointmentDate, formatAppointmentTime } from '@/lib/utils/appointment';
+import { AppointmentDetailProposalTab } from '@/components/appointments/AppointmentDetailProposalTab';
 
 interface AppointmentDetailModalProps {
   open: boolean;
@@ -96,7 +98,7 @@ export function AppointmentDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Randevu Detayları</DialogTitle>
           <DialogDescription>
@@ -104,7 +106,14 @@ export function AppointmentDetailModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <Tabs defaultValue="details" className="w-full">
+          <TabsList className="w-full justify-start">
+            <TabsTrigger value="details">Detaylar</TabsTrigger>
+            <TabsTrigger value="proposals">Teklif</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="details" className="mt-4">
+            <div className="space-y-6">
           {/* Lead Info Section */}
           {lead && (
             <div className="space-y-3">
@@ -236,6 +245,18 @@ export function AppointmentDetailModal({
             </div>
           </div>
         </div>
+          </TabsContent>
+
+          <TabsContent value="proposals" className="mt-4">
+            <AppointmentDetailProposalTab
+              appointmentId={appointment.id}
+              leadId={lead?.id}
+              leadName={lead?.name}
+              leadPhone={lead?.phone}
+              leadCompany={lead?.company}
+            />
+          </TabsContent>
+        </Tabs>
 
         {/* Action Buttons */}
         <DialogFooter className="flex-col sm:flex-row gap-2">
