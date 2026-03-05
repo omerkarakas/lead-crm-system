@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     const notificationResult = await sendProposalResponseNotification(
       pb,
       updatedProposal,
-      lead
+      lead as any
     );
 
     // Log response for audit trail

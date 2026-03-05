@@ -58,8 +58,8 @@ async function getConfiguredSalesPhones(pb: PocketBase): Promise<string[]> {
       // Parse comma-separated phone numbers
       return phonesValue
         .split(',')
-        .map((p) => p.trim().replace(/\D/g, ''))
-        .filter((p) => p.length >= 10);
+        .map((p: string) => p.trim().replace(/\D/g, ''))
+        .filter((p: string) => p.length >= 10);
     }
 
     return [];
