@@ -16,6 +16,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: WhatsApp & Qualification** - QA system with automated WhatsApp scoring ✅ Completed 2026-03-03
 - [x] **Phase 3: Email Communication** - Email sending, templates, and manual messaging ✅ Completed 2026-03-04
 - [x] **Phase 4: Appointments** - Cal.com integration with booking workflow ✅ Completed 2026-03-04
+- [ ] **Phase 4.1: Lead Capture & Pipeline Automation** - Public form, booking link settings, Meta Ads webhook
+- [ ] **Phase 4.2: Proposal Management** - Proposal templates, sending, response tracking
 - [ ] **Phase 5: Campaigns & Nurturing** - Multi-channel sequences and automation
 - [ ] **Phase 6: Polish & Integration** - Webhooks, activity timeline, and final touches
 
@@ -114,33 +116,63 @@ Plans:
 - [x] 04-03-PLAN.md — WhatsApp confirmations and reminders (message templates, automated sending, cron job) ✅
 - [x] 04-04-PLAN.md — Appointment list view with filtering (advanced filters, view toggle, detail modal, lead integration) ✅
 
-### Phase 4.1: Phase 4 Testing & Verification (INSERTED)
+### Phase 4.1: Lead Capture & Pipeline Automation (INSERTED)
 
-**Goal**: Verify Lead Scoring, WhatsApp messaging, and Cal.com appointment integration through comprehensive testing.
+**Goal**: Public lead form, configurable booking link, and Meta Ads webhook integration.
 
 **Depends on**: Phase 4 (Appointments)
 
-**Type**: Testing & Verification Phase
-
 **Success Criteria** (what must be TRUE):
-1. Lead scoring system works correctly (poll sending, answer parsing, score calculation, quality determination)
-2. WhatsApp messaging works end-to-end (Green API webhook, message logging, delivery)
-3. Cal.com webhook integration works (booking processing, lead matching, appointment creation, status updates)
+1. Public can submit leads via web form (name, phone, email, company, message)
+2. Admin can configure booking link URL from settings UI (not hardcoded)
+3. Meta Ads webhook can create leads via Facebook Lead Ads integration
+4. Duplicate lead submissions update existing record with 're-apply' status
 
 **Focus Areas**:
-- Lead Qualification: QA poll flow, score calculation, quality threshold (80 points)
-- WhatsApp Communication: Poll messages, confirmation/reminder messages, error handling
-- Cal.com Integration: Webhook processing, idempotency, lead matching by phone/email
+- Lead Capture: Public form with validation, source tracking, honeypot spam protection
+- Settings Integration: Booking URL in app_settings, admin UI configuration
+- Meta Ads Integration: Facebook Lead Ads webhook endpoint
+- Status Enhancement: New 're-apply' status for duplicate leads
 
-**Plans**: TBD (run /gsd:plan-phase 4.1 to create test plans)
+**Plans**: 4 plans in 3 waves
 
 Plans:
-- [ ] 04.1-01: Lead scoring unit tests (poll parser, score calculator, quality threshold)
-- [ ] 04.1-02: WhatsApp integration tests (webhook, message sending, logging)
-- [ ] 04.1-03: Cal.com webhook tests (booking processing, lead matching, idempotency)
-- [ ] 04.1-04: End-to-end integration tests (full flow verification)
+- [ ] 04.1-01-PLAN.md — Add 're-apply' status to LeadStatus enum and update all UI components ✅
+- [ ] 04.1-02-PLAN.md — Booking link settings integration (database field, remove hardcoded, admin UI)
+- [ ] 04.1-03-PLAN.md — Public lead capture form (page, validation, UTM tracking, duplicate handling, honeypot)
+- [ ] 04.1-04-PLAN.md — Meta Ads webhook integration (Facebook Lead Ads endpoint, payload transformation)
 
-**Reason for Insertion**: Phase 4 was approved without proper testing. This phase ensures all integrations work correctly before proceeding to Phase 5.
+**Reason for Insertion**: Complete lead-to-customer flow before testing phase. Missing pieces: public form, configurable booking link, Meta Ads integration.
+
+### Phase 4.2: Proposal Management (INSERTED)
+
+**Goal**: Sales can create, send, and track proposals with document templates and response tracking.
+
+**Depends on**: Phase 4.1 (lead capture complete)
+
+**Success Criteria** (what must be TRUE):
+1. Admin can create proposal templates with variable support ({{company}}, {{budget}}, etc.)
+2. Sales can generate proposal from template and send unique link to lead via WhatsApp
+3. Lead's response status is tracked (CEVAP_BEKLENIYOR / KABUL / RED)
+4. Lead records show offer_document_url, offer_date, offer_response, offer_responded_at
+5. When appointment completes, lead status auto-updates to CUSTOMER or LOST (based on proposal response)
+
+**Focus Areas**:
+- Proposal Templates: CRUD for templates with TipTap editor, variable system
+- Proposal Generation: Template → filled content → unique link generation
+- Response Tracking: Lead status update on response, response timestamp
+- Status Automation: Appointment completion triggers lead status update (CUSTOMER/LOST)
+- UI Integration: "Teklif" tab on appointment detail/lead detail
+
+**Plans**: TBD
+
+Plans:
+- [ ] 04.2-01: Proposal template management (collection, UI, editor)
+- [ ] 04.2-02: Proposal generation and sending (fill variables, generate link, WhatsApp send)
+- [ ] 04.2-03: Response tracking and status updates (lead response handling)
+- [ ] 04.2-04: Status automation (appointment completion → CUSTOMER/LOST) and UI integration
+
+**Reason for Insertion**: Proposal workflow is critical part of sales process after appointment booking.
 
 ### Phase 5: Campaigns & Nurturing
 
@@ -189,7 +221,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 4.1 → 4.2 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -197,5 +229,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 2. WhatsApp & Qualification | 4/4 | ✅ Complete | 2026-03-03 |
 | 3. Email Communication | 3/3 | ✅ Complete | 2026-03-04 |
 | 4. Appointments | 4/4 | ✅ Complete | 2026-03-04 |
+| 4.1 Lead Capture & Pipeline | 0/4 | Not started | - |
+| 4.2 Proposal Management | 0/4 | Not started | - |
 | 5. Campaigns & Nurturing | 0/5 | Not started | - |
 | 6. Polish & Integration | 0/3 | Not started | - |
