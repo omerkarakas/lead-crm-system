@@ -9,20 +9,20 @@ See: .planning/PROJECT.md (updated 2025-03-01)
 
 ## Current Position
 
-Phase: 4.1 of 6 (Phase 4 Testing & Verification - INSERTED)
-Plan: Not started
-Status: Phase inserted, needs planning
-Last activity: 2026-03-04 — Phase 4.1 inserted for testing verification
+Phase: 4.1 of 9 (Phase 4.1: Lead Capture & Pipeline Automation - INSERTED)
+Plan: 01 of 4 (in progress)
+Status: Wave 1 execution
+Last activity: 2026-03-05 — Completed 04.1-01: Add RE_APPLY status for duplicate leads
 
-Progress: [████████░░] 67% (4/6 phases complete, 24/24 plans complete + testing phase inserted)
+Progress: [███████░░░] 50% (4/9 phases complete, 22/26 plans targeted)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 21
+- Total plans completed: 22
 - Average duration: 11 min
-- Total execution time: 2 hours 34 min
+- Total execution time: 2 hours 36 min
 
 **By Phase:**
 
@@ -149,6 +149,7 @@ Recent decisions affecting current work:
 | Appointment detail modal | Full info display with action buttons (edit, cancel, complete) | 2026-03-04 |
 | Active filter badges | Individual clear buttons for each active filter | 2026-03-04 |
 | Appointment history tab | Randevular tab on lead detail page with 30s auto-refresh | 2026-03-04 |
+| RE_APPLY lead status | New status value for tracking duplicate leads from Meta Ads | 2026-03-05 |
 
 ### Pending Todos
 
@@ -170,16 +171,19 @@ None yet.
 
 ### Roadmap Evolution
 
-- **Phase 4.1 inserted** (2026-03-04): Testing & Verification phase after Phase 4
-  - Reason: Phase 4 integrations (Lead Scoring, WhatsApp, Cal.com) need verification
-  - Focus: Unit tests, integration tests, end-to-end flow verification
-  - Blocks: Phase 5 until testing is complete
+- **Phase 4.1 redesigned** (2026-03-05): Changed from Testing & Verification to Lead Capture & Pipeline Automation
+  - Reason: Testing deferred, critical missing features needed first
+  - Focus: Public lead form, booking link settings, status automation, Meta Ads webhook
+  - Blocks: Phase 4.2 (Proposal Management) until complete
+- **Phase 4.2 inserted** (2026-03-05): Proposal Management after Phase 4.1
+  - Reason: Proposal workflow critical for sales process after appointments
+  - Focus: Proposal templates, generation, sending, response tracking
 
 ## Session Continuity
 
-Last session: 2026-03-04 (Phase 4.1 inserted - Testing & Verification)
-Stopped at: Phase 4.1 created, needs planning
+Last session: 2026-03-05 (Phase 4.1 Plan 01 completed)
+Stopped at: Completed 04.1-01 - Add RE_APPLY status
 Resume file: None
 Dev server: Running at http://localhost:3000
 
-**Note**: Phase 4 complete but not tested. Phase 4.1 inserted for verification before proceeding to Phase 5.
+**Note**: Phase 4.1 in progress - RE_APPLY status added for Meta Ads duplicate lead tracking.
