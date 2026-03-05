@@ -27,6 +27,7 @@ const STATUS_LABELS: Record<LeadStatus, string> = {
   [LeadStatus.BOOKED]: 'Randevu',
   [LeadStatus.CUSTOMER]: 'Müşteri',
   [LeadStatus.LOST]: 'Kayıp',
+  [LeadStatus.RE_APPLY]: 'Tekrar Başvuru',
 };
 
 export function LeadFilter({
