@@ -6,7 +6,7 @@ import type {
   TemplateVariable,
 } from '@/types/proposal';
 import type { Lead } from '@/types/lead';
-import type { Appointment } from '@/types/proposal';
+import type { Appointment } from '@/types/appointment';
 
 /**
  * Default available variables for proposal templates
@@ -185,7 +185,7 @@ function replaceTemplateVariables(
 
   // Replace appointment variables if available
   if (appointment) {
-    const appointmentDate = new Date(appointment.start_time);
+    const appointmentDate = new Date(appointment.scheduled_at);
     const formattedDate = appointmentDate.toLocaleDateString('tr-TR');
     const formattedTime = appointmentDate.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
 
@@ -235,9 +235,17 @@ export function previewTemplate(
 
   const sampleAppointment: Appointment = {
     id: 'sample-appointment-id',
-    start_time: new Date().toISOString(),
-    end_time: new Date(Date.now() + 3600000).toISOString(),
-    status: 'scheduled',
+    lead_id: 'sample-lead-id',
+    calcom_booking_id: 'sample-booking-id',
+    scheduled_at: new Date().toISOString(),
+    duration: 60,
+    status: 'scheduled' as any,
+    source: 'manual' as any,
+    confirmation_sent: false,
+    reminder_24h_sent: false,
+    reminder_2h_sent: false,
+    created: new Date().toISOString(),
+    updated: new Date().toISOString(),
   };
 
   return replaceTemplateVariables(template.content, sampleLead, sampleAppointment, customVariables);
