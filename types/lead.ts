@@ -3,7 +3,8 @@ export enum LeadStatus {
   QUALIFIED = 'qualified',
   BOOKED = 'booked',
   CUSTOMER = 'customer',
-  LOST = 'lost'
+  LOST = 'lost',
+  RE_APPLY = 're-apply'
 }
 
 export enum LeadSource {
@@ -65,8 +66,13 @@ export interface UpdateLeadDto {
   source?: LeadSource;
   status?: LeadStatus;
   score?: number;
+  total_score?: number;
   quality?: LeadQuality;
   tags?: string[];
+  qa_sent?: boolean;
+  qa_sent_at?: string;
+  qa_completed?: boolean;
+  qa_completed_at?: string;
 }
 
 export interface Note {
