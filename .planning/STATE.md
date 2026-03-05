@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2025-03-01)
 ## Current Position
 
 Phase: 4.2 of 9 (Phase 4.2: Proposal Management - INSERTED)
-Plan: TBD (not yet planned)
-Status: Phase 4.1 complete, ready for next phase
-Last activity: 2026-03-05 — Phase 4.1 verified (18/18 must-haves passed)
+Plan: 01 of 3
+Status: Phase 4.2-01 (Proposal Template Management) complete
+Last activity: 2026-03-05 — Completed proposal template management system
 
-Progress: [████████░░] 56% (5/9 phases complete, 28/30 plans targeted)
+Progress: [████████░░] 59% (5/9 phases complete, 29/30 plans targeted)
 
 ## Performance Metrics
 
@@ -33,6 +33,7 @@ Progress: [████████░░] 56% (5/9 phases complete, 28/30 plans
 | 03-email-communication   | 3 of 3    | 17 min    | 5.7 min  |
 | 04-appointments          | 4 of 4    | 20 min    | 5 min    |
 | 04.1-lead-capture        | 4 of 4    | 46 min    | 11.5 min |
+| 04.2-proposal-management | 1 of 3    | 4 min     | 4 min    |
 
 **Recent Trend:**
 
@@ -162,6 +163,11 @@ Recent decisions affecting current work:
 | Meta Ads webhook endpoint | /api/webhooks/meta-ads processes Facebook Lead Ads with field mapping and duplicate handling | 2026-03-05 |
 | Shared lead creation helper | createOrUpdateLead() function consolidates duplicate detection logic for webhooks and forms | 2026-03-05 |
 | Structured webhook logging | JSON-formatted logs with sanitized data for debugging and monitoring | 2026-03-05 |
+| Proposal template management | TipTap/Markdown editors with custom variable system for proposal templates | 2026-03-05 |
+| Proposal template permissions | Admin-only access control with CAN_MANAGE_PROPOSAL_TEMPLATES permission | 2026-03-05 |
+| Custom variable definitions | JSON-based variable system (name, label, description, default_value) for template extensibility | 2026-03-05 |
+| Soft delete for templates | is_deleted flag enables template recovery instead of permanent deletion | 2026-03-05 |
+| Turkish date/time formatting | Appointment variables formatted with tr-TR locale for proposal content | 2026-03-05 |
 
 ### Pending Todos
 
@@ -195,9 +201,9 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-05 (Phase 4.1 complete)
-Stopped at: Phase 4.1 verification passed (18/18 must-haves)
+Last session: 2026-03-05 (Phase 4.2-01 complete)
+Stopped at: Completed proposal template management system
 Resume file: None
 Dev server: Running at http://localhost:3001
 
-**Note**: Phase 4.1 complete - Public lead form, booking link settings, and Meta Ads webhook all implemented and verified. Ready to proceed to Phase 4.2 (Proposal Management).
+**Note**: Phase 4.2-01 complete - Proposal template management with TipTap/Markdown editors, custom variable system, and admin-only access control implemented. Ready to proceed to Phase 4.2-02.
