@@ -1,14 +1,5 @@
 {
-  "node": {
-    "a5e79af02a2f9d5a43e06e41df06be90d9a62a62": {
-      "workers": {
-        "app/(dashboard)/leads/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CDev%5C%5Cclaude%5C%5Cmoka-crm%5C%5Clib%5C%5Cpocketbase%5C%5Cserver.ts%22%2C%5B%22getServerPb%22%5D%5D%5D&__client_imported__=true!"
-      },
-      "layer": {
-        "app/(dashboard)/leads/page": "action-browser"
-      }
-    }
-  },
+  "node": {},
   "edge": {},
-  "encryptionKey": "JLgymf4EtjSsbOqeLADJzhN5NAywlFgF7lxWAu3+oMY="
+  "encryptionKey": "Eq3eqmibX5hFqEn30R4XhuFw16CpV+KCxd4G8QZe2Ig="
 }

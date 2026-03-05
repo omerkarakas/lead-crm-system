@@ -3,8 +3,6 @@
  * This file contains server-only functions that use PocketBase
  */
 
-'use server';
-
 import PocketBase from 'pocketbase';
 import { getServerPb } from '../pocketbase/server';
 import { QA_CONFIG } from './qa-constants';
@@ -54,4 +52,5 @@ export function clearBookingLinkCache(): void {
 
 // Re-export constants and utility functions for convenience
 export { QA_CONFIG, formatWelcomeMessage, formatPollMessage, calculateScore, isQualified } from './qa-constants';
+
 
