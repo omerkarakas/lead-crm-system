@@ -85,14 +85,16 @@ function transformFacebookPayload(payload: FacebookLeadAdsPayload) {
   const website = extractFieldValue(payload.field_data, 'website');
   const message = extractFieldValue(payload.field_data, 'message');
 
-  // Build UTM params from Meta Ads context
-  const utmParams = {
+  // Build UTM params from Meta Ads context (only include non-empty values)
+  const utmParams: Record<string, string> = {
     utm_source: 'facebook',
     utm_medium: 'lead_ad',
-    utm_campaign: payload.adgroup_id || payload.form_id || '',
-    utm_content: payload.form_id || '',
     utm_timestamp: new Date().toISOString(),
   };
+
+  // Only add optional UTM params if they have values
+  if (payload.adgroup_id) utmParams.utm_campaign = payload.adgroup_id;
+  if (payload.form_id) utmParams.utm_content = payload.form_id;
 
   return {
     name,
@@ -183,7 +185,7 @@ export async function POST(req: NextRequest) {
 
     // Use shared lead creation/update logic from /api/leads
     // Transform Facebook payload to CreateLeadDto format
-    const leadData = {
+    const leadData: any = {
       name,
       phone,
       email,
@@ -191,8 +193,12 @@ export async function POST(req: NextRequest) {
       website,
       message,
       source,
-      ...utmParams,
     };
+
+    // Only add UTM params that have values (avoid empty strings)
+    Object.entries(utmParams).forEach(([key, value]) => {
+      if (value) leadData[key] = value;
+    });
 
     const { lead, action } = await createOrUpdateLead(leadData, pb);
 
