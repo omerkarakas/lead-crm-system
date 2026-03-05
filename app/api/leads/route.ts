@@ -173,16 +173,33 @@ export async function createOrUpdateLead(
   } else {
     // Create new lead
     const createData: any = {
-      ...data,
-      createdBy: userId, // Will be undefined if no auth, that's ok
+      name: data.name,
+      phone: data.phone,
+      email: data.email,
+      company: data.company,
+      website: data.website,
+      message: data.message,
+      source: data.source,
       status: data.status || 'new',
       score: data.score ?? 0,
       quality: data.quality || 'pending',
       tags: data.tags || [],
       qa_sent: false,
       qa_completed: false,
-      ...utmParams,
     };
+
+    // Only add createdBy if we have a valid userId (relation field validation)
+    if (userId) {
+      createData.createdBy = userId;
+    }
+
+    // Add UTM params if present
+    if (utmParams.utm_source) createData.utm_source = utmParams.utm_source;
+    if (utmParams.utm_medium) createData.utm_medium = utmParams.utm_medium;
+    if (utmParams.utm_campaign) createData.utm_campaign = utmParams.utm_campaign;
+    if (utmParams.utm_content) createData.utm_content = utmParams.utm_content;
+    if (utmParams.utm_term) createData.utm_term = utmParams.utm_term;
+    if (utmParams.utm_timestamp) createData.utm_timestamp = utmParams.utm_timestamp;
 
     // Debug log to see what we're creating
     console.log('[createOrUpdateLead] Creating lead with data:', JSON.stringify(createData, null, 2));
