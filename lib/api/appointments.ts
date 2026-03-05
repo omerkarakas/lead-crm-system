@@ -658,3 +658,62 @@ export async function cancelScheduledReminders(appointmentId: string): Promise<v
     console.error('[cancelScheduledReminders] Error:', error);
   }
 }
+
+/**
+ * Complete an appointment and update lead status based on proposal response
+ * Returns appointment with lead status update info
+ */
+export async function completeAppointment(
+  appointmentId: string
+): Promise<{
+  appointment: Appointment;
+  statusUpdate?: {
+    updated: boolean;
+    previousStatus?: string;
+    newStatus?: string;
+    reason: string;
+  };
+}> {
+  // Get appointment with lead relation
+  const appointment = await pb.collection<Appointment>('appointments').getOne(appointmentId, {
+    expand: 'lead_id'
+  });
+
+  if (!appointment.lead_id) {
+    throw new Error('No lead associated with this appointment');
+  }
+
+  // Update appointment status to completed
+  const updatedAppointment = await pb.collection<Appointment>('appointments').update(appointmentId, {
+    status: 'completed'
+  });
+
+  // Check lead status based on proposal response
+  const lead = appointment.expand?.lead_id as any;
+  let statusUpdate = undefined;
+
+  if (lead) {
+    // Import updateLeadStatusBasedOnProposal dynamically to avoid circular dependency
+    const { updateLeadStatusBasedOnProposal } = await import('@/lib/utils/status');
+
+    // If status is already CUSTOMER or LOST, log it
+    if (lead.status === 'customer' || lead.status === 'lost') {
+      statusUpdate = {
+        updated: false,
+        previousStatus: lead.status,
+        newStatus: lead.status,
+        reason: lead.status === 'customer'
+          ? 'Durum zaten müşteri (teklif kabul edildi)'
+          : 'Durum zaten kaybedildi (teklif reddedildi)'
+      };
+    } else {
+      // Check proposal response and update status
+      statusUpdate = await updateLeadStatusBasedOnProposal(pb, appointment.lead_id);
+    }
+  }
+
+  return {
+    appointment: updatedAppointment,
+    statusUpdate
+  };
+}
