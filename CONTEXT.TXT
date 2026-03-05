@@ -1,0 +1,44 @@
+ # Moka CRM - Devam Hatırlatma                                                                                                                                                                                     ## Son Durum                                                                                             Phase 4.1 (Testing & Verification) için context toplaması başladı ama düzeltmeler yapıldı.                                                                                                                        ## Tamamlanan Düzeltmeler                                                                                1. **WhatsApp Poll Çalışıyor** ✅                                                                           - Green API credentials server-side env ile çözüldü                                                      - Lead oluşturduktan hemen poll gönderiliyor                                                             - Manuel poll tetikleme (Admin → "Tekrar Gönder") çalışıyor                                                                                                                                                    2. **Auto-Cancellation Çözüldü** ✅                                                                         - Her API modülüne ayrı PocketBase instance                                                              - Component'lere AbortController eklendi                                                                 - Tab geçişlerinde hata vermiyor                                                                                                                                                                             
+  3. **UI Düzeltmeleri** ✅
+     - LeadForm: Company zorunlu, website optional
+     - LeadAppointments: CalendarPlus import düzeltildi
+     - Notlar sekmesi düzeltildi
+
+  4. **Store Düzeltmeleri** ✅
+     - createLead artık Lead objesi döndürüyor
+     - LeadModal'da otomatik poll tetikleniyor
+
+  ## Kaldığımız Yer
+  /gsd:discuss-phase 4.1 komutu ile Phase 4.1 için context toplanıyorduk.
+
+  Şu anda durduruldu:
+  - Phase 4.1 için CONTEXT.md oluşturuldu (sonra silindi)
+  - Test stratejisi tartışması başladı ama düzeltmelere odaklanıldı
+  - Test framework'leri, coverage, CI/CD konuları konuşuldu
+
+  ## Öncelikler
+  1. **Admin Settings Sayfası** (yeni plan gerekiyor)
+     - Green API, Cal.com, Resend credentials yönetimi
+     - Test dashboard için endpoint'ler
+     - API anahtarlarını UI'dan yönetme
+
+  2. **Cal.com Self-Hosted Entegrasyonu**
+     - Cal.com URL ve API key config'e eklenmeli
+     - Webhook endpoint'i test edilmeli
+
+  3. **Phase 4.1 Test Planı**
+     - Test stratejisi belirlenmeli (Unit/Integration/E2E)
+     - Coverage hedefleri
+     - CI/CD entegrasyonu
+
+  ## Önemli Dosyalar
+  - .env.local (Green API credentials mevcut)
+  - lib/api/whatsapp.ts (server-side pb kullanıyor)
+  - lib/api/appointments.ts (ayrı pb instance)
+  - lib/stores/leads.ts (createLead returns Lead)
+
+  ## Bir Sonraki Adım
+  Hangi öncelikle devam edelim?
+  1. Admin Settings sayfası + Test dashboard
+  2. Cal.com webhook test
+  3. Phase 4.1 test planı tamamlama

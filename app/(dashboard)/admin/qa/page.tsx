@@ -8,7 +8,7 @@ import { useQAStore } from '@/lib/stores/qa';
 import { QuestionBuilder } from '@/components/admin/qa/QuestionBuilder';
 import { QuestionList } from '@/components/admin/qa/QuestionList';
 import { WelcomeMessageConfig } from '@/components/admin/qa/WelcomeMessageConfig';
-import { QA_CONFIG } from '@/lib/config/qa';
+import { QA_CONFIG } from '@/lib/config/qa-constants';
 import { Button } from '@/components/ui/button';
 import { Plus, MessageSquare, Settings, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';

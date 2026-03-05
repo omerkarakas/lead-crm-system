@@ -1,4 +1,4 @@
-import { QA_CONFIG } from '@/lib/config/qa';
+import { QA_CONFIG } from '@/lib/config/qa-constants';
 import { QualityBadge } from './QualityBadge';
 
 export interface ScoreDisplayProps {
