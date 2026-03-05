@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2025-03-01)
 ## Current Position
 
 Phase: 4.1 of 9 (Phase 4.1: Lead Capture & Pipeline Automation - INSERTED)
-Plan: 03 of 4 (in progress)
-Status: Wave 2 execution
-Last activity: 2026-03-05 — Completed 04.1-03: Public lead form with UTM tracking
+Plan: 04 of 4 (checkpoint pending)
+Status: Wave 3 execution
+Last activity: 2026-03-05 — Wave 3 tasks complete, awaiting checkpoint verification
 
 Progress: [███████░░░] 50% (4/9 phases complete, 24/26 plans targeted)
 
@@ -158,6 +158,9 @@ Recent decisions affecting current work:
 | Duplicate lead updates | Old values stored in message field with Turkish date format, status set to 're-apply' | 2026-03-05 |
 | Honeypot spam protection | Hidden 'fax_number' field with invisible styling to trap automated bots | 2026-03-05 |
 | Public lead form | /lead-form route with no authentication, Turkish labels, responsive design | 2026-03-05 |
+| Meta Ads webhook endpoint | /api/webhooks/meta-ads processes Facebook Lead Ads with field mapping and duplicate handling | 2026-03-05 |
+| Shared lead creation helper | createOrUpdateLead() function consolidates duplicate detection logic for webhooks and forms | 2026-03-05 |
+| Structured webhook logging | JSON-formatted logs with sanitized data for debugging and monitoring | 2026-03-05 |
 
 ### Pending Todos
 
@@ -171,6 +174,7 @@ None yet.
 
 - **Phase 4 was approved without testing** — Need to verify Lead Scoring, WhatsApp, and Cal.com integrations before Phase 5
 - Previous concern resolved: Auth redirect issue fixed with server-side token validation
+- **PocketBase API rules configuration required** — Meta Ads webhook needs unauthenticated access or admin credentials to create leads
 - **PocketBase migrations not yet applied** — JS migrations created (UTM fields, message field, email optional) but need server restart to apply
 - Notes stored in lead record - may need separate notes collection for Phase 6 (activity timeline)
 - No file upload capability yet (needed for lead attachments in future phases)
@@ -190,9 +194,9 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-05 (Phase 4.1 Plan 03 completed)
-Stopped at: Completed 04.1-03 - Public lead form with UTM tracking
+Last session: 2026-03-05 (Phase 4.1 Plan 04 checkpoint pending)
+Stopped at: Completed 04.1-04 tasks, awaiting checkpoint verification (Meta Ads webhook)
 Resume file: None
-Dev server: Running at http://localhost:3000
+Dev server: Running at http://localhost:3003
 
-**Note**: Phase 4.1 in progress - Public lead form with duplicate handling ready for Meta Ads webhook integration.
+**Note**: Phase 4.1 Wave 3 complete - Meta Ads webhook implemented with shared duplicate handling logic. Awaiting PocketBase configuration and checkpoint verification before proceeding to Phase 4.2.
