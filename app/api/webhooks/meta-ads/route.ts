@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import PocketBase from 'pocketbase';
 import type { Lead } from '@/types/lead';
 import { LeadSource } from '@/types/lead';
+import { createOrUpdateLead } from '@/app/api/leads/route';
 
 // Create dedicated PocketBase instance for Meta Ads webhook (no auth required)
 const PB_URL = process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090';
@@ -132,89 +133,22 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Webhooks don't have auth, use direct PB instance
-    // Check for duplicate lead (by phone OR email)
-    let duplicateLead: Lead | null = null;
-    const filterParts: string[] = [`phone = "${phone}"`];
-    if (email) {
-      filterParts.push(`email = "${email}"`);
-    }
+    // Use shared lead creation/update logic from /api/leads
+    // Transform Facebook payload to CreateLeadDto format
+    const leadData = {
+      name,
+      phone,
+      email,
+      company,
+      website,
+      message,
+      source,
+      ...utmParams,
+    };
 
-    console.log('[Meta Ads Webhook] PB instance:', pb);
-    console.log('[Meta Ads Webhook] Filter:', filterParts.join(' || '));
+    const { lead, action } = await createOrUpdateLead(leadData, pb);
 
-    try {
-      console.log('[Meta Ads Webhook] About to call getList...');
-      const duplicates = await pb.collection('leads').getList(1, 1, {
-        filter: filterParts.join(' || '),
-      });
-      console.log('[Meta Ads Webhook] getList result:', duplicates);
-      if (duplicates.items.length > 0) {
-        duplicateLead = duplicates.items[0] as Lead;
-      }
-    } catch (error) {
-      console.error('[Meta Ads Webhook] Error checking duplicates:', error);
-    }
-
-    let lead: Lead;
-    let action: 'created' | 'updated';
-
-    if (duplicateLead) {
-      // Handle duplicate - update existing lead
-      const now = new Date();
-      const dateStr = now.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-
-      // Store old values in message field
-      const oldValuesNote = `FACEBOOK TEKRAR [${dateStr}]: Eski değerler - name: ${duplicateLead.name}, phone: ${duplicateLead.phone}, email: ${duplicateLead.email || ''}, company: ${duplicateLead.company || ''}`;
-      const existingNotes = duplicateLead.message || '';
-      const updatedNotes = existingNotes ? `${existingNotes}\n\n${oldValuesNote}` : oldValuesNote;
-
-      // Prepare update data
-      const updateData: any = {
-        name,
-        phone,
-        email: email || duplicateLead.email,
-        company: company || duplicateLead.company,
-        website: website || duplicateLead.website,
-        message: updatedNotes,
-        source,
-        status: 're-apply',
-        qa_completed: false,
-        qa_completed_at: null,
-        // Update UTM params
-        utm_source: utmParams.utm_source,
-        utm_medium: utmParams.utm_medium,
-        utm_campaign: utmParams.utm_campaign || duplicateLead.utm_campaign,
-        utm_content: utmParams.utm_content || duplicateLead.utm_content,
-        utm_timestamp: utmParams.utm_timestamp,
-      };
-
-      lead = await pb.collection('leads').update(duplicateLead.id, updateData) as Lead;
-      action = 'updated';
-
-      console.log('[Meta Ads Webhook] Duplicate lead updated:', lead.id);
-    } else {
-      // Create new lead
-      lead = await pb.collection('leads').create({
-        name,
-        phone,
-        email,
-        company,
-        website,
-        message,
-        source,
-        status: 'new',
-        score: 0,
-        quality: 'pending',
-        tags: [],
-        qa_sent: false,
-        qa_completed: false,
-        ...utmParams,
-      }) as Lead;
-      action = 'created';
-
-      console.log('[Meta Ads Webhook] New lead created:', lead.id);
-    }
+    console.log('[Meta Ads Webhook] Lead processed:', { id: lead.id, action });
 
     // Log successful processing
     console.log(JSON.stringify({
