@@ -191,3 +191,96 @@ export async function listProposals(params: {
     totalPages: response.totalPages,
   };
 }
+
+/**
+ * Get proposal history for a specific proposal
+ * Returns full audit trail including creation, sent, and response details
+ */
+export async function getProposalHistory(proposalId: string): Promise<Proposal | null> {
+  try {
+    const proposal = await pb.collection('proposals').getOne<Proposal>(proposalId, {
+      expand: 'lead_id,template_id',
+    });
+
+    return proposal;
+  } catch (error) {
+    console.error('Get proposal history error:', error);
+    return null;
+  }
+}
+
+/**
+ * Get all proposal history for a lead
+ * Returns all proposals with full audit trail sorted by creation date
+ */
+export async function getLeadProposalHistory(
+  leadId: string,
+  options?: {
+    responseFilter?: ProposalResponse;
+    sort?: 'newest' | 'oldest';
+    limit?: number;
+  }
+): Promise<Proposal[]> {
+  try {
+    const sort = options?.sort === 'oldest' ? 'created' : '-created';
+    const perPage = options?.limit || 50;
+
+    let filter = `lead_id = "${leadId}"`;
+    if (options?.responseFilter) {
+      filter += ` && response = "${options.responseFilter}"`;
+    }
+
+    const response = await pb.collection('proposals').getList<Proposal>(1, perPage, {
+      filter,
+      sort,
+      expand: 'lead_id,template_id',
+    });
+
+    return response.items;
+  } catch (error) {
+    console.error('Get lead proposal history error:', error);
+    return [];
+  }
+}
+
+/**
+ * Get proposal statistics for a lead
+ * Returns counts of proposals by response status
+ */
+export async function getLeadProposalStats(leadId: string): Promise<{
+  total: number;
+  pending: number;
+  accepted: number;
+  rejected: number;
+}> {
+  try {
+    const [pending, accepted, rejected, total] = await Promise.all([
+      pb.collection('proposals').getList(1, 1, {
+        filter: `lead_id = "${leadId}" && response = "cevap_bekleniyor"`,
+        skipTotal: true,
+      }),
+      pb.collection('proposals').getList(1, 1, {
+        filter: `lead_id = "${leadId}" && response = "kabul"`,
+        skipTotal: true,
+      }),
+      pb.collection('proposals').getList(1, 1, {
+        filter: `lead_id = "${leadId}" && response = "red"`,
+        skipTotal: true,
+      }),
+      pb.collection('proposals').getList(1, 1, {
+        filter: `lead_id = "${leadId}"`,
+        skipTotal: true,
+      }),
+    ]);
+
+    return {
+      total: total.totalItems,
+      pending: pending.totalItems,
+      accepted: accepted.totalItems,
+      rejected: rejected.totalItems,
+    };
+  } catch (error) {
+    console.error('Get lead proposal stats error:', error);
+    return { total: 0, pending: 0, accepted: 0, rejected: 0 };
+  }
+}

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Appointment, AppointmentStatus } from '@/types/appointment';
+import { LeadStatus } from '@/types/lead';
 import {
   Dialog,
   DialogContent,
@@ -13,6 +14,25 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import {
   Calendar,
   Clock,
@@ -24,9 +44,11 @@ import {
   X,
   Pencil,
   ExternalLink,
+  RefreshCw,
 } from 'lucide-react';
 import { formatAppointmentDate, formatAppointmentTime } from '@/lib/utils/appointment';
 import { AppointmentDetailProposalTab } from '@/components/appointments/AppointmentDetailProposalTab';
+import { toast } from 'sonner';
 
 interface AppointmentDetailModalProps {
   open: boolean;
@@ -36,6 +58,7 @@ interface AppointmentDetailModalProps {
   onUpdateStatus?: (id: string, status: AppointmentStatus) => Promise<void>;
   onSendConfirmation?: (id: string) => Promise<void>;
   loading?: boolean;
+  isAdmin?: boolean;
 }
 
 const STATUS_LABELS: Record<AppointmentStatus, string> = {
@@ -52,6 +75,24 @@ const STATUS_VARIANTS: Record<AppointmentStatus, 'default' | 'secondary' | 'outl
   [AppointmentStatus.RESCHEDULED]: 'outline',
 };
 
+const LEAD_STATUS_LABELS: Record<LeadStatus, string> = {
+  [LeadStatus.NEW]: 'Yeni',
+  [LeadStatus.QUALIFIED]: 'Nitelikli',
+  [LeadStatus.BOOKED]: 'Randevu alındı',
+  [LeadStatus.CUSTOMER]: 'Müşteri',
+  [LeadStatus.LOST]: 'Kaybedildi',
+  [LeadStatus.RE_APPLY]: 'Yeniden başvuru',
+};
+
+const LEAD_STATUS_VARIANTS: Record<LeadStatus, 'default' | 'secondary' | 'outline' | 'destructive'> = {
+  [LeadStatus.NEW]: 'default',
+  [LeadStatus.QUALIFIED]: 'secondary',
+  [LeadStatus.BOOKED]: 'outline',
+  [LeadStatus.CUSTOMER]: 'default',
+  [LeadStatus.LOST]: 'destructive',
+  [LeadStatus.RE_APPLY]: 'outline',
+};
+
 export function AppointmentDetailModal({
   open,
   onClose,
@@ -60,8 +101,14 @@ export function AppointmentDetailModal({
   onUpdateStatus,
   onSendConfirmation,
   loading = false,
+  isAdmin = false,
 }: AppointmentDetailModalProps) {
   const [actionLoading, setActionLoading] = useState(false);
+  const [showStatusOverride, setShowStatusOverride] = useState(false);
+  const [statusOverrideLoading, setStatusOverrideLoading] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<LeadStatus | ''>('');
+  const [statusReason, setStatusReason] = useState('');
+  const [forceOverride, setForceOverride] = useState(false);
 
   if (!appointment) {
     return null;
@@ -94,7 +141,62 @@ export function AppointmentDetailModal({
     }
   };
 
+  const handleStatusOverride = async () => {
+    if (!lead || !selectedStatus) {
+      toast.error('Lütfen durum seçin');
+      return;
+    }
+
+    setStatusOverrideLoading(true);
+    try {
+      const response = await fetch(`/api/appointments/${appointment.id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lead_id: lead.id,
+          status: selectedStatus,
+          reason: statusReason || undefined,
+          force: forceOverride,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (data.warning) {
+          toast.error(data.warning);
+          return;
+        }
+        throw new Error(data.error || 'Durum güncellenirken hata oluştu');
+      }
+
+      toast.success(`Durum güncellendi: ${LEAD_STATUS_LABELS[selectedStatus]}`);
+      setShowStatusOverride(false);
+      setSelectedStatus('');
+      setStatusReason('');
+      setForceOverride(false);
+
+      // Refresh the page to show updated status
+      window.location.reload();
+    } catch (error: any) {
+      toast.error(error.message || 'Durum güncellenirken hata oluştu');
+    } finally {
+      setStatusOverrideLoading(false);
+    }
+  };
+
   const canUpdateStatus = appointment.status === AppointmentStatus.SCHEDULED;
+
+  // Check if lead status was auto-updated from proposal
+  const isAutoUpdated = lead?.offer_response &&
+    (lead.offer_response === 'kabul' || lead.offer_response === 'red') &&
+    (lead.status === 'customer' || lead.status === 'lost');
+
+  const statusReasonText = isAutoUpdated
+    ? lead.offer_response === 'kabul'
+      ? '(Teklif kabul edildi)'
+      : '(Teklif reddedildi)'
+    : null;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -117,18 +219,39 @@ export function AppointmentDetailModal({
           {/* Lead Info Section */}
           {lead && (
             <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-muted-foreground">Müşteri Adayı</h3>
-              <div className="bg-muted/50 rounded-lg p-4 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">{lead.name}</span>
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-muted-foreground">Müşteri Adayı</h3>
+                {isAdmin && (
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => window.location.href = `/leads/${lead.id}`}
+                    onClick={() => setShowStatusOverride(true)}
+                    className="h-7 text-xs"
                   >
-                    <ExternalLink className="h-4 w-4 mr-1" />
-                    Detay
+                    <RefreshCw className="h-3 w-3 mr-1" />
+                    Durum Güncelle
                   </Button>
+                )}
+              </div>
+              <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">{lead.name}</span>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={LEAD_STATUS_VARIANTS[lead.status as LeadStatus] || 'default'} className="font-medium">
+                      {LEAD_STATUS_LABELS[lead.status as LeadStatus] || lead.status}
+                    </Badge>
+                    {statusReasonText && (
+                      <span className="text-xs text-muted-foreground">{statusReasonText}</span>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => window.location.href = `/leads/${lead.id}`}
+                    >
+                      <ExternalLink className="h-4 w-4 mr-1" />
+                      Detay
+                    </Button>
+                  </div>
                 </div>
                 <div className="text-sm text-muted-foreground space-y-1">
                   <div className="flex items-center gap-2">
@@ -311,6 +434,87 @@ export function AppointmentDetailModal({
             Kapat
           </Button>
         </DialogFooter>
+
+        {/* Status Override Dialog */}
+        {isAdmin && showStatusOverride && lead && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+              <h3 className="text-lg font-semibold mb-4">Lead Durumu Güncelle</h3>
+
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="status-select">Yeni Durum</Label>
+                  <Select value={selectedStatus} onValueChange={(value) => setSelectedStatus(value as LeadStatus)}>
+                    <SelectTrigger id="status-select">
+                      <SelectValue placeholder="Durum seçin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(LEAD_STATUS_LABELS).map(([value, label]) => (
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="status-reason">Açıklama (isteğe bağlı)</Label>
+                  <Textarea
+                    id="status-reason"
+                    placeholder="Durum değişikliği nedeni..."
+                    value={statusReason}
+                    onChange={(e) => setStatusReason(e.target.value)}
+                    rows={3}
+                  />
+                </div>
+
+                {isAutoUpdated && (
+                  <div className="flex items-start gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                    <input
+                      type="checkbox"
+                      id="force-override"
+                      checked={forceOverride}
+                      onChange={(e) => setForceOverride(e.target.checked)}
+                      className="mt-0.5"
+                    />
+                    <div className="flex-1">
+                      <Label htmlFor="force-override" className="text-sm font-medium text-yellow-800">
+                        Zorla
+                      </Label>
+                      <p className="text-xs text-yellow-700 mt-1">
+                        Bu durum otomatik olarak teklif yanıtından güncellendi. Değiştirmek için işaretleyin.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-2 mt-6">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowStatusOverride(false);
+                    setSelectedStatus('');
+                    setStatusReason('');
+                    setForceOverride(false);
+                  }}
+                  disabled={statusOverrideLoading}
+                  className="flex-1"
+                >
+                  İptal
+                </Button>
+                <Button
+                  onClick={handleStatusOverride}
+                  disabled={statusOverrideLoading || !selectedStatus || (isAutoUpdated && !forceOverride)}
+                  className="flex-1"
+                >
+                  {statusOverrideLoading ? 'Güncelleniyor...' : 'Güncelle'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

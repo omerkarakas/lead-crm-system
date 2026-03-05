@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
     const perPage = parseInt(searchParams.get('perPage') || '20');
     const leadId = searchParams.get('leadId') || undefined;
     const response = searchParams.get('response') || undefined;
+    const sort = searchParams.get('sort') || '-created'; // Support 'newest' or 'oldest'
 
     let filter = '';
 
@@ -32,7 +33,7 @@ export async function GET(request: NextRequest) {
     }
 
     const options: any = {
-      sort: '-created',
+      sort: sort === 'oldest' ? 'created' : '-created',
       expand: 'lead_id,template_id',
     };
 

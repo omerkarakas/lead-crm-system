@@ -9,6 +9,7 @@ export const PERMISSIONS = {
   CAN_EDIT_LEADS: 'can_edit_leads',
   CAN_DELETE_LEADS: 'can_delete_leads',
   CAN_VIEW_ALL_LEADS: 'can_view_all_leads',
+  CAN_OVERRIDE_LEAD_STATUS: 'can_override_lead_status',
 
   // Notes and tags
   CAN_ADD_NOTES: 'can_add_notes',
@@ -34,6 +35,7 @@ export const ROLE_PERMISSIONS: Record<Role, string[]> = {
     PERMISSIONS.CAN_EDIT_LEADS,
     PERMISSIONS.CAN_DELETE_LEADS,
     PERMISSIONS.CAN_VIEW_ALL_LEADS,
+    PERMISSIONS.CAN_OVERRIDE_LEAD_STATUS,
     PERMISSIONS.CAN_ADD_NOTES,
     PERMISSIONS.CAN_MANAGE_TAGS,
     PERMISSIONS.CAN_MANAGE_QA_QUESTIONS,
@@ -102,4 +104,8 @@ export function canManageSettings(role: Role): boolean {
 
 export function canManageProposalTemplates(role: Role): boolean {
   return hasPermission(role, PERMISSIONS.CAN_MANAGE_PROPOSAL_TEMPLATES);
+}
+
+export function canOverrideLeadStatus(role: Role): boolean {
+  return hasPermission(role, PERMISSIONS.CAN_OVERRIDE_LEAD_STATUS);
 }
