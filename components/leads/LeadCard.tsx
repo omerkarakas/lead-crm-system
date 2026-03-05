@@ -24,6 +24,7 @@ const STATUS_LABELS: Record<LeadStatus, string> = {
   [LeadStatus.BOOKED]: 'Randevu',
   [LeadStatus.CUSTOMER]: 'Müşteri',
   [LeadStatus.LOST]: 'Kayıp',
+  [LeadStatus.RE_APPLY]: 'Tekrar Başvuru',
 };
 
 const STATUS_VARIANTS: Record<LeadStatus, 'default' | 'secondary' | 'outline' | 'destructive'> = {
@@ -32,6 +33,7 @@ const STATUS_VARIANTS: Record<LeadStatus, 'default' | 'secondary' | 'outline' | 
   [LeadStatus.BOOKED]: 'outline',
   [LeadStatus.CUSTOMER]: 'default',
   [LeadStatus.LOST]: 'destructive',
+  [LeadStatus.RE_APPLY]: 'secondary',
 };
 
 const SOURCE_LABELS: Record<string, string> = {

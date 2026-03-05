@@ -19,7 +19,8 @@ const STATUS_TURKISH_MAP: Record<LeadStatus, string> = {
   qualified: 'Qualify',
   booked: 'Randevu Alındı',
   customer: 'Müşteri',
-  lost: 'Kayıp'
+  lost: 'Kayıp',
+  're-apply': 'Tekrar Başvuru'
 };
 
 /**
