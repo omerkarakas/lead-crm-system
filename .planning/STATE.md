@@ -10,19 +10,19 @@ See: .planning/PROJECT.md (updated 2025-03-01)
 ## Current Position
 
 Phase: 4.1 of 9 (Phase 4.1: Lead Capture & Pipeline Automation - INSERTED)
-Plan: 02 of 4 (in progress)
-Status: Wave 1 execution
-Last activity: 2026-03-05 — Completed 04.1-02: Booking link configuration
+Plan: 03 of 4 (in progress)
+Status: Wave 2 execution
+Last activity: 2026-03-05 — Completed 04.1-03: Public lead form with UTM tracking
 
-Progress: [███████░░░] 50% (4/9 phases complete, 23/26 plans targeted)
+Progress: [███████░░░] 50% (4/9 phases complete, 24/26 plans targeted)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 23
+- Total plans completed: 24
 - Average duration: 11 min
-- Total execution time: 2 hours 39 min
+- Total execution time: 2 hours 42 min
 
 **By Phase:**
 
@@ -153,6 +153,11 @@ Recent decisions affecting current work:
 | Configurable booking link | Booking link URL stored in app_settings collection, retrieved via async function | 2026-03-05 |
 | Admin settings UI | Settings page with dynamic forms for service configuration (Green API, Cal.com, Resend) | 2026-03-05 |
 | In-memory config caching | Booking link cached to avoid repeated database queries | 2026-03-05 |
+| UTM tracking fields | 6 optional fields (source, medium, campaign, content, term, timestamp) for marketing attribution | 2026-03-05 |
+| Duplicate detection logic | Phone OR email matching with flexible handling for web form submissions | 2026-03-05 |
+| Duplicate lead updates | Old values stored in message field with Turkish date format, status set to 're-apply' | 2026-03-05 |
+| Honeypot spam protection | Hidden 'fax_number' field with invisible styling to trap automated bots | 2026-03-05 |
+| Public lead form | /lead-form route with no authentication, Turkish labels, responsive design | 2026-03-05 |
 
 ### Pending Todos
 
@@ -166,6 +171,7 @@ None yet.
 
 - **Phase 4 was approved without testing** — Need to verify Lead Scoring, WhatsApp, and Cal.com integrations before Phase 5
 - Previous concern resolved: Auth redirect issue fixed with server-side token validation
+- **PocketBase migrations not yet applied** — JS migrations created (UTM fields, message field, email optional) but need server restart to apply
 - Notes stored in lead record - may need separate notes collection for Phase 6 (activity timeline)
 - No file upload capability yet (needed for lead attachments in future phases)
 - Tag autocomplete queries all leads - may need optimization for large datasets
@@ -184,9 +190,9 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-05 (Phase 4.1 Plan 02 completed)
-Stopped at: Completed 04.1-02 - Booking link configuration
+Last session: 2026-03-05 (Phase 4.1 Plan 03 completed)
+Stopped at: Completed 04.1-03 - Public lead form with UTM tracking
 Resume file: None
 Dev server: Running at http://localhost:3000
 
-**Note**: Phase 4.1 in progress - Booking link now configurable via admin settings.
+**Note**: Phase 4.1 in progress - Public lead form with duplicate handling ready for Meta Ads webhook integration.
