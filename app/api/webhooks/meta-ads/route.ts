@@ -4,9 +4,27 @@ import type { Lead } from '@/types/lead';
 import { LeadSource } from '@/types/lead';
 import { createOrUpdateLead } from '@/app/api/leads/route';
 
-// Create dedicated PocketBase instance for Meta Ads webhook (no auth required)
-const PB_URL = process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090';
-const pb = new PocketBase(PB_URL);
+// PocketBase admin credentials for webhook (from env vars)
+const PB_ADMIN_EMAIL = process.env.POCKETBASE_ADMIN_EMAIL;
+const PB_ADMIN_PASSWORD = process.env.POCKETBASE_ADMIN_PASSWORD;
+
+/**
+ * Create authenticated PocketBase instance for Meta Ads webhook
+ * Uses admin credentials to bypass API rules
+ */
+async function getAuthenticatedPB(): Promise<PocketBase> {
+  const pb = new PocketBase(process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090');
+
+  if (PB_ADMIN_EMAIL && PB_ADMIN_PASSWORD) {
+    try {
+      await pb.collection('_superusers').authWithPassword(PB_ADMIN_EMAIL, PB_ADMIN_PASSWORD);
+    } catch (error) {
+      console.error('[Meta Ads Webhook] Admin auth failed, continuing without auth:', error);
+    }
+  }
+
+  return pb;
+}
 
 /**
  * Facebook Lead Ads webhook payload structure
@@ -107,6 +125,9 @@ export async function POST(req: NextRequest) {
         { status: 405 }
       );
     }
+
+    // Get authenticated PocketBase instance
+    const pb = await getAuthenticatedPB();
 
     // Parse webhook payload
     const payload = await req.json() as FacebookLeadAdsPayload;
