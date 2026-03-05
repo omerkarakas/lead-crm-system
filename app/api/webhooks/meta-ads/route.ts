@@ -111,6 +111,17 @@ export async function POST(req: NextRequest) {
     // Parse webhook payload
     const payload = await req.json() as FacebookLeadAdsPayload;
 
+    // Log incoming webhook (sanitized, no PII)
+    console.log(JSON.stringify({
+      event: 'meta_ads_webhook',
+      leadgen_id: payload.leadgen_id,
+      adgroup_id: payload.adgroup_id,
+      form_id: payload.form_id,
+      created_time: payload.created_time,
+      field_count: payload.field_data?.length || 0,
+      status: 'received',
+    }));
+
     // Basic validation - check required fields
     if (!payload.leadgen_id || !payload.field_data || !Array.isArray(payload.field_data)) {
       console.error('[Meta Ads Webhook] Invalid payload: missing leadgen_id or field_data');
@@ -123,6 +134,22 @@ export async function POST(req: NextRequest) {
     // Transform payload to lead data
     const { name, phone, email, company, website, message, source, utmParams } =
       transformFacebookPayload(payload);
+
+    // Log transformation results (without PII)
+    console.log(JSON.stringify({
+      event: 'meta_ads_webhook',
+      leadgen_id: payload.leadgen_id,
+      transformation: {
+        has_name: !!name,
+        has_phone: !!phone,
+        has_email: !!email,
+        has_company: !!company,
+        source,
+        utm_source: utmParams.utm_source,
+        utm_medium: utmParams.utm_medium,
+      },
+      status: 'transformed',
+    }));
 
     // Validate required fields
     if (!name || !phone) {
@@ -150,7 +177,7 @@ export async function POST(req: NextRequest) {
 
     console.log('[Meta Ads Webhook] Lead processed:', { id: lead.id, action });
 
-    // Log successful processing
+    // Log successful processing with full context
     console.log(JSON.stringify({
       event: 'meta_ads_webhook',
       leadgen_id: payload.leadgen_id,
@@ -166,11 +193,13 @@ export async function POST(req: NextRequest) {
     }, { status: action === 'created' ? 201 : 200 });
 
   } catch (error) {
+    // Log errors with full context for debugging
     console.error('[Meta Ads Webhook] Error:', error);
     console.log(JSON.stringify({
       event: 'meta_ads_webhook',
       status: 'error',
       error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
     }));
 
     // Return 200 OK to prevent Facebook retries on server errors
