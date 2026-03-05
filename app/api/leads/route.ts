@@ -69,109 +69,136 @@ export async function GET(request: NextRequest) {
 }
 
 /**
+ * Create or update lead helper function
+ * Consolidates duplicate detection and handling logic for use across public form and webhooks
+ *
+ * @param data - Lead creation data with optional UTM params
+ * @param pb - Optional PocketBase instance (creates own if not provided)
+ * @returns Object with lead and action ('created' | 'updated')
+ */
+export async function createOrUpdateLead(
+  data: CreateLeadDto & {
+    utm_source?: string;
+    utm_medium?: string;
+    utm_campaign?: string;
+    utm_content?: string;
+    utm_term?: string;
+    utm_timestamp?: string;
+  },
+  pb?: any
+): Promise<{ lead: Lead; action: 'created' | 'updated' }> {
+  const pocketbase = pb || await getServerPb();
+  const userId = pocketbase.authStore.model?.id;
+
+  // Extract UTM parameters
+  const utmParams = {
+    utm_source: data.utm_source,
+    utm_medium: data.utm_medium,
+    utm_campaign: data.utm_campaign,
+    utm_content: data.utm_content,
+    utm_term: data.utm_term,
+    utm_timestamp: data.utm_timestamp,
+  };
+
+  // Check if any UTM params are present, add timestamp if not provided
+  const hasUtmParams = Object.values(utmParams).some(v => v !== undefined && v !== '');
+  if (hasUtmParams && !utmParams.utm_timestamp) {
+    utmParams.utm_timestamp = new Date().toISOString();
+  }
+
+  // Check for duplicate lead (by phone OR email)
+  let duplicateLead: Lead | null = null;
+  const filterParts: string[] = [];
+
+  if (data.phone) {
+    filterParts.push(`phone = "${data.phone}"`);
+  }
+  if (data.email) {
+    filterParts.push(`email = "${data.email}"`);
+  }
+
+  if (filterParts.length > 0) {
+    try {
+      const duplicates = await pocketbase.collection('leads').getList(1, 1, {
+        filter: filterParts.join(' || '),
+      });
+      if (duplicates.items.length > 0) {
+        duplicateLead = duplicates.items[0] as Lead;
+      }
+    } catch (error) {
+      console.error('[createOrUpdateLead] Error checking duplicates:', error);
+    }
+  }
+
+  let lead: Lead;
+
+  if (duplicateLead) {
+    // Handle duplicate - update existing lead
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+    // Store old values in message field
+    const oldValuesNote = `TEKRAR BASVURU [${dateStr}]: Eski değerler - name: ${duplicateLead.name}, phone: ${duplicateLead.phone}, email: ${duplicateLead.email || ''}, company: ${duplicateLead.company || ''}`;
+    const existingNotes = duplicateLead.message || '';
+    const updatedNotes = existingNotes ? `${existingNotes}\n\n${oldValuesNote}` : oldValuesNote;
+
+    // Prepare update data
+    const updateData: any = {
+      name: data.name,
+      phone: data.phone,
+      email: data.email || duplicateLead.email,
+      company: data.company || duplicateLead.company,
+      website: data.website || duplicateLead.website,
+      message: updatedNotes,
+      source: data.source || 'web_form',
+      status: 're-apply',
+      qa_completed: false,
+      qa_completed_at: null,
+    };
+
+    // Add UTM params if present
+    if (hasUtmParams) {
+      updateData.utm_source = utmParams.utm_source || duplicateLead.utm_source;
+      updateData.utm_medium = utmParams.utm_medium || duplicateLead.utm_medium;
+      updateData.utm_campaign = utmParams.utm_campaign || duplicateLead.utm_campaign;
+      updateData.utm_content = utmParams.utm_content || duplicateLead.utm_content;
+      updateData.utm_term = utmParams.utm_term || duplicateLead.utm_term;
+      updateData.utm_timestamp = utmParams.utm_timestamp || duplicateLead.utm_timestamp;
+    }
+
+    lead = await pocketbase.collection('leads').update(duplicateLead.id, updateData) as Lead;
+
+    console.log('[createOrUpdateLead] Duplicate lead updated:', lead.id);
+    return { lead, action: 'updated' };
+  } else {
+    // Create new lead
+    lead = await pocketbase.collection('leads').create({
+      ...data,
+      createdBy: userId,
+      status: data.status || 'new',
+      score: data.score ?? 0,
+      quality: data.quality || 'pending',
+      tags: data.tags || [],
+      qa_sent: false,
+      qa_completed: false,
+      ...utmParams,
+    }) as Lead;
+
+    console.log('[createOrUpdateLead] New lead created:', lead.id);
+    return { lead, action: 'created' };
+  }
+}
+
+/**
  * POST /api/leads - Create a new lead or update existing duplicate
  */
 export async function POST(request: NextRequest) {
   try {
     const pb = await getServerPb();
-    const userId = pb.authStore.model?.id;
     const body = await request.json() as CreateLeadDto;
 
-    // Extract UTM parameters
-    const utmParams = {
-      utm_source: body.utm_source,
-      utm_medium: body.utm_medium,
-      utm_campaign: body.utm_campaign,
-      utm_content: body.utm_content,
-      utm_term: body.utm_term,
-      utm_timestamp: body.utm_timestamp,
-    };
-
-    // Check if any UTM params are present, add timestamp if not provided
-    const hasUtmParams = Object.values(utmParams).some(v => v !== undefined && v !== '');
-    if (hasUtmParams && !utmParams.utm_timestamp) {
-      utmParams.utm_timestamp = new Date().toISOString();
-    }
-
-    // Check for duplicate lead (by phone OR email)
-    let duplicateLead: Lead | null = null;
-    const filterParts: string[] = [];
-
-    if (body.phone) {
-      filterParts.push(`phone = "${body.phone}"`);
-    }
-    if (body.email) {
-      filterParts.push(`email = "${body.email}"`);
-    }
-
-    if (filterParts.length > 0) {
-      try {
-        const duplicates = await pb.collection<Lead>('leads').getList(1, 1, {
-          filter: filterParts.join(' || '),
-        });
-        if (duplicates.items.length > 0) {
-          duplicateLead = duplicates.items[0];
-        }
-      } catch (error) {
-        console.error('[POST /api/leads] Error checking duplicates:', error);
-      }
-    }
-
-    let lead: Lead;
-
-    if (duplicateLead) {
-      // Handle duplicate - update existing lead
-      const now = new Date();
-      const dateStr = now.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-
-      // Store old values in notes field
-      const oldValuesNote = `TEKRAR BASVURU [${dateStr}]: Eski değerler - name: ${duplicateLead.name}, phone: ${duplicateLead.phone}, email: ${duplicateLead.email || ''}, company: ${duplicateLead.company || ''}`;
-      const existingNotes = duplicateLead.message || '';
-      const updatedNotes = existingNotes ? `${existingNotes}\n\n${oldValuesNote}` : oldValuesNote;
-
-      // Prepare update data
-      const updateData: any = {
-        name: body.name,
-        phone: body.phone,
-        email: body.email || duplicateLead.email,
-        company: body.company || duplicateLead.company,
-        website: body.website || duplicateLead.website,
-        message: updatedNotes,
-        source: 'web_form',
-        status: 're-apply',
-        qa_completed: false,
-        qa_completed_at: null,
-      };
-
-      // Add UTM params if present
-      if (hasUtmParams) {
-        updateData.utm_source = utmParams.utm_source || duplicateLead.utm_source;
-        updateData.utm_medium = utmParams.utm_medium || duplicateLead.utm_medium;
-        updateData.utm_campaign = utmParams.utm_campaign || duplicateLead.utm_campaign;
-        updateData.utm_content = utmParams.utm_content || duplicateLead.utm_content;
-        updateData.utm_term = utmParams.utm_term || duplicateLead.utm_term;
-        updateData.utm_timestamp = utmParams.utm_timestamp || duplicateLead.utm_timestamp;
-      }
-
-      lead = await pb.collection('leads').update<Lead>(duplicateLead.id, updateData);
-
-      console.log('[POST /api/leads] Duplicate lead updated:', lead.id);
-    } else {
-      // Create new lead
-      lead = await pb.collection('leads').create<Lead>({
-        ...body,
-        createdBy: userId,
-        status: body.status || 'new',
-        score: body.score ?? 0,
-        quality: body.quality || 'pending',
-        tags: body.tags || [],
-        qa_sent: false,
-        qa_completed: false,
-        ...utmParams,
-      });
-
-      console.log('[POST /api/leads] New lead created:', lead.id);
-    }
+    // Use the shared createOrUpdateLead helper
+    const { lead, action } = await createOrUpdateLead(body, pb);
 
     // Trigger background poll job (fire and forget, don't await)
     setTimeout(async () => {
@@ -227,10 +254,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      action: duplicateLead ? 'updated' : 'created',
-      message: duplicateLead ? 'Lead updated (duplicate)' : 'Lead created',
+      action: action,
+      message: action === 'updated' ? 'Lead updated (duplicate)' : 'Lead created',
       lead
-    }, { status: duplicateLead ? 200 : 201 });
+    }, { status: action === 'updated' ? 200 : 201 });
   } catch (error) {
     console.error('[POST /api/leads] Error:', error);
     return NextResponse.json(
