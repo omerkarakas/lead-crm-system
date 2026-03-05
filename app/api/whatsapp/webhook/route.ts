@@ -10,7 +10,8 @@ import {
   formatLowQualityMessage,
   formatRetryMessage
 } from '@/lib/whatsapp/message-formatter';
-import { QA_CONFIG } from '@/lib/config/qa';
+import { QA_CONFIG, getBookingLink } from '@/lib/config/qa';
+import { LeadQuality } from '@/types/lead';
 
 /**
  * Green API Webhook endpoint for incoming WhatsApp messages
@@ -139,7 +140,7 @@ export async function POST(req: NextRequest) {
     const finalScore = await calculateLeadTotalScore(lead.id);
 
     // Update lead score and quality
-    const quality = finalScore >= QA_CONFIG.qualityScoreThreshold ? 'qualified' : 'pending';
+    const quality = finalScore >= QA_CONFIG.qualityScoreThreshold ? LeadQuality.QUALIFIED : LeadQuality.PENDING;
     await updateLead(lead.id, {
       total_score: finalScore,
       quality: quality,
@@ -152,7 +153,8 @@ export async function POST(req: NextRequest) {
     let responseMessage = '';
 
     if (quality === 'qualified') {
-      responseMessage = formatBookingLinkMessage(QA_CONFIG.calcomMeetingUrl);
+      const bookingLink = await getBookingLink();
+      responseMessage = formatBookingLinkMessage(bookingLink);
     } else {
       responseMessage = formatLowQualityMessage();
     }
