@@ -38,6 +38,12 @@ export interface Lead {
   qa_sent_at?: string;
   qa_completed: boolean;
   qa_completed_at?: string;
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  utm_content?: string;
+  utm_term?: string;
+  utm_timestamp?: string;
   created: string;
   updated: string;
 }
@@ -54,6 +60,12 @@ export interface CreateLeadDto {
   score?: number;
   quality?: LeadQuality;
   tags?: string[];
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  utm_content?: string;
+  utm_term?: string;
+  utm_timestamp?: string;
 }
 
 export interface UpdateLeadDto {
@@ -73,6 +85,12 @@ export interface UpdateLeadDto {
   qa_sent_at?: string;
   qa_completed?: boolean;
   qa_completed_at?: string;
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  utm_content?: string;
+  utm_term?: string;
+  utm_timestamp?: string;
 }
 
 export interface Note {
