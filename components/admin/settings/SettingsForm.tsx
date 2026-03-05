@@ -39,6 +39,10 @@ const SERVICE_FIELDS: Record<
     { key: 'from_email', label: 'From Email', type: 'text', placeholder: 'bildirim@mokadijital.com' },
     { key: 'from_name', label: 'From Name', type: 'text', placeholder: 'Moka CRM' },
   ],
+  proposal_notifications: [
+    { key: 'enabled', label: 'Bildirimler Aktif', type: 'text', placeholder: 'true' },
+    { key: 'sales_phones', label: 'Satış Ekibi Telefonları', type: 'text', placeholder: '905551234567,905551234568' },
+  ],
 };
 
 export function SettingsForm({

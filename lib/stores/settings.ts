@@ -87,11 +87,18 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     }
   },
 
-  testConnection: async (service: ServiceName) => {
+  testConnection: async (service: ServiceName, message?: string) => {
     set({ loading: true, error: null });
     try {
-      const response = await fetch(`/api/settings/test/${service}`, {
+      // Use special endpoint for proposal notifications
+      const endpoint = service === 'proposal_notifications'
+        ? '/api/settings/test/proposal-notification'
+        : `/api/settings/test/${service}`;
+
+      const response = await fetch(endpoint, {
         method: 'POST',
+        headers: message ? { 'Content-Type': 'application/json' } : undefined,
+        body: message ? JSON.stringify({ message }) : undefined,
       });
 
       if (!response.ok) {

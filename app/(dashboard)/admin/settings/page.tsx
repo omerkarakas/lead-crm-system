@@ -76,6 +76,7 @@ export default function AdminSettingsPage() {
   const greenApiSettings = useServiceSettings('green_api');
   const calcomSettings = useServiceSettings('calcom');
   const resendSettings = useServiceSettings('resend');
+  const proposalNotificationsSettings = useServiceSettings('proposal_notifications');
 
   return (
     <div className="space-y-6">
@@ -106,6 +107,7 @@ export default function AdminSettingsPage() {
           <TabsTrigger value="green_api">Green API (WhatsApp)</TabsTrigger>
           <TabsTrigger value="calcom">Cal.com</TabsTrigger>
           <TabsTrigger value="resend">Resend (Email)</TabsTrigger>
+          <TabsTrigger value="proposal_notifications">Teklif Bildirimleri</TabsTrigger>
         </TabsList>
 
         <TabsContent value="green_api" className="mt-4">
@@ -144,6 +146,19 @@ export default function AdminSettingsPage() {
             isTesting={testingService === 'resend'}
             onUpdate={handleUpdate}
             onTest={() => handleTest('resend')}
+          />
+        </TabsContent>
+
+        <TabsContent value="proposal_notifications" className="mt-4">
+          <SettingsForm
+            serviceName="proposal_notifications"
+            serviceLabel="Teklif Bildirimleri"
+            serviceDescription="Teklif cevapları için satış ekibine WhatsApp bildirimleri"
+            settings={proposalNotificationsSettings}
+            testResult={null}
+            isTesting={testingService === 'proposal_notifications'}
+            onUpdate={handleUpdate}
+            onTest={() => handleTest('proposal_notifications')}
           />
         </TabsContent>
       </Tabs>
