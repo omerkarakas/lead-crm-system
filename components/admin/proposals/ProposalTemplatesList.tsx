@@ -52,7 +52,7 @@ export function ProposalTemplatesList({
   onRestore,
   onToggleActive,
 }: ProposalTemplatesListProps) {
-  const [searchQuery, setSearchQuery] =('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [showArchived, setShowArchived] = useState(false);
 
   const filteredTemplates = (showArchived ? archivedTemplates : templates).filter(

@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuthStore } from '@/lib/stores/auth';
-import { canManageUsers, canManageQAQuestions, canManageEmailTemplates, canManageSettings } from '@/lib/utils/permissions';
+import { canManageUsers, canManageQAQuestions, canManageEmailTemplates, canManageSettings, canManageProposalTemplates } from '@/lib/utils/permissions';
 import { Role } from '@/types/user';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -16,6 +16,7 @@ import {
   MessageSquare,
   Mail,
   Settings,
+  FileText,
 } from 'lucide-react';
 import { useState } from 'react';
 import Link from 'next/link';
@@ -46,6 +47,12 @@ const navItems: NavItem[] = [
     label: 'E-posta Şablonları',
     icon: <Mail className="h-4 w-4" />,
     permission: canManageEmailTemplates,
+  },
+  {
+    href: '/admin/proposal-templates',
+    label: 'Teklif Şablonları',
+    icon: <FileText className="h-4 w-4" />,
+    permission: canManageProposalTemplates,
   },
   {
     href: '/admin/settings',

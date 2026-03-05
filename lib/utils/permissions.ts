@@ -20,6 +20,9 @@ export const PERMISSIONS = {
   // Email templates management
   CAN_MANAGE_EMAIL_TEMPLATES: 'can_manage_email_templates',
 
+  // Proposal templates management
+  CAN_MANAGE_PROPOSAL_TEMPLATES: 'can_manage_proposal_templates',
+
   // Settings management
   CAN_MANAGE_SETTINGS: 'can_manage_settings',
 } as const;
@@ -35,6 +38,7 @@ export const ROLE_PERMISSIONS: Record<Role, string[]> = {
     PERMISSIONS.CAN_MANAGE_TAGS,
     PERMISSIONS.CAN_MANAGE_QA_QUESTIONS,
     PERMISSIONS.CAN_MANAGE_EMAIL_TEMPLATES,
+    PERMISSIONS.CAN_MANAGE_PROPOSAL_TEMPLATES,
     PERMISSIONS.CAN_MANAGE_SETTINGS,
   ],
   [Role.SALES]: [
@@ -94,4 +98,8 @@ export function canManageEmailTemplates(role: Role): boolean {
 
 export function canManageSettings(role: Role): boolean {
   return hasPermission(role, PERMISSIONS.CAN_MANAGE_SETTINGS);
+}
+
+export function canManageProposalTemplates(role: Role): boolean {
+  return hasPermission(role, PERMISSIONS.CAN_MANAGE_PROPOSAL_TEMPLATES);
 }
