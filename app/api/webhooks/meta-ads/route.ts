@@ -185,6 +185,7 @@ export async function POST(req: NextRequest) {
 
     // Use shared lead creation/update logic from /api/leads
     // Transform Facebook payload to CreateLeadDto format
+    // Note: Explicitly not setting createdBy - webhooks create leads without user attribution
     const leadData: any = {
       name,
       phone,
@@ -193,6 +194,8 @@ export async function POST(req: NextRequest) {
       website,
       message,
       source,
+      // createdBy: intentionally NOT set for webhook-created leads
+      // This avoids relation validation issues
     };
 
     // Only add UTM params that have values (avoid empty strings)

@@ -1,1 +1,3 @@
-{}
+{
+  "/api/webhooks/meta-ads/route": "app/api/webhooks/meta-ads/route.js"
+}
