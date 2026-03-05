@@ -185,7 +185,6 @@ export async function POST(req: NextRequest) {
 
     // Use shared lead creation/update logic from /api/leads
     // Transform Facebook payload to CreateLeadDto format
-    // Note: Explicitly not setting createdBy - webhooks create leads without user attribution
     const leadData: any = {
       name,
       phone,
@@ -194,8 +193,6 @@ export async function POST(req: NextRequest) {
       website,
       message,
       source,
-      // createdBy: intentionally NOT set for webhook-created leads
-      // This avoids relation validation issues
     };
 
     // Only add UTM params that have values (avoid empty strings)
@@ -203,7 +200,9 @@ export async function POST(req: NextRequest) {
       if (value) leadData[key] = value;
     });
 
-    const { lead, action } = await createOrUpdateLead(leadData, pb);
+    // DON'T pass pb instance - let createOrUpdateLead get unauthenticated instance
+    // This ensures createdBy remains undefined and relation validation passes
+    const { lead, action } = await createOrUpdateLead(leadData);
 
     console.log('[Meta Ads Webhook] Lead processed:', { id: lead.id, action });
 
