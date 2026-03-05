@@ -188,9 +188,16 @@ export function AppointmentList({
               {formatAppointmentDateTime(appointment.scheduled_at)}
             </p>
           </div>
-          <Badge variant={STATUS_VARIANTS[appointment.status]} className="font-medium">
-            {STATUS_LABELS[appointment.status]}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant={STATUS_VARIANTS[appointment.status]} className="font-medium">
+              {STATUS_LABELS[appointment.status]}
+            </Badge>
+            {appointment.expand?.lead_id?.offer_response && appointment.expand.lead_id.offer_response !== 'cevap_bekleniyor' && (
+              <Badge variant={appointment.expand.lead_id.offer_response === 'kabul' ? 'default' : 'destructive'} className="text-xs">
+                {appointment.expand.lead_id.offer_response === 'kabul' ? 'Teklif Kabul' : 'Teklif Red'}
+              </Badge>
+            )}
+          </div>
         </div>
 
         <div className="space-y-2 text-sm">
@@ -271,9 +278,16 @@ export function AppointmentList({
                     </TableCell>
                     <TableCell>{lead?.phone || '-'}</TableCell>
                     <TableCell>
-                      <Badge variant={STATUS_VARIANTS[appointment.status]} className="font-medium">
-                        {STATUS_LABELS[appointment.status]}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={STATUS_VARIANTS[appointment.status]} className="font-medium">
+                          {STATUS_LABELS[appointment.status]}
+                        </Badge>
+                        {lead?.offer_response && lead.offer_response !== 'cevap_bekleniyor' && (
+                          <Badge variant={lead.offer_response === 'kabul' ? 'default' : 'destructive'} className="text-xs">
+                            {lead.offer_response === 'kabul' ? 'Teklif Kabul' : 'Teklif Red'}
+                          </Badge>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
                       {appointment.location ? (

@@ -56,10 +56,25 @@ export function LeadInfo({ lead }: LeadInfoProps) {
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>Müşteri Adayı Bilgileri</CardTitle>
-          <Badge variant={STATUS_VARIANTS[lead.status]} className="font-medium">
-            {STATUS_LABELS[lead.status]}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant={STATUS_VARIANTS[lead.status]} className="font-medium">
+              {STATUS_LABELS[lead.status]}
+            </Badge>
+            {lead.offer_response && lead.offer_responded_at && (
+              <Badge variant="outline" className="text-xs">
+                {lead.offer_response === 'kabul' ? 'Teklif Kabul' : 'Teklif Red'}
+              </Badge>
+            )}
+          </div>
         </div>
+        {/* Auto-update reason for status */}
+        {(lead.status === LeadStatus.CUSTOMER || lead.status === LeadStatus.LOST) &&
+         lead.offer_response && (
+          <p className="text-xs text-muted-foreground mt-2">
+            {lead.offer_response === 'kabul' ? '(Teklif kabul edildi)' : '(Teklif reddedildi)'}
+            {lead.offer_responded_at && ` • ${new Date(lead.offer_responded_at).toLocaleDateString('tr-TR')}`}
+          </p>
+        )}
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Contact Information */}
