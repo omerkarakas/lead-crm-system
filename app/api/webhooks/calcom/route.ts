@@ -7,7 +7,7 @@ import {
   updateAppointmentStatus,
   sendAppointmentConfirmation
 } from '@/lib/api/appointments';
-import type { AppointmentStatus, CalcomBookingPayload } from '@/types/appointment';
+import { AppointmentStatus, AppointmentSource, type CalcomBookingPayload } from '@/types/appointment';
 
 /**
  * Cal.com Webhook endpoint for booking events
@@ -49,11 +49,11 @@ export async function POST(req: NextRequest) {
     const duration = Math.round((endDateTime.getTime() - startDateTime.getTime()) / 60000);
 
     // Determine appointment status from Cal.com status
-    let appointmentStatus: AppointmentStatus = 'scheduled';
+    let appointmentStatus: AppointmentStatus = AppointmentStatus.SCHEDULED;
     if (calcomStatus === 'CANCELLED') {
-      appointmentStatus = 'cancelled';
+      appointmentStatus = AppointmentStatus.CANCELLED;
     } else if (calcomStatus === 'RESCHEDULED') {
-      appointmentStatus = 'rescheduled';
+      appointmentStatus = AppointmentStatus.RESCHEDULED;
     }
 
     // Check for duplicate: Call getAppointmentByCalcomId(bookingId)
@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
         location: location || 'Online',
         meeting_url: (metadata as any).meetingUrl || null,
         status: appointmentStatus,
-        source: 'calcom',
+        source: AppointmentSource.CALCOM,
         notes: `Attendee: ${name} (${email}${phone ? ', ' + phone : ''})`
       });
 
@@ -121,7 +121,7 @@ export async function POST(req: NextRequest) {
         location: location || 'Online',
         meeting_url: (metadata as any).meetingUrl || null,
         status: appointmentStatus,
-        source: 'calcom',
+        source: AppointmentSource.CALCOM,
         notes: `FAILED MATCH - Attendee: ${name} (${email}${phone ? ', ' + phone : ''})`
       });
 

@@ -22,7 +22,7 @@ export default function AdminQAPage() {
   const [builderOpen, setBuilderOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<QAQuestion | null>(null);
   const [welcomeConfigOpen, setWelcomeConfigOpen] = useState(false);
-  const [welcomeMessage, setWelcomeMessage] = useState(QA_CONFIG.welcomeMessage);
+  const [welcomeMessage, setWelcomeMessage] = useState<string>(QA_CONFIG.welcomeMessage);
 
   useEffect(() => {
     checkAuth();

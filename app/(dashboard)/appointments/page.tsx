@@ -6,7 +6,8 @@ import { useAuthStore } from '@/lib/stores/auth';
 import { Appointment, AppointmentStatus } from '@/types/appointment';
 import { Button } from '@/components/ui/button';
 import { Loader2, CalendarPlus } from 'lucide-react';
-import { AppointmentFilters, AppointmentFilters as FiltersType } from '@/components/appointments/AppointmentFilters';
+import type { AppointmentFilters } from '@/components/appointments/AppointmentFilters';
+import { AppointmentFilters as AppointmentFiltersComponent } from '@/components/appointments/AppointmentFilters';
 import { AppointmentList } from '@/components/appointments/AppointmentList';
 import { AppointmentDetailModal } from '@/components/appointments/AppointmentDetailModal';
 import { AppointmentModal } from '@/components/appointments/AppointmentModal';
@@ -26,7 +27,7 @@ export default function AppointmentsPage() {
   const [totalItems, setTotalItems] = useState(0);
 
   // Filter state
-  const [filters, setFilters] = useState<FiltersType['AppointmentFilters']>({});
+  const [filters, setFilters] = useState<AppointmentFilters>({});
   const [isFilterInitialized, setIsFilterInitialized] = useState(false);
 
   // Detail modal state
@@ -49,7 +50,7 @@ export default function AppointmentsPage() {
     const searchParam = searchParams.get('search');
     const pageParam = searchParams.get('page');
 
-    const newFilters: FiltersType['AppointmentFilters'] = {};
+    const newFilters: AppointmentFilters = {};
 
     if (startParam) newFilters.startDate = startParam;
     if (endParam) newFilters.endDate = endParam;
@@ -136,7 +137,7 @@ export default function AppointmentsPage() {
     }
   }, [filters, currentPage, isFilterInitialized, router]);
 
-  const handleFilterChange = useCallback((newFilters: FiltersType['AppointmentFilters']) => {
+  const handleFilterChange = useCallback((newFilters: AppointmentFilters) => {
     setFilters(newFilters);
     setCurrentPage(1); // Reset to first page when filters change
   }, []);
@@ -265,7 +266,7 @@ export default function AppointmentsPage() {
       </div>
 
       {/* Filters */}
-      <AppointmentFilters
+      <AppointmentFiltersComponent
         onFilterChange={handleFilterChange}
         loading={loading}
         initialFilters={filters}
@@ -281,7 +282,7 @@ export default function AppointmentsPage() {
               <button
                 onClick={() => {
                   const newFilters = { ...filters };
-                  delete newFilters[filter.key as keyof FiltersType['AppointmentFilters']];
+                  delete newFilters[filter.key as keyof AppointmentFilters];
                   handleFilterChange(newFilters);
                 }}
                 className="ml-1 hover:text-destructive"

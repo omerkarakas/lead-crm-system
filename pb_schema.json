@@ -737,6 +737,61 @@
           }
         }
       ]
+    },
+    {
+      "id": "app_settings_collection",
+      "name": "app_settings",
+      "type": "base",
+      "schema": [
+        {
+          "id": "settings_service_name",
+          "name": "service_name",
+          "type": "select",
+          "required": true,
+          "options": {
+            "values": ["green_api", "calcom", "resend"],
+            "maxSelect": 1
+          }
+        },
+        {
+          "id": "settings_setting_key",
+          "name": "setting_key",
+          "type": "text",
+          "required": true,
+          "options": {
+            "min": 1,
+            "max": 100
+          }
+        },
+        {
+          "id": "settings_setting_value",
+          "name": "setting_value",
+          "type": "text",
+          "required": true,
+          "options": {
+            "min": 1,
+            "max": 5000
+          }
+        },
+        {
+          "id": "settings_description",
+          "name": "description",
+          "type": "text",
+          "required": false,
+          "options": {
+            "min": 1,
+            "max": 500
+          }
+        },
+        {
+          "id": "settings_is_active",
+          "name": "is_active",
+          "type": "bool",
+          "required": true,
+          "options": {},
+          "default": true
+        }
+      ]
     }
   ]
 }

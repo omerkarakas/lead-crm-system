@@ -80,7 +80,7 @@ function transformFacebookPayload(payload: FacebookLeadAdsPayload) {
     name,
     phone,
     email,
-    company,
+    company: company || name.split(' ')[0] + ' (Facebook)', // Default to name if company missing
     website,
     message,
     source: LeadSource.WEB_FORM,

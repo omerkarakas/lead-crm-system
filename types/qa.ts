@@ -18,6 +18,7 @@ export interface CreateQAQuestionDto {
 }
 
 export interface UpdateQAQuestionDto {
+  id: string;
   question_text?: string;
   options?: string[];
   points?: Record<string, number>;

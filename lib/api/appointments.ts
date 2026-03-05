@@ -217,6 +217,7 @@ export async function fetchAppointments(params: {
   status?: AppointmentStatus;
   startDate?: string;
   endDate?: string;
+  search?: string;
   sort?: string;
 } = {}): Promise<{
   page: number;
@@ -232,6 +233,7 @@ export async function fetchAppointments(params: {
     status,
     startDate,
     endDate,
+    search,
     sort = '-scheduled_at'
   } = params;
 
@@ -253,6 +255,11 @@ export async function fetchAppointments(params: {
   }
   if (endDate) {
     filterParts.push(`scheduled_at <= "${endDate}"`);
+  }
+
+  // Search filter (by lead name via relation)
+  if (search) {
+    filterParts.push(`lead_id.name ~ "${search}" || lead_id.phone ~ "${search}"`);
   }
 
   const options: any = { sort };

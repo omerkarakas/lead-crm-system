@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuthStore } from '@/lib/stores/auth';
-import { canManageUsers, canManageQAQuestions, canManageEmailTemplates } from '@/lib/utils/permissions';
+import { canManageUsers, canManageQAQuestions, canManageEmailTemplates, canManageSettings } from '@/lib/utils/permissions';
 import { Role } from '@/types/user';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -15,6 +15,7 @@ import {
   Megaphone,
   MessageSquare,
   Mail,
+  Settings,
 } from 'lucide-react';
 import { useState } from 'react';
 import Link from 'next/link';
@@ -45,6 +46,12 @@ const navItems: NavItem[] = [
     label: 'E-posta Şablonları',
     icon: <Mail className="h-4 w-4" />,
     permission: canManageEmailTemplates,
+  },
+  {
+    href: '/admin/settings',
+    label: 'Ayarlar',
+    icon: <Settings className="h-4 w-4" />,
+    permission: canManageSettings,
   },
   {
     href: '/users',

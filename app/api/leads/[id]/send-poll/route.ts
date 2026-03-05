@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerPb } from '@/lib/pocketbase/server';
 import { fetchActiveQuestions } from '@/lib/api/qa';
+import { fetchLead } from '@/lib/api/leads';
 import type { Lead } from '@/types/lead';
 
 // Import poll message formatter

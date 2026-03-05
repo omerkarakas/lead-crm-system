@@ -76,7 +76,7 @@ export function QuestionBuilder({
       };
 
       if (isEditing && editingQuestion) {
-        await onSave(editingQuestion.id, data);
+        await onSave({ ...data, id: editingQuestion.id } as UpdateQAQuestionDto);
       } else {
         await onSave(data);
       }
