@@ -10,19 +10,19 @@ See: .planning/PROJECT.md (updated 2025-03-01)
 ## Current Position
 
 Phase: 4.1 of 9 (Phase 4.1: Lead Capture & Pipeline Automation - INSERTED)
-Plan: 01 of 4 (in progress)
+Plan: 02 of 4 (in progress)
 Status: Wave 1 execution
-Last activity: 2026-03-05 — Completed 04.1-01: Add RE_APPLY status for duplicate leads
+Last activity: 2026-03-05 — Completed 04.1-02: Booking link configuration
 
-Progress: [███████░░░] 50% (4/9 phases complete, 22/26 plans targeted)
+Progress: [███████░░░] 50% (4/9 phases complete, 23/26 plans targeted)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 22
+- Total plans completed: 23
 - Average duration: 11 min
-- Total execution time: 2 hours 36 min
+- Total execution time: 2 hours 39 min
 
 **By Phase:**
 
@@ -150,6 +150,9 @@ Recent decisions affecting current work:
 | Active filter badges | Individual clear buttons for each active filter | 2026-03-04 |
 | Appointment history tab | Randevular tab on lead detail page with 30s auto-refresh | 2026-03-04 |
 | RE_APPLY lead status | New status value for tracking duplicate leads from Meta Ads | 2026-03-05 |
+| Configurable booking link | Booking link URL stored in app_settings collection, retrieved via async function | 2026-03-05 |
+| Admin settings UI | Settings page with dynamic forms for service configuration (Green API, Cal.com, Resend) | 2026-03-05 |
+| In-memory config caching | Booking link cached to avoid repeated database queries | 2026-03-05 |
 
 ### Pending Todos
 
@@ -181,9 +184,9 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-05 (Phase 4.1 Plan 01 completed)
-Stopped at: Completed 04.1-01 - Add RE_APPLY status
+Last session: 2026-03-05 (Phase 4.1 Plan 02 completed)
+Stopped at: Completed 04.1-02 - Booking link configuration
 Resume file: None
 Dev server: Running at http://localhost:3000
 
-**Note**: Phase 4.1 in progress - RE_APPLY status added for Meta Ads duplicate lead tracking.
+**Note**: Phase 4.1 in progress - Booking link now configurable via admin settings.
