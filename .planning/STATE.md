@@ -5,24 +5,24 @@
 See: .planning/PROJECT.md (updated 2025-03-01)
 
 **Core value:** Lead-to-Customer dönüşümünü otomatize eden tek platform.
-**Current focus:** Phase 4 - Appointments
+**Current focus:** Phase 4.2 - Proposal Management
 
 ## Current Position
 
-Phase: 4.1 of 9 (Phase 4.1: Lead Capture & Pipeline Automation - INSERTED)
-Plan: 04 of 4 (checkpoint pending)
-Status: Wave 3 execution
-Last activity: 2026-03-05 — Wave 3 tasks complete, awaiting checkpoint verification
+Phase: 4.2 of 9 (Phase 4.2: Proposal Management - INSERTED)
+Plan: TBD (not yet planned)
+Status: Phase 4.1 complete, ready for next phase
+Last activity: 2026-03-05 — Phase 4.1 verified (18/18 must-haves passed)
 
-Progress: [███████░░░] 50% (4/9 phases complete, 24/26 plans targeted)
+Progress: [████████░░] 56% (5/9 phases complete, 28/30 plans targeted)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 24
+- Total plans completed: 28
 - Average duration: 11 min
-- Total execution time: 2 hours 42 min
+- Total execution time: 3 hours 5 min
 
 **By Phase:**
 
@@ -32,6 +32,7 @@ Progress: [███████░░░] 50% (4/9 phases complete, 24/26 plans
 | 02-whatsapp-qualification | 4 of 4    | 62 min    | 15.5 min  |
 | 03-email-communication   | 3 of 3    | 17 min    | 5.7 min  |
 | 04-appointments          | 4 of 4    | 20 min    | 5 min    |
+| 04.1-lead-capture        | 4 of 4    | 46 min    | 11.5 min |
 
 **Recent Trend:**
 
@@ -174,8 +175,8 @@ None yet.
 
 - **Phase 4 was approved without testing** — Need to verify Lead Scoring, WhatsApp, and Cal.com integrations before Phase 5
 - Previous concern resolved: Auth redirect issue fixed with server-side token validation
-- **PocketBase API rules configuration required** — Meta Ads webhook needs unauthenticated access or admin credentials to create leads
-- **PocketBase migrations not yet applied** — JS migrations created (UTM fields, message field, email optional) but need server restart to apply
+- Previous concern resolved: PocketBase API rules configuration - createdBy nonempty property removed
+- Previous concern resolved: PocketBase migrations applied (UTM fields, message field, email optional)
 - Notes stored in lead record - may need separate notes collection for Phase 6 (activity timeline)
 - No file upload capability yet (needed for lead attachments in future phases)
 - Tag autocomplete queries all leads - may need optimization for large datasets
@@ -194,9 +195,9 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-05 (Phase 4.1 Plan 04 checkpoint pending)
-Stopped at: Completed 04.1-04 tasks, awaiting checkpoint verification (Meta Ads webhook)
+Last session: 2026-03-05 (Phase 4.1 complete)
+Stopped at: Phase 4.1 verification passed (18/18 must-haves)
 Resume file: None
-Dev server: Running at http://localhost:3003
+Dev server: Running at http://localhost:3001
 
-**Note**: Phase 4.1 Wave 3 complete - Meta Ads webhook implemented with shared duplicate handling logic. Awaiting PocketBase configuration and checkpoint verification before proceeding to Phase 4.2.
+**Note**: Phase 4.1 complete - Public lead form, booking link settings, and Meta Ads webhook all implemented and verified. Ready to proceed to Phase 4.2 (Proposal Management).
