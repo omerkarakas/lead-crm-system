@@ -2,14 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { updateProposalResponse } from '@/lib/api/proposals';
 import { getProposalByToken } from '@/lib/api/proposals';
 import { updateLeadStatusBasedOnProposal } from '@/lib/utils/status';
-import pb from '@/lib/pocketbase';
-import { sendWhatsAppMessage, logWhatsAppMessage } from '@/lib/api/whatsapp';
+import { sendProposalResponseNotification } from '@/lib/api/notifications';
+import { getServerPb } from '@/lib/pocketbase/server';
+import type { ProposalResponse } from '@/types/proposal';
 
 /**
  * POST /api/proposals/respond
  * Handle proposal response (accept/reject)
  */
 export async function POST(request: NextRequest) {
+  const pb = await getServerPb();
+
   try {
     const body = await request.json();
 
@@ -48,7 +51,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Update proposal response
-    await updateProposalResponse(pb, body.token, body.response as any, body.comment);
+    const updatedProposal = await updateProposalResponse(
+      pb,
+      body.token,
+      body.response as ProposalResponse,
+      body.comment
+    );
 
     // Update lead status immediately based on proposal response (per CONTEXT)
     const statusUpdate = await updateLeadStatusBasedOnProposal(pb, proposal.lead_id);
@@ -58,35 +66,28 @@ export async function POST(request: NextRequest) {
     const lead = await pb.collection('leads').getOne(proposal.lead_id);
 
     // Send notification to sales team via WhatsApp
-    const responseText = body.response === 'kabul' ? 'kabul etti' : 'reddetti';
-    const notificationMessage = `🔔 Teklif ${responseText}!\n\nMüşteri: ${lead.name}\nTelefon: ${lead.phone}\nCevap: ${body.response === 'kabul' ? 'Kabul' : 'Red'}${body.comment ? `\nGerekçe: ${body.comment}` : ''}`;
+    const notificationResult = await sendProposalResponseNotification(
+      pb,
+      updatedProposal,
+      lead
+    );
 
-    // Send to sales team WhatsApp number (configure this in env)
-    const salesPhone = process.env.SALES_WHATSAPP_NUMBER || '905551234567';
-    const chatId = salesPhone.replace(/\D/g, '') + '@c.us';
-
-    try {
-      const whatsappResult = await sendWhatsAppMessage(chatId, notificationMessage);
-
-      if (whatsappResult) {
-        await logWhatsAppMessage({
-          lead_id: proposal.lead_id,
-          direction: 'outgoing',
-          message_text: notificationMessage,
-          message_type: 'info',
-          status: 'sent',
-          sent_at: new Date().toISOString(),
-          green_api_id: whatsappResult.idMessage,
-        });
-      }
-    } catch (whatsappError) {
-      // Log but don't fail the response if WhatsApp fails
-      console.error('Failed to send WhatsApp notification:', whatsappError);
-    }
+    // Log response for audit trail
+    console.log('[Proposal Response] Recorded:', {
+      proposal_id: proposal.id,
+      lead_id: proposal.lead_id,
+      response: body.response,
+      comment: body.comment,
+      notified_count: notificationResult.notified_count,
+      notification_errors: notificationResult.errors,
+    });
 
     return NextResponse.json({
       success: true,
       message: 'Proposal response recorded',
+      proposal_id: proposal.id,
+      lead_id: proposal.lead_id,
+      notified_count: notificationResult.notified_count,
       statusUpdate: statusUpdate.updated ? {
         previousStatus: statusUpdate.previousStatus,
         newStatus: statusUpdate.newStatus,
