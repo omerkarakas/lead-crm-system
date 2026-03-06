@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerPb } from '@/lib/pocketbase/server';
 import type { Lead } from '@/types/lead';
+import { canViewAllLeads, canEditLeads, canDeleteLeads } from '@/lib/utils/permissions';
 
 /**
  * GET /api/leads/[id] - Get a single lead by ID
@@ -12,6 +13,15 @@ export async function GET(
   try {
     const { id } = await params;
     const pb = await getServerPb();
+    const user = pb.authStore.model as any;
+
+    // Check if user has permission to view leads
+    if (!user || !canViewAllLeads(user?.role)) {
+      return NextResponse.json(
+        { error: 'Forbidden - You do not have permission to view leads' },
+        { status: 403 }
+      );
+    }
 
     const lead = await pb.collection<Lead>('leads').getOne<Lead>(id);
 
@@ -39,7 +49,16 @@ export async function PUT(
   try {
     const { id } = await params;
     const pb = await getServerPb();
+    const user = pb.authStore.model as any;
     const body = await request.json();
+
+    // Check if user has permission to edit leads
+    if (!user || !canEditLeads(user?.role)) {
+      return NextResponse.json(
+        { error: 'Forbidden - You do not have permission to edit leads' },
+        { status: 403 }
+      );
+    }
 
     const lead = await pb.collection('leads').update<Lead>(id, body);
 
@@ -71,6 +90,15 @@ export async function DELETE(
   try {
     const { id } = await params;
     const pb = await getServerPb();
+    const user = pb.authStore.model as any;
+
+    // Check if user has permission to delete leads (admin only)
+    if (!user || !canDeleteLeads(user?.role)) {
+      return NextResponse.json(
+        { error: 'Forbidden - You do not have permission to delete leads' },
+        { status: 403 }
+      );
+    }
 
     await pb.collection('leads').delete(id);
 

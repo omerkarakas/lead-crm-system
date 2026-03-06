@@ -32,7 +32,9 @@ export async function sendProposalViaWhatsApp(
   try {
     // Fetch lead and template
     const lead = await pb.collection('leads').getOne<Lead>(leadId);
-    const template = await pb.collection('proposal_templates').getOne<ProposalTemplate>(templateId);
+    const template = await pb.collection('proposal_templates').getOne<ProposalTemplate>(templateId, {
+      filter: 'is_deleted = false',
+    });
 
     // Check if template is active
     if (!template.is_active) {

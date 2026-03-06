@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerPb } from '@/lib/pocketbase/server';
 import type { CreateAppointmentDto } from '@/types/appointment';
 import type { Appointment } from '@/types/appointment';
+import { canViewAllLeads } from '@/lib/utils/permissions';
 
 /**
  * GET /api/appointments - Get all appointments with filtering
@@ -9,6 +10,15 @@ import type { Appointment } from '@/types/appointment';
 export async function GET(req: NextRequest) {
   try {
     const pb = await getServerPb();
+    const user = pb.authStore.model as any;
+
+    // Check if user has permission to view appointments (same as viewing leads)
+    if (!user || !canViewAllLeads(user?.role)) {
+      return NextResponse.json(
+        { error: 'Forbidden - You do not have permission to view appointments' },
+        { status: 403 }
+      );
+    }
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get('page') || '1');
     const perPage = parseInt(searchParams.get('perPage') || '50');
@@ -74,6 +84,16 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const pb = await getServerPb();
+    const user = pb.authStore.model as any;
+
+    // Check if user is authenticated (all authenticated roles can create appointments)
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Authentication required' },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json() as CreateAppointmentDto;
 
     console.log('[POST /api/appointments] Request body:', body);

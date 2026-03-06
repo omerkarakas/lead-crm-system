@@ -21,7 +21,6 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
-import { getActiveProposalTemplates } from '@/lib/api/proposal-templates';
 import type { ProposalTemplate } from '@/types/proposal';
 
 interface ProposalDialogProps {
@@ -61,7 +60,13 @@ export function ProposalDialog({
     setLoading(true);
     setError('');
     try {
-      const activeTemplates = await getActiveProposalTemplates();
+      // Fetch from API route instead of directly from PocketBase
+      const response = await fetch('/api/proposal-templates');
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Şablonlar yüklenirken hata oluştu');
+      }
+      const activeTemplates = await response.json();
       setTemplates(activeTemplates);
       if (activeTemplates.length > 0) {
         setSelectedTemplateId(activeTemplates[0].id);

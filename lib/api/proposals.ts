@@ -1,4 +1,5 @@
 import pb from '@/lib/pocketbase';
+import { getServerPb } from '@/lib/pocketbase/server';
 import type PocketBase from 'pocketbase';
 import type {
   Proposal,

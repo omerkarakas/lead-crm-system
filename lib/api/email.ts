@@ -145,7 +145,11 @@ export async function getLeadEmailMessages(leadId: string): Promise<EmailMessage
     });
 
     return response.items;
-  } catch (error) {
+  } catch (error: any) {
+    // Silently ignore auto-cancellation errors
+    if (error.name === 'ClientAbortError' || error?.message?.includes('autocancelled')) {
+      return [];
+    }
     console.error('Get lead email messages error:', error);
     return [];
   }
@@ -294,7 +298,11 @@ export async function getEmailHistory(leadId: string): Promise<EmailMessage[]> {
     });
 
     return response.items;
-  } catch (error) {
+  } catch (error: any) {
+    // Silently ignore auto-cancellation errors
+    if (error.name === 'ClientAbortError' || error?.message?.includes('autocancelled')) {
+      return [];
+    }
     console.error('Get email history error:', error);
     return [];
   }

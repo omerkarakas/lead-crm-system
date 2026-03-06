@@ -1,5 +1,4 @@
-import { fetchLead } from '@/lib/api/leads';
-import { getLeadAnswers } from '@/lib/api/qa';
+import { getServerPb } from '@/lib/pocketbase/server';
 import { Lead } from '@/types/lead';
 import { notFound } from 'next/navigation';
 import { LeadInfo } from '@/components/leads/LeadInfo';
@@ -9,15 +8,12 @@ import { WhatsAppConversation } from '@/components/leads/WhatsAppConversation';
 import { LeadDetailActions } from '@/components/leads/LeadDetailActions';
 import { ScoreDisplay } from '@/components/leads/ScoreDisplay';
 import { QAAnswersTable } from '@/components/leads/QAAnswersTable';
-import { ManualPollTrigger } from '@/components/leads/ManualPollTrigger';
 import { EmailHistory } from '@/components/leads/EmailHistory';
-import { LeadAppointments } from '@/components/appointments/LeadAppointments';
 import { LeadDetailProposalsTab } from '@/components/leads/LeadDetailProposalsTab';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import pb from '@/lib/pocketbase';
 
 // Client component for appointments tab to handle state
 import { ClientAppointmentTab } from '@/components/leads/ClientAppointmentTab';
@@ -28,19 +24,15 @@ interface LeadDetailPageProps {
   };
 }
 
-async function getLead(id: string): Promise<Lead> {
-  try {
-    return await fetchLead(id);
-  } catch (error) {
-    notFound();
-  }
-}
-
 async function getLeadData(id: string) {
+  const pb = await getServerPb();
   try {
-    const lead = await fetchLead(id);
-    const answers = await getLeadAnswers(id);
-    return { lead, answers };
+    const lead = await pb.collection('leads').getOne<Lead>(id);
+    const answers = await pb.collection('qa_answers').getList(1, 50, {
+      filter: `lead_id = "${id}"`,
+      expand: 'question_id',
+    });
+    return { lead, answers: answers.items };
   } catch (error) {
     notFound();
   }
@@ -48,10 +40,6 @@ async function getLeadData(id: string) {
 
 export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
   const { lead, answers } = await getLeadData(params.id);
-
-  // Get current user for role check
-  const user = pb.authStore.model as any;
-  const isAdmin = user?.role === 'admin';
 
   // Prepare score breakdown for display
   const scoreBreakdown = answers.map((answer: any) => {
@@ -163,22 +151,6 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
         </div>
         <div className="space-y-6">
           <TagsManager leadId={lead.id} currentTags={lead.tags} />
-
-          {/* Admin Actions Section */}
-          {isAdmin && (
-            <div className="bg-white rounded-lg p-4 border">
-              <h3 className="font-semibold mb-3">Yönetici İşlemleri</h3>
-              <div className="flex flex-col gap-2">
-                <ManualPollTrigger
-                  leadId={lead.id}
-                  qaCompleted={lead.qa_completed}
-                />
-                <p className="text-xs text-gray-500 mt-2">
-                  Manuel olarak poll tekrar gönder
-                </p>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

@@ -82,10 +82,12 @@ export async function getActiveProposalTemplates(): Promise<ProposalTemplate[]> 
 }
 
 /**
- * Fetch a single template by ID
+ * Fetch a single template by ID (only non-deleted)
  */
 export async function getProposalTemplateById(id: string): Promise<ProposalTemplate> {
-  return await pb.collection('proposal_templates').getOne<ProposalTemplate>(id);
+  return await pb.collection('proposal_templates').getOne<ProposalTemplate>(id, {
+    filter: 'is_deleted = false',
+  });
 }
 
 /**

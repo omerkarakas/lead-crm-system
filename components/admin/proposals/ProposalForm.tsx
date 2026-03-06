@@ -115,6 +115,7 @@ export function ProposalForm({
       editor_type: editorType,
       variables: customVariables,
       is_active: isActive,
+      is_deleted: false,
     };
 
     await onSave(data);

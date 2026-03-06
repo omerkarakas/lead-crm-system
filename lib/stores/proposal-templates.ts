@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { ProposalTemplate, CreateProposalTemplateDto, UpdateProposalTemplateDto } from '@/types/proposal';
-import * as proposalTemplatesApi from '@/lib/api/proposal-templates';
 
 interface ProposalTemplatesState {
   templates: ProposalTemplate[];
@@ -23,6 +22,16 @@ interface ProposalTemplatesState {
   clearError: () => void;
 }
 
+// Helper function to fetch from API
+async function fetchFromAPI(endpoint: string, options?: RequestInit): Promise<any> {
+  const response = await fetch(endpoint, options);
+  if (!response.ok) {
+    const data = await response.json();
+    throw new Error(data.error || 'API request failed');
+  }
+  return response.json();
+}
+
 export const useProposalTemplatesStore = create<ProposalTemplatesState>((set, get) => ({
   templates: [],
   archivedTemplates: [],
@@ -35,10 +44,7 @@ export const useProposalTemplatesStore = create<ProposalTemplatesState>((set, ge
   fetchTemplates: async () => {
     set({ loading: true, error: null });
     try {
-      const { items } = await proposalTemplatesApi.getProposalTemplates({
-        search: get().searchQuery || undefined,
-        isActive: get().filterActive ?? undefined,
-      });
+      const items = await fetchFromAPI('/api/proposal-templates');
       set({ templates: items, loading: false });
     } catch (error: any) {
       set({
@@ -51,7 +57,7 @@ export const useProposalTemplatesStore = create<ProposalTemplatesState>((set, ge
   fetchArchivedTemplates: async () => {
     set({ loading: true, error: null });
     try {
-      const archivedTemplates = await proposalTemplatesApi.getArchivedProposalTemplates();
+      const archivedTemplates = await fetchFromAPI('/api/proposal-templates?archived=true');
       set({ archivedTemplates, loading: false });
     } catch (error: any) {
       set({
@@ -64,7 +70,11 @@ export const useProposalTemplatesStore = create<ProposalTemplatesState>((set, ge
   createTemplate: async (data: CreateProposalTemplateDto) => {
     set({ loading: true, error: null });
     try {
-      await proposalTemplatesApi.createProposalTemplate(data);
+      await fetchFromAPI('/api/proposal-templates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
       await get().fetchTemplates();
       set({ loading: false });
     } catch (error: any) {
@@ -79,7 +89,11 @@ export const useProposalTemplatesStore = create<ProposalTemplatesState>((set, ge
   updateTemplate: async (id: string, data: UpdateProposalTemplateDto) => {
     set({ loading: true, error: null });
     try {
-      await proposalTemplatesApi.updateProposalTemplate(id, data);
+      await fetchFromAPI(`/api/proposal-templates/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
       await get().fetchTemplates();
       set({ loading: false });
     } catch (error: any) {
@@ -94,7 +108,9 @@ export const useProposalTemplatesStore = create<ProposalTemplatesState>((set, ge
   deleteTemplate: async (id: string) => {
     set({ loading: true, error: null });
     try {
-      await proposalTemplatesApi.deleteProposalTemplate(id);
+      await fetchFromAPI(`/api/proposal-templates/${id}`, {
+        method: 'DELETE',
+      });
       await get().fetchTemplates();
       set({ loading: false });
     } catch (error: any) {
@@ -109,7 +125,9 @@ export const useProposalTemplatesStore = create<ProposalTemplatesState>((set, ge
   restoreTemplate: async (id: string) => {
     set({ loading: true, error: null });
     try {
-      await proposalTemplatesApi.restoreProposalTemplate(id);
+      await fetchFromAPI(`/api/proposal-templates/${id}/restore`, {
+        method: 'POST',
+      });
       await get().fetchTemplates();
       await get().fetchArchivedTemplates();
       set({ loading: false });
@@ -125,7 +143,11 @@ export const useProposalTemplatesStore = create<ProposalTemplatesState>((set, ge
   toggleActive: async (id: string, isActive: boolean) => {
     set({ loading: true, error: null });
     try {
-      await proposalTemplatesApi.toggleActive(id, isActive);
+      await fetchFromAPI(`/api/proposal-templates/${id}/toggle`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive }),
+      });
       await get().fetchTemplates();
       set({ loading: false });
     } catch (error: any) {

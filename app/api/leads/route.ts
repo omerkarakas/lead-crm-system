@@ -5,6 +5,7 @@ import type { CreateLeadDto } from '@/types/lead';
 import { fetchActiveQuestions } from '@/lib/api/qa';
 import { formatPollMessage as formatWhatsAppPollMessage } from '@/lib/whatsapp/message-formatter';
 import { sendWhatsAppMessage, logWhatsAppMessage } from '@/lib/api/whatsapp';
+import { canViewAllLeads, canCreateLeads } from '@/lib/utils/permissions';
 
 /**
  * GET /api/leads - Get all leads with pagination and filtering
@@ -12,6 +13,15 @@ import { sendWhatsAppMessage, logWhatsAppMessage } from '@/lib/api/whatsapp';
 export async function GET(request: NextRequest) {
   try {
     const pb = await getServerPb();
+    const user = pb.authStore.model as any;
+
+    // Check if user has permission to view leads
+    if (!user || !canViewAllLeads(user?.role)) {
+      return NextResponse.json(
+        { error: 'Forbidden - You do not have permission to view leads' },
+        { status: 403 }
+      );
+    }
 
     const searchParams = request.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') || '1');

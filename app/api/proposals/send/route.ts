@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerPb } from '@/lib/pocketbase/server';
 import { sendProposalViaWhatsApp } from '@/lib/api/proposals/send';
+import { canSendProposals } from '@/lib/utils/permissions';
 
 /**
  * POST /api/proposals/send
@@ -9,6 +10,15 @@ import { sendProposalViaWhatsApp } from '@/lib/api/proposals/send';
 export async function POST(request: NextRequest) {
   try {
     const pb = await getServerPb();
+    const user = pb.authStore.model as any;
+
+    // Check if user has permission to send proposals
+    if (!canSendProposals(user?.role)) {
+      return NextResponse.json(
+        { error: 'Forbidden - You do not have permission to send proposals' },
+        { status: 403 }
+      );
+    }
 
     const body = await request.json();
 
@@ -32,7 +42,9 @@ export async function POST(request: NextRequest) {
 
     // Verify template exists and is active
     try {
-      const template = await pb.collection('proposal_templates').getOne(body.template_id);
+      const template = await pb.collection('proposal_templates').getOne(body.template_id, {
+        filter: 'is_deleted = false',
+      });
       if (!template.is_active) {
         return NextResponse.json(
           { error: 'Template is not active' },

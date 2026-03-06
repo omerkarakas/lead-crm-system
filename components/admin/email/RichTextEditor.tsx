@@ -26,6 +26,7 @@ interface RichTextEditorProps {
 export const RichTextEditor = forwardRef<any, RichTextEditorProps>(
   ({ content, onChange, placeholder, editorRef }, ref) => {
     const editor = useEditor({
+      immediatelyRender: false,
       extensions: [
         StarterKit.configure({
           heading: false,
@@ -44,7 +45,11 @@ export const RichTextEditor = forwardRef<any, RichTextEditorProps>(
             class: 'text-blue-600 underline',
           },
         }),
-        Underline,
+        Underline.configure({
+          HTMLAttributes: {
+            class: 'underline',
+          },
+        }),
       ],
       content,
       onUpdate: ({ editor }) => {

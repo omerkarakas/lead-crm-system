@@ -156,12 +156,21 @@ export async function updateAppointmentStatus(
  * Get all appointments for a lead, sorted by scheduled_at DESC
  */
 export async function getAppointmentsByLead(leadId: string): Promise<Appointment[]> {
-  const response = await pb.collection('appointments').getList<Appointment>(1, 50, {
-    filter: `lead_id = "${leadId}"`,
-    sort: '-scheduled_at'
-  });
+  try {
+    const response = await pb.collection('appointments').getList<Appointment>(1, 50, {
+      filter: `lead_id = "${leadId}"`,
+      sort: '-scheduled_at'
+    });
 
-  return response.items;
+    return response.items;
+  } catch (error: any) {
+    // Silently ignore auto-cancellation errors
+    if (error.name === 'ClientAbortError' || error?.message?.includes('autocancelled')) {
+      return [];
+    }
+    console.error('Get appointments by lead error:', error);
+    return [];
+  }
 }
 
 /**

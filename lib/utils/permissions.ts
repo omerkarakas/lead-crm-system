@@ -20,9 +20,11 @@ export const PERMISSIONS = {
 
   // Email templates management
   CAN_MANAGE_EMAIL_TEMPLATES: 'can_manage_email_templates',
+  CAN_SEND_EMAILS: 'can_send_emails',
 
   // Proposal templates management
   CAN_MANAGE_PROPOSAL_TEMPLATES: 'can_manage_proposal_templates',
+  CAN_SEND_PROPOSALS: 'can_send_proposals',
 
   // Settings management
   CAN_MANAGE_SETTINGS: 'can_manage_settings',
@@ -40,7 +42,9 @@ export const ROLE_PERMISSIONS: Record<Role, string[]> = {
     PERMISSIONS.CAN_MANAGE_TAGS,
     PERMISSIONS.CAN_MANAGE_QA_QUESTIONS,
     PERMISSIONS.CAN_MANAGE_EMAIL_TEMPLATES,
+    PERMISSIONS.CAN_SEND_EMAILS,
     PERMISSIONS.CAN_MANAGE_PROPOSAL_TEMPLATES,
+    PERMISSIONS.CAN_SEND_PROPOSALS,
     PERMISSIONS.CAN_MANAGE_SETTINGS,
   ],
   [Role.SALES]: [
@@ -49,6 +53,8 @@ export const ROLE_PERMISSIONS: Record<Role, string[]> = {
     PERMISSIONS.CAN_VIEW_ALL_LEADS,
     PERMISSIONS.CAN_ADD_NOTES,
     PERMISSIONS.CAN_MANAGE_TAGS,
+    PERMISSIONS.CAN_SEND_EMAILS,
+    PERMISSIONS.CAN_SEND_PROPOSALS,
   ],
   [Role.MARKETING]: [
     PERMISSIONS.CAN_CREATE_LEADS,
@@ -108,4 +114,12 @@ export function canManageProposalTemplates(role: Role): boolean {
 
 export function canOverrideLeadStatus(role: Role): boolean {
   return hasPermission(role, PERMISSIONS.CAN_OVERRIDE_LEAD_STATUS);
+}
+
+export function canSendProposals(role: Role): boolean {
+  return hasPermission(role, PERMISSIONS.CAN_SEND_PROPOSALS);
+}
+
+export function canSendEmails(role: Role): boolean {
+  return hasPermission(role, PERMISSIONS.CAN_SEND_EMAILS);
 }

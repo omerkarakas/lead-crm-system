@@ -89,7 +89,11 @@ export async function getLeadWhatsAppMessages(leadId: string): Promise<WhatsAppM
     });
 
     return response.items;
-  } catch (error) {
+  } catch (error: any) {
+    // Silently ignore auto-cancellation errors - they occur when a request is superseded
+    if (error.name === 'ClientAbortError' || error?.message?.includes('autocancelled')) {
+      return [];
+    }
     console.error('Get lead WhatsApp messages error:', error);
     return [];
   }

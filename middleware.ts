@@ -5,7 +5,7 @@ import PocketBase from 'pocketbase';
 const pb = new PocketBase(process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090');
 
 // Routes that don't require authentication
-const publicRoutes = ['/login', '/forgot-password', '/reset-password', '/register'];
+const publicRoutes = ['/login', '/forgot-password', '/reset-password', '/register', '/proposals'];
 
 // Routes that redirect to dashboard if authenticated
 const authRoutes = ['/login', '/register'];

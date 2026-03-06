@@ -190,13 +190,22 @@ export async function addNote(data: CreateNoteDto): Promise<Note> {
  * Get notes for a lead
  */
 export async function getNotes(leadId: string): Promise<Note[]> {
-  const response = await pb.collection('notes').getList<Note>(1, 50, {
-    filter: `leadId = "${leadId}"`,
-    sort: '-created',
-    expand: 'userId',
-  });
+  try {
+    const response = await pb.collection('notes').getList<Note>(1, 50, {
+      filter: `leadId = "${leadId}"`,
+      sort: '-created',
+      expand: 'userId',
+    });
 
-  return response.items;
+    return response.items;
+  } catch (error: any) {
+    // Silently ignore auto-cancellation errors
+    if (error.name === 'ClientAbortError' || error?.message?.includes('autocancelled')) {
+      return [];
+    }
+    console.error('Get notes error:', error);
+    return [];
+  }
 }
 
 /**

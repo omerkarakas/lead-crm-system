@@ -11,6 +11,7 @@ interface ClientAppointmentTabProps {
 
 export function ClientAppointmentTab({ leadId, leadName }: ClientAppointmentTabProps) {
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const handleCreateAppointment = useCallback(() => {
     setIsAppointmentModalOpen(true);
@@ -20,9 +21,15 @@ export function ClientAppointmentTab({ leadId, leadName }: ClientAppointmentTabP
     setIsAppointmentModalOpen(false);
   }, []);
 
+  const handleAppointmentSuccess = useCallback(() => {
+    // Trigger refresh of appointments list
+    setRefreshKey(prev => prev + 1);
+  }, []);
+
   return (
     <>
       <LeadAppointments
+        key={refreshKey}
         leadId={leadId}
         onCreateAppointment={handleCreateAppointment}
       />
@@ -30,6 +37,7 @@ export function ClientAppointmentTab({ leadId, leadName }: ClientAppointmentTabP
       <AppointmentModal
         open={isAppointmentModalOpen}
         onOpenChange={handleCloseAppointmentModal}
+        onSuccess={handleAppointmentSuccess}
         preSelectedLeadId={leadId}
         preSelectedLeadName={leadName}
       />

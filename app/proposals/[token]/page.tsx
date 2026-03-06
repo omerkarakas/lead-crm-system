@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
-import { getProposalByToken } from '@/lib/api/proposals';
+import { getServerPb } from '@/lib/pocketbase/server';
 import { ProposalView } from '@/components/proposals/ProposalView';
+import type { Proposal } from '@/types/proposal';
 
 interface ProposalPageProps {
   params: {
@@ -16,7 +17,23 @@ export default async function ProposalPage({ params }: ProposalPageProps) {
   const { token } = params;
 
   // Get proposal by token (includes expiration check)
-  const proposal = await getProposalByToken(token);
+  const pb = await getServerPb();
+  let proposal: Proposal | null = null;
+
+  try {
+    proposal = await pb.collection('proposals').getFirstListItem<Proposal>(`token = "${token}"`, {
+      expand: 'lead_id,template_id',
+    });
+
+    // Check expiration
+    const expiresAt = new Date(proposal.expires_at);
+    if (expiresAt < new Date()) {
+      proposal = null;
+    }
+  } catch (error) {
+    console.error('Get proposal by token error:', error);
+    proposal = null;
+  }
 
   // Handle errors
   if (!proposal) {
@@ -76,7 +93,22 @@ export default async function ProposalPage({ params }: ProposalPageProps) {
  * Generate metadata for SEO
  */
 export async function generateMetadata({ params }: ProposalPageProps) {
-  const proposal = await getProposalByToken(params.token);
+  const pb = await getServerPb();
+  let proposal: Proposal | null = null;
+
+  try {
+    proposal = await pb.collection('proposals').getFirstListItem<Proposal>(`token = "${params.token}"`, {
+      expand: 'lead_id,template_id',
+    });
+
+    // Check expiration
+    const expiresAt = new Date(proposal.expires_at);
+    if (expiresAt < new Date()) {
+      proposal = null;
+    }
+  } catch (error) {
+    proposal = null;
+  }
 
   if (!proposal) {
     return {

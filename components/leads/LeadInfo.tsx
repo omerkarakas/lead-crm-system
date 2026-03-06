@@ -36,19 +36,18 @@ interface LeadInfoProps {
 }
 
 export function LeadInfo({ lead }: LeadInfoProps) {
-  const handleCall = () => {
-    window.location.href = `tel:${lead.phone}`;
-  };
-
-  const handleEmail = () => {
-    if (lead.email) {
-      window.location.href = `mailto:${lead.email}`;
+  const formatWebsiteUrl = (url: string) => {
+    if (!url) return '';
+    // Eğer protokol yoksa ekle
+    if (!url.match(/^https?:\/\//i)) {
+      return `https://${url}`;
     }
+    return url;
   };
 
   const handleWhatsApp = () => {
     const phone = lead.phone.replace(/\D/g, '');
-    window.location.href = `https://wa.me/${phone}`;
+    window.open(`https://wa.me/${phone}`, '_blank');
   };
 
   return (
@@ -94,14 +93,24 @@ export function LeadInfo({ lead }: LeadInfoProps) {
             <div>
               <label className="text-sm font-medium text-muted-foreground">Telefon</label>
               <div className="flex items-center gap-2">
-                <p className="font-medium">{lead.phone}</p>
+                <a href={`tel:${lead.phone}`} className="font-medium hover:text-blue-600">
+                  {lead.phone}
+                </a>
                 <div className="flex gap-1">
-                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={handleCall} title="Ara">
+                  <a
+                    href={`tel:${lead.phone}`}
+                    className="inline-flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+                    title="Ara"
+                  >
                     <Phone className="h-3 w-3" />
-                  </Button>
-                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={handleWhatsApp} title="WhatsApp">
+                  </a>
+                  <button
+                    onClick={handleWhatsApp}
+                    className="inline-flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+                    title="WhatsApp"
+                  >
                     <MessageSquare className="h-3 w-3" />
-                  </Button>
+                  </button>
                 </div>
               </div>
             </div>
@@ -109,10 +118,21 @@ export function LeadInfo({ lead }: LeadInfoProps) {
               <div>
                 <label className="text-sm font-medium text-muted-foreground">E-posta</label>
                 <div className="flex items-center gap-2">
-                  <p className="font-medium">{lead.email}</p>
-                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={handleEmail} title="E-posta Gönder">
+                  <a
+                    href={`mailto:${lead.email}`}
+                    className="font-medium hover:text-blue-600"
+                  >
+                    {lead.email}
+                  </a>
+                  <a
+                    href={`mailto:${lead.email}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+                    title="E-posta Gönder"
+                  >
                     <Mail className="h-3 w-3" />
-                  </Button>
+                  </a>
                 </div>
               </div>
             )}
@@ -133,7 +153,7 @@ export function LeadInfo({ lead }: LeadInfoProps) {
               <label className="text-sm font-medium text-muted-foreground">Website</label>
               <div className="flex items-center gap-2">
                 <a
-                  href={lead.website}
+                  href={formatWebsiteUrl(lead.website)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-600 hover:underline font-medium"

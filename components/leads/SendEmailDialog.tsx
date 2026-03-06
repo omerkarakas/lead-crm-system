@@ -21,7 +21,6 @@ import {
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { sendEmailToLead } from '@/lib/api/email';
 import { fetchActiveTemplates, fetchTemplateById } from '@/lib/api/email-templates';
 import { useEmailStore } from '@/lib/stores/email';
 import { replaceVariables } from '@/lib/email/template-variables';
@@ -130,11 +129,18 @@ export function SendEmailDialog({
 
     setIsSending(true);
     try {
-      const result = await sendEmailToLead(leadId, {
-        template_id: lastUsedTemplate.id,
+      const response = await fetch('/api/emails/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lead_id: leadId,
+          template_id: lastUsedTemplate.id,
+        }),
       });
 
-      if (result.success) {
+      const result = await response.json();
+
+      if (response.ok && result.success) {
         setLastUsedTemplate(lastUsedTemplate.id);
         toast.success('E-posta başarıyla gönderildi');
         onOpenChange(false);
@@ -158,13 +164,20 @@ export function SendEmailDialog({
 
     setIsSending(true);
     try {
-      const result = await sendEmailToLead(leadId, {
-        subject,
-        body,
-        template_id: selectedTemplateId || undefined,
+      const response = await fetch('/api/emails/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lead_id: leadId,
+          subject,
+          body,
+          template_id: selectedTemplateId || undefined,
+        }),
       });
 
-      if (result.success) {
+      const result = await response.json();
+
+      if (response.ok && result.success) {
         if (selectedTemplateId && selectedTemplateId !== 'custom') {
           setLastUsedTemplate(selectedTemplateId);
         }

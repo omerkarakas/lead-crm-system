@@ -27,23 +27,41 @@ if (typeof window !== 'undefined') {
  * Fetch all questions (ordered by order field)
  */
 export async function fetchQuestions(): Promise<QAQuestion[]> {
-  const response = await pb.collection('qa_questions').getList<QAQuestion>(1, 100, {
-    sort: 'order',
-  });
+  try {
+    const response = await pb.collection('qa_questions').getList<QAQuestion>(1, 100, {
+      sort: 'order',
+    });
 
-  return response.items;
+    return response.items;
+  } catch (error: any) {
+    // Silently ignore auto-cancellation errors
+    if (error.name === 'ClientAbortError' || error?.message?.includes('autocancelled')) {
+      return [];
+    }
+    console.error('Fetch questions error:', error);
+    return [];
+  }
 }
 
 /**
  * Fetch only active questions (ordered by order field)
  */
 export async function fetchActiveQuestions(): Promise<QAQuestion[]> {
-  const response = await pb.collection('qa_questions').getList<QAQuestion>(1, 100, {
-    filter: 'is_active = true',
-    sort: 'order',
-  });
+  try {
+    const response = await pb.collection('qa_questions').getList<QAQuestion>(1, 100, {
+      filter: 'is_active = true',
+      sort: 'order',
+    });
 
-  return response.items;
+    return response.items;
+  } catch (error: any) {
+    // Silently ignore auto-cancellation errors
+    if (error.name === 'ClientAbortError' || error?.message?.includes('autocancelled')) {
+      return [];
+    }
+    console.error('Fetch active questions error:', error);
+    return [];
+  }
 }
 
 /**
@@ -120,13 +138,22 @@ export async function saveAnswer(answer: QAAnswer): Promise<QAAnswer> {
  * Get lead's answers with question expansion
  */
 export async function getLeadAnswers(leadId: string): Promise<QAAnswer[]> {
-  const response = await pb.collection('qa_answers').getList<QAAnswer>(1, 100, {
-    filter: `lead_id = "${leadId}"`,
-    sort: 'answered_at',
-    expand: 'question_id'
-  });
+  try {
+    const response = await pb.collection('qa_answers').getList<QAAnswer>(1, 100, {
+      filter: `lead_id = "${leadId}"`,
+      sort: 'answered_at',
+      expand: 'question_id'
+    });
 
-  return response.items;
+    return response.items;
+  } catch (error: any) {
+    // Silently ignore auto-cancellation errors
+    if (error.name === 'ClientAbortError' || error?.message?.includes('autocancelled')) {
+      return [];
+    }
+    console.error('Get lead answers error:', error);
+    return [];
+  }
 }
 
 /**
