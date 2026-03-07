@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: WhatsApp & Qualification** - QA system with automated WhatsApp scoring ✅ Completed 2026-03-03
 - [x] **Phase 3: Email Communication** - Email sending, templates, and manual messaging ✅ Completed 2026-03-04
 - [x] **Phase 4: Appointments** - Cal.com integration with booking workflow ✅ Completed 2026-03-04
-- [ ] **Phase 4.1: Lead Capture & Pipeline Automation** - Public form, booking link settings, Meta Ads webhook
+- [x] **Phase 4.1: Lead Capture & Pipeline Automation** - Public form, booking link settings, Meta Ads webhook ✅ Completed 2026-03-05
 - [ ] **Phase 4.2: Proposal Management** - Proposal templates, sending, response tracking
 - [ ] **Phase 5: Campaigns & Nurturing** - Multi-channel sequences and automation
 - [ ] **Phase 6: Polish & Integration** - Webhooks, activity timeline, and final touches
@@ -137,10 +137,10 @@ Plans:
 **Plans**: 4 plans in 3 waves
 
 Plans:
-- [ ] 04.1-01-PLAN.md — Add 're-apply' status to LeadStatus enum and update all UI components ✅
-- [ ] 04.1-02-PLAN.md — Booking link settings integration (database field, remove hardcoded, admin UI)
-- [ ] 04.1-03-PLAN.md — Public lead capture form (page, validation, UTM tracking, duplicate handling, honeypot)
-- [ ] 04.1-04-PLAN.md — Meta Ads webhook integration (Facebook Lead Ads endpoint, payload transformation)
+- [x] 04.1-01-PLAN.md — Add 're-apply' status to LeadStatus enum and update all UI components ✅
+- [x] 04.1-02-PLAN.md — Booking link settings integration (database field, remove hardcoded, admin UI) ✅
+- [x] 04.1-03-PLAN.md — Public lead capture form (page, validation, UTM tracking, duplicate handling, honeypot) ✅
+- [x] 04.1-04-PLAN.md — Meta Ads webhook integration (Facebook Lead Ads endpoint, payload transformation) ✅
 
 **Reason for Insertion**: Complete lead-to-customer flow before testing phase. Missing pieces: public form, configurable booking link, Meta Ads integration.
 
@@ -164,13 +164,14 @@ Plans:
 - Status Automation: Appointment completion triggers lead status update (CUSTOMER/LOST)
 - UI Integration: "Teklif" tab on appointment detail/lead detail
 
-**Plans**: 4 plans in 2 waves
+**Plans**: 5 plans in 3 waves
 
 Plans:
-- [ ] 04.2-01-PLAN.md — Proposal template management (collection, UI, editor)
-- [ ] 04.2-02-PLAN.md — Proposal generation and sending (fill variables, generate link, WhatsApp send)
-- [ ] 04.2-03-PLAN.md — Response tracking and status updates (lead response handling)
-- [ ] 04.2-04-PLAN.md — Status automation (appointment completion → CUSTOMER/LOST) and UI integration
+- [x] 04.2-01-PLAN.md — Proposal template management (collection, UI, editor) ✅
+- [x] 04.2-02-PLAN.md — Proposal generation and sending (fill variables, generate link, WhatsApp send) ✅
+- [x] 04.2-03-PLAN.md — Response tracking and sales team notifications ✅
+- [x] 04.2-04-PLAN.md — Status automation (appointment completion → CUSTOMER/LOST) and UI integration ✅
+- [ ] 04.2-05-PLAN.md — Fix sales team phone notification approach (remove users.phone dependency, single source of truth)
 
 **Reason for Insertion**: Proposal workflow is critical part of sales process after appointment booking.
 
@@ -230,6 +231,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 4.1 → 4.2 → 5 → 6
 | 3. Email Communication | 3/3 | ✅ Complete | 2026-03-04 |
 | 4. Appointments | 4/4 | ✅ Complete | 2026-03-04 |
 | 4.1 Lead Capture & Pipeline | 4/4 | ✅ Complete | 2026-03-05 |
-| 4.2 Proposal Management | 0/4 | Not started | - |
+| 4.2 Proposal Management | 4/5 | In progress | - |
 | 5. Campaigns & Nurturing | 0/5 | Not started | - |
 | 6. Polish & Integration | 0/3 | Not started | - |
