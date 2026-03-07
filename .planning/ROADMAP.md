@@ -171,7 +171,7 @@ Plans:
 - [x] 04.2-02-PLAN.md — Proposal generation and sending (fill variables, generate link, WhatsApp send) ✅
 - [x] 04.2-03-PLAN.md — Response tracking and sales team notifications ✅
 - [x] 04.2-04-PLAN.md — Status automation (appointment completion → CUSTOMER/LOST) and UI integration ✅
-- [ ] 04.2-05-PLAN.md — Fix sales team phone notification approach (remove users.phone dependency, single source of truth)
+- [x] 04.2-05-PLAN.md — Fix sales team phone notification approach (remove users.phone dependency, single source of truth) ✅
 
 **Reason for Insertion**: Proposal workflow is critical part of sales process after appointment booking.
 
@@ -231,6 +231,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 4.1 → 4.2 → 5 → 6
 | 3. Email Communication | 3/3 | ✅ Complete | 2026-03-04 |
 | 4. Appointments | 4/4 | ✅ Complete | 2026-03-04 |
 | 4.1 Lead Capture & Pipeline | 4/4 | ✅ Complete | 2026-03-05 |
-| 4.2 Proposal Management | 4/5 | In progress | - |
+| 4.2 Proposal Management | 5/5 | ✅ Complete | 2026-03-07 |
 | 5. Campaigns & Nurturing | 0/5 | Not started | - |
 | 6. Polish & Integration | 0/3 | Not started | - |
