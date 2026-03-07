@@ -167,17 +167,8 @@ export default function AppointmentsPage() {
     setActionLoading(true);
     try {
       await updateAppointmentStatus(id, status);
-      // Refresh appointments
-      const response = await fetchAppointments({
-        page: currentPage,
-        perPage: 20,
-        startDate: filters.startDate,
-        endDate: filters.endDate,
-        status: filters.status,
-        search: filters.search,
-        sort: '-scheduled_at',
-      });
-      setAppointments(response.items as any[]);
+      // Refresh appointments - use fetchAppointmentsData to preserve lead data
+      await fetchAppointmentsData();
       handleCloseDetailModal();
     } catch (error) {
       console.error('Error updating appointment status:', error);
@@ -185,30 +176,21 @@ export default function AppointmentsPage() {
     } finally {
       setActionLoading(false);
     }
-  }, [currentPage, filters, handleCloseDetailModal]);
+  }, [fetchAppointmentsData, handleCloseDetailModal]);
 
   const handleSendConfirmation = useCallback(async (id: string) => {
     setActionLoading(true);
     try {
       await sendAppointmentConfirmation(id);
-      // Refresh appointments
-      const response = await fetchAppointments({
-        page: currentPage,
-        perPage: 20,
-        startDate: filters.startDate,
-        endDate: filters.endDate,
-        status: filters.status,
-        search: filters.search,
-        sort: '-scheduled_at',
-      });
-      setAppointments(response.items as any[]);
+      // Refresh appointments - use fetchAppointmentsData to preserve lead data
+      await fetchAppointmentsData();
     } catch (error) {
       console.error('Error sending confirmation:', error);
       throw error;
     } finally {
       setActionLoading(false);
     }
-  }, [currentPage, filters]);
+  }, [fetchAppointmentsData]);
 
   const handleOpenCreateModal = useCallback(() => {
     setIsCreateModalOpen(true);

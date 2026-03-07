@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Dialog,
   DialogContent,
@@ -24,6 +25,7 @@ interface LeadModalProps {
 export function LeadModal({ open, onOpenChange, lead, mode = 'create' }: LeadModalProps) {
   const { createLead, updateLead } = useLeadsStore();
   const { user } = useAuthStore();
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const defaultValues = lead
@@ -70,6 +72,8 @@ export function LeadModal({ open, onOpenChange, lead, mode = 'create' }: LeadMod
         }
 
         toast.success(`${data.name} başarıyla oluşturuldu.`);
+        // Refresh server components to show updated data
+        router.refresh();
       } else if (lead) {
         const updateData: UpdateLeadDto = {
           name: data.name,
@@ -84,6 +88,8 @@ export function LeadModal({ open, onOpenChange, lead, mode = 'create' }: LeadMod
         };
         await updateLead(lead.id, updateData, { force, userRole: user?.role });
         toast.success(`${data.name} başarıyla güncellendi.`);
+        // Refresh server components to show updated data
+        router.refresh();
       }
       onOpenChange(false);
     } catch (error: any) {

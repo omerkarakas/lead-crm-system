@@ -327,11 +327,11 @@ export function AppointmentList({
       )}
 
       {/* Mobile Card View */}
-      <div className={viewMode === 'card' ? 'space-y-4' : 'md:hidden space-y-4'}>
+      <div className={viewMode === 'card' ? 'grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4' : 'md:hidden space-y-4'}>
         {appointments.map((appointment) => (
           <AppointmentCard key={appointment.id} appointment={appointment} />
         ))}
-        <div className="flex justify-center">
+        <div className={viewMode === 'card' ? 'col-span-full flex justify-center' : 'flex justify-center'}>
           {renderPagination()}
         </div>
       </div>

@@ -14,6 +14,12 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Switch } from '@/components/ui/switch';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { Edit, Archive, RotateCcw, Search, Filter } from 'lucide-react';
 import {
   Select,
@@ -112,35 +118,38 @@ export function TemplateList({
                 />
               </TableCell>
               <TableCell className="text-right">
-                <div className="flex justify-end gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onEdit(template)}
-                    disabled={loading}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  {template.is_deleted ? (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onRestore(template.id)}
-                      disabled={loading}
-                    >
-                      <RotateCcw className="h-4 w-4" />
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onArchive(template.id)}
-                      disabled={loading}
-                    >
-                      <Archive className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
+                <TooltipProvider>
+                  <div className="flex justify-end gap-1">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="text-green-600 hover:text-green-700 hover:bg-green-50" onClick={() => onEdit(template)} disabled={loading}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Düzenle</TooltipContent>
+                    </Tooltip>
+
+                    {template.is_deleted ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="icon" onClick={() => onRestore(template.id)} disabled={loading}>
+                            <RotateCcw className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Geri Yükle</TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="icon" className="text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => onArchive(template.id)} disabled={loading}>
+                            <Archive className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Arşivle</TooltipContent>
+                      </Tooltip>
+                    )}
+                  </div>
+                </TooltipProvider>
               </TableCell>
             </TableRow>
           ))}

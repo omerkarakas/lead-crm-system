@@ -62,11 +62,11 @@ export function getVariableValue(variable: string, lead: Lead): string {
 
 /**
  * Replace template variables with lead data
- * Supports {{variable}} syntax
+ * Supports {variable} syntax
  */
 export function replaceVariables(template: string, lead: Lead): string {
-  // Find all {{variable}} patterns and replace them
-  return template.replace(/\{\{(\w+)\}\}/g, (match, variableName) => {
+  // Find all {variable} patterns and replace them
+  return template.replace(/\{(\w+)\}/g, (match, variableName) => {
     const value = getVariableValue(variableName, lead);
     return value !== '' ? value : match;
   });
@@ -76,7 +76,7 @@ export function replaceVariables(template: string, lead: Lead): string {
  * Extract all variable names from a template
  */
 export function extractVariables(template: string): string[] {
-  const matches = template.match(/\{\{(\w+)\}\}/g);
+  const matches = template.match(/\{(\w+)\}/g);
   if (!matches) return [];
-  return matches.map(match => match.replace(/\{\{|\}\}/g, ''));
+  return matches.map(match => match.replace(/\{|\}/g, ''));
 }

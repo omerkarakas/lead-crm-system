@@ -21,8 +21,8 @@ try {
     {
       id: 'template_welcome',
       name: 'Hoş Geldin',
-      subject: '{{name}} ile tanışalım!',
-      body: '<p>Merhaba {{name}},</p><p>Şirketiniz {{company}} ile tanışmaktan mutluluk duyuyoruz.</p><p>Size en iyi şekilde yardımcı olmak için buradayız.</p><p>Saygılarımla,</p><p>Moka CRM Ekibi</p>',
+      subject: '{name} ile tanışalım!',
+      body: '<p>Merhaba {name},</p><p>Şirketiniz {company} ile tanışmaktan mutluluk duyuyoruz.</p><p>Size en iyi şekilde yardımcı olmak için buradayız.</p><p>Saygılarımla,</p><p>Moka CRM Ekibi</p>',
       category: 'welcome',
       is_active: true,
       is_deleted: false
@@ -30,8 +30,8 @@ try {
     {
       id: 'template_followup',
       name: 'Takip - 1 Gün',
-      subject: '{{name}} beyinizi aldık mı?',
-      body: '<p>Merhaba {{name}},</p><p>Geçen gün {{website}} web sitemizden bize ulaştınız.</p><p>Sorularınız için yardımcı olabilir miyim?</p><p>İyi çalışmalar,</p><p>Moka CRM</p>',
+      subject: '{name} beyinizi aldık mı?',
+      body: '<p>Merhaba {name},</p><p>Geçen gün {website} web sitemizden bize ulaştınız.</p><p>Sorularınız için yardımcı olabilir miyim?</p><p>İyi çalışmalar,</p><p>Moka CRM</p>',
       category: 'follow_up',
       is_active: true,
       is_deleted: false
@@ -39,8 +39,8 @@ try {
     {
       id: 'template_qualification',
       name: 'Qualification',
-      subject: '{{name}} için değerlendirme',
-      body: '<p>Merhaba {{name}},</p><p>Aşağıdaki bilgilerinizle ilgileniyoruz:</p><ul><li>Şirket: {{company}}</li><li>Web: {{website}}</li><li>Mesajınız: {{message}}</li></ul><p>Size en kısa sürede dönüş yapacağız.</p>',
+      subject: '{name} için değerlendirme',
+      body: '<p>Merhaba {name},</p><p>Aşağıdaki bilgilerinizle ilgileniyoruz:</p><ul><li>Şirket: {company}</li><li>Web: {website}</li><li>Mesajınız: {message}</li></ul><p>Size en kısa sürede dönüş yapacağız.</p>',
       category: 'qualification',
       is_active: true,
       is_deleted: false
@@ -48,8 +48,8 @@ try {
     {
       id: 'template_generic',
       name: 'Genel Bilgi',
-      subject: '{{name}} merhaba',
-      body: '<p>Merhaba {{name}},</p><p>Bu bir test e-postasıdır.</p><p>Gösterdiğiniz ilgi için teşekkürler.</p>',
+      subject: '{name} merhaba',
+      body: '<p>Merhaba {name},</p><p>Bu bir test e-postasıdır.</p><p>Gösterdiğiniz ilgi için teşekkürler.</p>',
       category: 'generic',
       is_active: true,
       is_deleted: false

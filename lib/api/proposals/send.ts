@@ -78,7 +78,8 @@ export async function sendProposalViaWhatsApp(
     const chatId = lead.phone.replace(/\D/g, '') + '@c.us';
 
     // Send WhatsApp message
-    const message = `Merhaba ${lead.name}, size özel hazırladığımız teklifi inceleyebilirsiniz: ${link}. Link ${expiresInDays} gün geçerlidir.`;
+    // Make the URL clickable by surrounding with spaces
+    const message = `Merhaba ${lead.name}, size özel hazırladığımız teklifi inceleyebilirsiniz:\n\n${link}\n\nLink ${expiresInDays} gün geçerlidir.`;
 
     const whatsappResult = await sendWhatsAppMessage(chatId, message);
 

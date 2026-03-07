@@ -21,6 +21,22 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ isLoading: true });
     try {
       const authData = await pb.collection('users').authWithPassword(email, password);
+
+      // Create session record
+      try {
+        const now = new Date().toISOString();
+        await pb.collection('sessions').create({
+          userId: authData.record.id,
+          token: authData.token,
+          lastActive: now,
+          ipAddress: null, // Will be filled by middleware if needed
+          userAgent: typeof window !== 'undefined' ? navigator.userAgent : null,
+        });
+      } catch (sessionError) {
+        // Log session creation error but don't fail login
+        console.error('Failed to create session record:', sessionError);
+      }
+
       set({
         user: authData.record as unknown as User,
         isAuthenticated: true,
@@ -33,6 +49,22 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: async () => {
+    // Delete current session from sessions table
+    const token = pb.authStore.token;
+    if (token) {
+      try {
+        const sessions = await pb.collection('sessions').getList(1, 50, {
+          filter: `token = "${token}"`,
+        });
+        if (sessions.items.length > 0) {
+          await pb.collection('sessions').delete(sessions.items[0].id);
+        }
+      } catch (error) {
+        // Ignore session deletion errors
+        console.error('Failed to delete session:', error);
+      }
+    }
+
     pb.authStore.clear();
     // Also clear the cookie
     if (typeof window !== 'undefined') {

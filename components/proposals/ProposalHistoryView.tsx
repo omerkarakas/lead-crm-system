@@ -10,22 +10,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ExternalLink, Clock, CheckCircle2, XCircle, Loader2, Calendar } from 'lucide-react';
+import { ExternalLink, CheckCircle2, XCircle, Loader2, Calendar, Plus } from 'lucide-react';
 import {
   formatProposalResponse,
   getProposalResponseBadgeVariant,
+  getProposalResponseBadgeClass,
 } from '@/lib/utils/proposal';
 import type { Proposal, ProposalResponse } from '@/types/proposal';
 
 interface ProposalHistoryViewProps {
   leadId: string;
   onNewProposal?: () => void;
+  refreshKey?: number;
 }
 
 type ResponseFilter = 'all' | 'cevap_bekleniyor' | 'kabul' | 'red';
 type SortOrder = 'newest' | 'oldest';
 
-export function ProposalHistoryView({ leadId, onNewProposal }: ProposalHistoryViewProps) {
+export function ProposalHistoryView({ leadId, onNewProposal, refreshKey }: ProposalHistoryViewProps) {
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<ResponseFilter>('all');
@@ -55,7 +57,7 @@ export function ProposalHistoryView({ leadId, onNewProposal }: ProposalHistoryVi
 
   useEffect(() => {
     loadProposals();
-  }, [leadId, filter, sortOrder]);
+  }, [leadId, filter, sortOrder, refreshKey]);
 
   // Auto-refresh every 30 seconds for real-time updates
   useEffect(() => {
@@ -70,7 +72,7 @@ export function ProposalHistoryView({ leadId, onNewProposal }: ProposalHistoryVi
       case 'red':
         return <XCircle className="h-4 w-4" />;
       default:
-        return <Clock className="h-4 w-4" />;
+        return <Calendar className="h-4 w-4" />;
     }
   };
 
@@ -102,6 +104,12 @@ export function ProposalHistoryView({ leadId, onNewProposal }: ProposalHistoryVi
           <p className="text-sm text-gray-600">{proposals.length} teklif</p>
         </div>
         <div className="flex items-center gap-3">
+          {onNewProposal && (
+            <Button onClick={onNewProposal} size="sm" className="gap-2">
+              <Plus className="w-4 h-4" />
+              Yeni Teklif
+            </Button>
+          )}
           <Select value={filter} onValueChange={(value) => setFilter(value as ResponseFilter)}>
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="Durum" />
@@ -130,12 +138,7 @@ export function ProposalHistoryView({ leadId, onNewProposal }: ProposalHistoryVi
       {proposals.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
           <Calendar className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-          <p className="text-gray-600 mb-4">Henüz teklif gönderilmedi</p>
-          {onNewProposal && (
-            <Button onClick={onNewProposal} variant="outline">
-              İlk Teklifi Gönder
-            </Button>
-          )}
+          <p className="text-gray-600">Henüz teklif gönderilmedi</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -175,7 +178,10 @@ export function ProposalHistoryView({ leadId, onNewProposal }: ProposalHistoryVi
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant={getProposalResponseBadgeVariant(proposal.response)}>
+                      <Badge
+                        variant={getProposalResponseBadgeVariant(proposal.response)}
+                        className={getProposalResponseBadgeClass(proposal.response)}
+                      >
                         {formatProposalResponse(proposal.response)}
                       </Badge>
                       <Button

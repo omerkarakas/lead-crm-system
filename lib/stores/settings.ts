@@ -97,8 +97,8 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
       const response = await fetch(endpoint, {
         method: 'POST',
-        headers: message ? { 'Content-Type': 'application/json' } : undefined,
-        body: message ? JSON.stringify({ message }) : undefined,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(message ? { message } : {}),
       });
 
       if (!response.ok) {

@@ -118,7 +118,7 @@ export function TemplateForm({
           id="subject"
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
-          placeholder="Hoşgeldiniz {{name}}!"
+          placeholder="Hoşgeldiniz {name}!"
           disabled={isLoading}
         />
       </div>

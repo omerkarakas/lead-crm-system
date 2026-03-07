@@ -276,15 +276,15 @@ export function SendEmailDialog({
           <div className="bg-muted rounded-lg p-3">
             <p className="text-xs text-muted-foreground flex flex-wrap gap-1">
               <strong>Kullanılabilir değişkenler:</strong>{' '}
-              <Badge variant="outline" className="mx-1">{'{{name}}'}</Badge>
-              <Badge variant="outline" className="mx-1">{'{{first_name}}'}</Badge>
-              <Badge variant="outline" className="mx-1">{'{{company}}'}</Badge>
-              <Badge variant="outline" className="mx-1">{'{{email}}'}</Badge>
-              <Badge variant="outline" className="mx-1">{'{{phone}}'}</Badge>
-              <Badge variant="outline" className="mx-1">{'{{website}}'}</Badge>
-              <Badge variant="outline" className="mx-1">{'{{message}}'}</Badge>
-              <Badge variant="outline" className="mx-1">{'{{source}}'}</Badge>
-              <Badge variant="outline" className="mx-1">{'{{status}}'}</Badge>
+              <Badge variant="outline" className="mx-1">{'{name}'}</Badge>
+              <Badge variant="outline" className="mx-1">{'{first_name}'}</Badge>
+              <Badge variant="outline" className="mx-1">{'{company}'}</Badge>
+              <Badge variant="outline" className="mx-1">{'{email}'}</Badge>
+              <Badge variant="outline" className="mx-1">{'{phone}'}</Badge>
+              <Badge variant="outline" className="mx-1">{'{website}'}</Badge>
+              <Badge variant="outline" className="mx-1">{'{message}'}</Badge>
+              <Badge variant="outline" className="mx-1">{'{source}'}</Badge>
+              <Badge variant="outline" className="mx-1">{'{status}'}</Badge>
             </p>
           </div>
 

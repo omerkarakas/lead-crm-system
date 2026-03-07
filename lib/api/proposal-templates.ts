@@ -156,7 +156,7 @@ export async function toggleActive(id: string, isActive: boolean): Promise<Propo
 
 /**
  * Replace template variables with actual data
- * Supports both {{variable}} and {variable} syntax
+ * Uses {variable} syntax
  */
 function replaceTemplateVariables(
   text: string,
@@ -167,22 +167,11 @@ function replaceTemplateVariables(
   let result = text;
 
   // Replace default lead variables
-  result = result.replace(/\{\{name\}\}/g, lead.name || '');
   result = result.replace(/\{name\}/g, lead.name || '');
-
-  result = result.replace(/\{\{email\}\}/g, lead.email || '');
   result = result.replace(/\{email\}/g, lead.email || '');
-
-  result = result.replace(/\{\{phone\}\}/g, lead.phone || '');
   result = result.replace(/\{phone\}/g, lead.phone || '');
-
-  result = result.replace(/\{\{company\}\}/g, lead.company || '');
   result = result.replace(/\{company\}/g, lead.company || '');
-
-  result = result.replace(/\{\{website\}\}/g, lead.website || '');
   result = result.replace(/\{website\}/g, lead.website || '');
-
-  result = result.replace(/\{\{message\}\}/g, lead.message || '');
   result = result.replace(/\{message\}/g, lead.message || '');
 
   // Replace appointment variables if available
@@ -191,17 +180,13 @@ function replaceTemplateVariables(
     const formattedDate = appointmentDate.toLocaleDateString('tr-TR');
     const formattedTime = appointmentDate.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
 
-    result = result.replace(/\{\{appointment_date\}\}/g, formattedDate);
     result = result.replace(/\{appointment_date\}/g, formattedDate);
-
-    result = result.replace(/\{\{appointment_time\}\}/g, formattedTime);
     result = result.replace(/\{appointment_time\}/g, formattedTime);
   }
 
   // Replace custom variables
   if (customVariables) {
     Object.entries(customVariables).forEach(([key, value]) => {
-      result = result.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), value || '');
       result = result.replace(new RegExp(`\\{${key}\\}`, 'g'), value || '');
     });
   }

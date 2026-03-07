@@ -7,6 +7,7 @@ import { useAuthStore } from '@/lib/stores/auth';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
+import { useSessionTracker } from '@/lib/hooks/useSessionTracker';
 
 export default function DashboardLayout({
   children,
@@ -16,6 +17,9 @@ export default function DashboardLayout({
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const { user, isLoading, checkAuth } = useAuthStore();
   const router = useRouter();
+
+  // Track session activity
+  useSessionTracker();
 
   useEffect(() => {
     checkAuth();

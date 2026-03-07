@@ -32,12 +32,11 @@ export interface Session {
   id: string;
   userId: string;
   token: string;
-  deviceId: string;
-  deviceName?: string;
-  userAgent: string;
-  ip: string;
   lastActive: string;
+  ipAddress?: string;
+  userAgent?: string;
   created: string;
+  updated: string;
   expand?: {
     userId?: User;
   };

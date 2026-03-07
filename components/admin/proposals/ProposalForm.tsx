@@ -48,7 +48,14 @@ export function ProposalForm({
 
   useEffect(() => {
     if (template) {
-      setPreviewContent(previewTemplate(template));
+      // Build custom variables with default values for preview
+      const previewCustomVars: Record<string, string> = {};
+      template.variables?.forEach(v => {
+        if (v.default_value) {
+          previewCustomVars[v.name] = v.default_value;
+        }
+      });
+      setPreviewContent(previewTemplate(template, previewCustomVars));
     }
   }, [template]);
 
@@ -83,7 +90,15 @@ export function ProposalForm({
       updated: template?.updated || new Date().toISOString(),
     };
 
-    setPreviewContent(previewTemplate(tempTemplate));
+    // Build custom variables with default values for preview
+    const previewCustomVars: Record<string, string> = {};
+    customVariables.forEach(v => {
+      if (v.default_value) {
+        previewCustomVars[v.name] = v.default_value;
+      }
+    });
+
+    setPreviewContent(previewTemplate(tempTemplate, previewCustomVars));
     setShowPreview(true);
   };
 

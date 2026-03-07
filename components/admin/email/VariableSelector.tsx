@@ -32,7 +32,7 @@ export function VariableSelector({ onInsert, editorRef }: VariableSelectorProps)
     // If editor ref is provided, try to insert at cursor position
     if (editorRef?.current) {
       const editor = editorRef.current;
-      const variableText = `{{${variable}}}`;
+      const variableText = `{${variable}}`;
 
       // Check if editor has insertText method (TipTap)
       if (typeof editor.view?.dispatch === 'function') {
@@ -46,7 +46,7 @@ export function VariableSelector({ onInsert, editorRef }: VariableSelectorProps)
       }
     } else {
       // No editor ref, just call the callback
-      onInsert(`{{${variable}}}`);
+      onInsert(`{${variable}}`);
     }
   };
 
@@ -67,7 +67,7 @@ export function VariableSelector({ onInsert, editorRef }: VariableSelectorProps)
             <div className="flex flex-col">
               <span className="font-medium">{variable.label}</span>
               <span className="text-xs text-muted-foreground">
-                {'{{' + variable.key + '}}'} - {variable.description}
+                {'{' + variable.key + '}'} - {variable.description}
               </span>
             </div>
           </DropdownMenuItem>

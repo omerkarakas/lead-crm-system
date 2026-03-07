@@ -166,10 +166,10 @@ export function SessionList({ user, open, onOpenChange }: SessionListProps) {
                     className="flex items-center justify-between p-3 border rounded-lg"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="text-2xl">{getDeviceIcon(session.userAgent)}</span>
+                      <span className="text-2xl">{getDeviceIcon(session.userAgent || '')}</span>
                       <div>
                         <p className="font-medium">
-                          {session.deviceName || 'Bilinmeyen Cihaz'}
+                          {session.userAgent ? 'Cihaz' : 'Bilinmeyen Cihaz'}
                           {isCurrent && (
                             <Badge variant="secondary" className="ml-2">
                               Şu anki
@@ -179,7 +179,9 @@ export function SessionList({ user, open, onOpenChange }: SessionListProps) {
                         <p className="text-sm text-muted-foreground">
                           Son aktivite: {formatLastActive(session.lastActive)}
                         </p>
-                        <p className="text-xs text-muted-foreground">{session.ip}</p>
+                        {session.ipAddress && (
+                          <p className="text-xs text-muted-foreground">{session.ipAddress}</p>
+                        )}
                       </div>
                     </div>
                     {!isCurrent && (

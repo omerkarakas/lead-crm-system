@@ -94,55 +94,41 @@ export async function deleteUser(id: string): Promise<void> {
 }
 
 /**
- * Fetch sessions for a user (Admin or own sessions)
+ * Fetch sessions for a user
+ * Uses PocketBase API rules for access control
  */
 export async function fetchSessions(userId: string): Promise<Session[]> {
-  const currentUserId = pb.authStore.model?.id;
-  const currentUserRole = pb.authStore.model?.role;
+  const response = await fetch(`/api/users/sessions?userId=${userId}`);
 
-  // Check permissions: Admin can see all sessions, users can only see their own
-  if (currentUserRole !== 'admin' && currentUserId !== userId) {
-    throw new Error('Bu oturumları görüntüleme yetkiniz yok');
+  if (!response.ok) {
+    const data = await response.json();
+    throw new Error(data.error || 'Failed to fetch sessions');
   }
 
-  const response = await pb.collection('sessions').getList<Session>(1, 50, {
-    filter: `userId = "${userId}"`,
-    sort: '-lastActive',
-  });
-
-  return response.items;
+  const data = await response.json();
+  return data.items;
 }
 
 /**
- * Revoke a single session (Admin or own session)
+ * Revoke a single session
+ * Uses PocketBase API rules for access control
  */
 export async function revokeSession(sessionId: string): Promise<void> {
-  const currentUserId = pb.authStore.model?.id;
-  const currentUserRole = pb.authStore.model?.role;
+  const response = await fetch(`/api/sessions?id=${sessionId}`, {
+    method: 'DELETE',
+  });
 
-  // Get the session first to check ownership
-  const session = await pb.collection('sessions').getOne<Session>(sessionId);
-
-  // Admin can revoke any session, users can only revoke their own
-  if (currentUserRole !== 'admin' && session.userId !== currentUserId) {
-    throw new Error('Bu oturumu iptal etme yetkiniz yok');
+  if (!response.ok) {
+    const data = await response.json();
+    throw new Error(data.error || 'Failed to revoke session');
   }
-
-  await pb.collection('sessions').delete(sessionId);
 }
 
 /**
  * Revoke all sessions for a user except current
  */
 export async function revokeAllOtherSessions(userId: string): Promise<void> {
-  const currentUserId = pb.authStore.model?.id;
-  const currentUserRole = pb.authStore.model?.role;
   const currentToken = pb.authStore.token;
-
-  // Check permissions
-  if (currentUserRole !== 'admin' && currentUserId !== userId) {
-    throw new Error('Bu oturumları iptal etme yetkiniz yok');
-  }
 
   // Get all sessions for the user
   const sessions = await fetchSessions(userId);
@@ -150,7 +136,7 @@ export async function revokeAllOtherSessions(userId: string): Promise<void> {
   // Delete all sessions except the current one
   for (const session of sessions) {
     if (session.token !== currentToken) {
-      await pb.collection('sessions').delete(session.id);
+      await revokeSession(session.id);
     }
   }
 }

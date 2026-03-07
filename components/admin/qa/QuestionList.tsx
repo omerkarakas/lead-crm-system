@@ -12,7 +12,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Switch } from '@/components/ui/switch';
-import { Edit, Trash2, GripVertical, MessageSquare } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { Edit, Trash2, ChevronUp, ChevronDown, MessageSquare } from 'lucide-react';
 import { useState } from 'react';
 import {
   AlertDialog,
@@ -24,12 +30,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 
 interface QuestionListProps {
   questions: QAQuestion[];
@@ -155,53 +155,54 @@ export function QuestionList({
                   />
                 </TableCell>
                 <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" disabled={loading}>
-                          <GripVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => moveUp(index)} disabled={index === 0}>
-                          Yukarı Taşı
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => moveDown(index)}
-                          disabled={index === questions.length - 1}
-                        >
-                          Aşağı Taşı
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                  <TooltipProvider>
+                    <div className="flex justify-end gap-1">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="icon" onClick={() => moveUp(index)} disabled={index === 0 || loading}>
+                            <ChevronUp className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Yukarı Taşı</TooltipContent>
+                      </Tooltip>
 
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setPreviewQuestion(question)}
-                      title="WhatsApp Önizleme"
-                    >
-                      <MessageSquare className="h-4 w-4" />
-                    </Button>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="icon" onClick={() => moveDown(index)} disabled={index === questions.length - 1 || loading}>
+                            <ChevronDown className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Aşağı Taşı</TooltipContent>
+                      </Tooltip>
 
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onEdit(question)}
-                      disabled={loading}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="icon" onClick={() => setPreviewQuestion(question)}>
+                            <MessageSquare className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>WhatsApp Önizleme</TooltipContent>
+                      </Tooltip>
 
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDeleteClick(question)}
-                      disabled={loading}
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="icon" className="text-green-600 hover:text-green-700 hover:bg-green-50" onClick={() => onEdit(question)} disabled={loading}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Düzenle</TooltipContent>
+                      </Tooltip>
+
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="icon" className="text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => handleDeleteClick(question)} disabled={loading}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Sil</TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </TooltipProvider>
                 </TableCell>
               </TableRow>
             ))}

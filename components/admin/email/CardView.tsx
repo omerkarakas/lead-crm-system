@@ -5,6 +5,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { Edit, Archive, RotateCcw, Mail } from 'lucide-react';
 
 interface CardViewProps {
@@ -70,34 +76,38 @@ export function CardView({
               />
 
               {/* Actions */}
-              <div className="flex gap-2 pt-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onEdit(template)}
-                  className="flex-1"
-                >
-                  <Edit className="h-4 w-4 mr-2" />
-                  Düzenle
-                </Button>
-                {template.is_deleted ? (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onRestore(template.id)}
-                  >
-                    <RotateCcw className="h-4 w-4" />
-                  </Button>
-                ) : (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onArchive(template.id)}
-                  >
-                    <Archive className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
+              <TooltipProvider>
+                <div className="flex justify-end gap-1 pt-2 border-t">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon" className="text-green-600 hover:text-green-700 hover:bg-green-50" onClick={() => onEdit(template)}>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Düzenle</TooltipContent>
+                  </Tooltip>
+
+                  {template.is_deleted ? (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" onClick={() => onRestore(template.id)}>
+                          <RotateCcw className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Geri Yükle</TooltipContent>
+                    </Tooltip>
+                  ) : (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => onArchive(template.id)}>
+                          <Archive className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Arşivle</TooltipContent>
+                    </Tooltip>
+                  )}
+                </div>
+              </TooltipProvider>
             </div>
           </CardContent>
         </Card>

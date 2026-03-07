@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
       notified_count: result.notified_count,
       message: result.notified_count > 0
         ? 'Test bildirimi gönderildi'
-        : 'Bildirim gönderilemedi. Ayarları kontrol edin.',
+        : (result.errors[0] || 'Bildirim gönderilemedi. Ayarları kontrol edin.'),
       errors: result.errors,
     });
   } catch (error: any) {

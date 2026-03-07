@@ -4,14 +4,13 @@ import { Lead, LeadStatus } from '@/types/lead';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Eye, Pencil, Phone, Mail } from 'lucide-react';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { MoreHorizontal } from 'lucide-react';
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { Eye, Pencil, Phone, Mail } from 'lucide-react';
 
 interface LeadCardProps {
   lead: Lead;
@@ -73,25 +72,28 @@ export function LeadCard({ lead, onEdit }: LeadCardProps) {
               <Badge variant={STATUS_VARIANTS[lead.status]} className="font-medium">
                 {STATUS_LABELS[lead.status]}
               </Badge>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => window.location.href = `/leads/${lead.id}`}>
-                    <Eye className="mr-2 h-4 w-4" />
-                    Detay
-                  </DropdownMenuItem>
+              <TooltipProvider>
+                <div className="flex gap-1">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon" onClick={() => window.location.href = `/leads/${lead.id}`}>
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Detay</TooltipContent>
+                  </Tooltip>
                   {onEdit && (
-                    <DropdownMenuItem onClick={() => onEdit(lead)}>
-                      <Pencil className="mr-2 h-4 w-4" />
-                      Düzenle
-                    </DropdownMenuItem>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="text-green-600 hover:text-green-700 hover:bg-green-50" onClick={() => onEdit(lead)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Düzenle</TooltipContent>
+                    </Tooltip>
                   )}
-                </DropdownMenuContent>
-              </DropdownMenu>
+                </div>
+              </TooltipProvider>
             </div>
           </div>
 

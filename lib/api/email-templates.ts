@@ -162,18 +162,18 @@ export async function sendTestEmail(
 
 /**
  * Replace template variables with actual data
- * Supported variables: {{name}}, {{email}}, {{phone}}, {{company}}, {{website}}, {{message}}
+ * Supported variables: {name}, {email}, {phone}, {company}, {website}, {message}
  */
 function replaceTemplateVariables(text: string, lead: Lead): string {
   let result = text;
 
   // Replace all supported variables
-  result = result.replace(/\{\{name\}\}/g, lead.name || '');
-  result = result.replace(/\{\{email\}\}/g, lead.email || '');
-  result = result.replace(/\{\{phone\}\}/g, lead.phone || '');
-  result = result.replace(/\{\{company\}\}/g, lead.company || '');
-  result = result.replace(/\{\{website\}\}/g, lead.website || '');
-  result = result.replace(/\{\{message\}\}/g, lead.message || '');
+  result = result.replace(/\{name\}/g, lead.name || '');
+  result = result.replace(/\{email\}/g, lead.email || '');
+  result = result.replace(/\{phone\}/g, lead.phone || '');
+  result = result.replace(/\{company\}/g, lead.company || '');
+  result = result.replace(/\{website\}/g, lead.website || '');
+  result = result.replace(/\{message\}/g, lead.message || '');
 
   return result;
 }

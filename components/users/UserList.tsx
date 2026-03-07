@@ -11,15 +11,14 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { Edit, Trash2, Laptop, MoreVertical, Plus } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { Loader2, Edit, Laptop, Plus, Trash2 } from 'lucide-react';
 
 interface UserListProps {
   users: User[];
@@ -106,32 +105,38 @@ export function UserList({
                 {new Date(user.created).toLocaleDateString('tr-TR')}
               </TableCell>
               <TableCell className="text-right">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => onEdit(user)}>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Düzenle
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => onViewSessions(user)}>
-                      <Laptop className="mr-2 h-4 w-4" />
-                      Oturumlar
-                    </DropdownMenuItem>
+                <TooltipProvider>
+                  <div className="flex items-center justify-end gap-1">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="text-green-600 hover:text-green-700 hover:bg-green-50" onClick={() => onEdit(user)}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Düzenle</TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" onClick={() => onViewSessions(user)}>
+                          <Laptop className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Oturumlar</TooltipContent>
+                    </Tooltip>
+
                     {user.id !== currentUser?.id && (
-                      <DropdownMenuItem
-                        onClick={() => onDelete(user)}
-                        className="text-destructive"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Sil
-                      </DropdownMenuItem>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="icon" className="text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => onDelete(user)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Sil</TooltipContent>
+                      </Tooltip>
                     )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                  </div>
+                </TooltipProvider>
               </TableCell>
             </TableRow>
           ))}

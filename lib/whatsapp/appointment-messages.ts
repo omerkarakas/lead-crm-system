@@ -38,12 +38,12 @@ export function formatConfirmationMessage(leadName: string, appointment: Appoint
 
   // Add location or meeting URL
   if (appointment.meeting_url) {
-    message += ` Online toplantı linki: ${appointment.meeting_url}`;
+    message += `\n\nOnline toplantı linki:\n${appointment.meeting_url}`;
   } else if (appointment.location) {
     message += ` ${appointment.location}`;
   }
 
-  message += '. İptal veya değişiklik için bize ulaşabilirsiniz.';
+  message += '.\n\nİptal veya değişiklik için bize ulaşabilirsiniz.';
 
   return message;
 }
@@ -62,12 +62,12 @@ export function format24hReminderMessage(leadName: string, appointment: Appointm
 
   // Add location
   if (appointment.meeting_url) {
-    message += ' Online toplantı.';
+    message += '\n\nOnline toplantı linki:\n' + appointment.meeting_url;
   } else if (appointment.location) {
     message += ` ${appointment.location}`;
   }
 
-  message += ' Görüşmek üzere!';
+  message += '\n\nGörüşmek üzere!';
 
   return message;
 }

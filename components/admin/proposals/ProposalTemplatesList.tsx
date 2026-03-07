@@ -14,15 +14,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import {
   FileText,
-  MoreHorizontal,
   Pencil,
   Trash2,
   RotateCcw,
@@ -159,55 +157,53 @@ export function ProposalTemplatesList({
                     })}
                   </TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
+                    <TooltipProvider>
+                      <div className="flex justify-end gap-1">
                         {showArchived ? (
-                          <>
-                            <DropdownMenuItem onClick={() => onRestore(template.id)}>
-                              <RotateCcw className="h-4 w-4 mr-2" />
-                              Geri Yükle
-                            </DropdownMenuItem>
-                          </>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" onClick={() => onRestore(template.id)}>
+                                <RotateCcw className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Geri Yükle</TooltipContent>
+                          </Tooltip>
                         ) : (
                           <>
-                            <DropdownMenuItem onClick={() => onEdit(template)}>
-                              <Pencil className="h-4 w-4 mr-2" />
-                              Düzenle
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() =>
-                                onToggleActive(template.id, !template.is_active)
-                              }
-                            >
-                              {template.is_active ? (
-                                <>
-                                  <PowerOff className="h-4 w-4 mr-2" />
-                                  Pasife Al
-                                </>
-                              ) : (
-                                <>
-                                  <Power className="h-4 w-4 mr-2" />
-                                  Aktife Et
-                                </>
-                              )}
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              onClick={() => onDelete(template.id)}
-                              className="text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Sil
-                            </DropdownMenuItem>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" className="text-green-600 hover:text-green-700 hover:bg-green-50" onClick={() => onEdit(template)}>
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Düzenle</TooltipContent>
+                            </Tooltip>
+
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" onClick={() => onToggleActive(template.id, !template.is_active)}>
+                                  {template.is_active ? (
+                                    <PowerOff className="h-4 w-4" />
+                                  ) : (
+                                    <Power className="h-4 w-4 text-green-600" />
+                                  )}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>{template.is_active ? 'Pasife Al' : 'Aktife Et'}</TooltipContent>
+                            </Tooltip>
+
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" className="text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => onDelete(template.id)}>
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Sil</TooltipContent>
+                            </Tooltip>
                           </>
                         )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                      </div>
+                    </TooltipProvider>
                   </TableCell>
                 </TableRow>
               ))}
