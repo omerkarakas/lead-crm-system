@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerPb } from '@/lib/pocketbase/server';
 import { sendProposalViaWhatsApp } from '@/lib/api/proposals/send';
 import { canSendProposals } from '@/lib/utils/permissions';
+import { validateSalesPhonesConfigured } from '@/lib/api/notifications';
 
 /**
  * POST /api/proposals/send
@@ -58,6 +59,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate sales team phones are configured (required for notifications)
+    const phoneValidation = await validateSalesPhonesConfigured(pb);
+    if (!phoneValidation.valid) {
+      return NextResponse.json(
+        { error: phoneValidation.error },
+        { status: 400 }
+      );
+    }
+
     // Send proposal
     const result = await sendProposalViaWhatsApp(
       body.lead_id,
@@ -78,7 +88,7 @@ export async function POST(request: NextRequest) {
       proposal_id: result.proposal_id,
       token: result.token,
       link: result.link,
-      message: 'Proposal sent successfully',
+      message: 'Teklif başarıyla gönderildi. Satış ekibi bilgilendirilecek.',
     });
   } catch (error: any) {
     console.error('POST /api/proposals/send error:', error);
