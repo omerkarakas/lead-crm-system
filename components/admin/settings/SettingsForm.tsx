@@ -40,7 +40,7 @@ const SERVICE_FIELDS: Record<
     { key: 'from_name', label: 'From Name', type: 'text', placeholder: 'Moka CRM' },
   ],
   proposal_notifications: [
-    { key: 'enabled', label: 'Bildirimler Aktif', type: 'text', placeholder: 'true' },
+    { key: 'enabled', label: 'Bildirimler Aktif', type: 'password', placeholder: 'true' },
     { key: 'sales_phones', label: 'Satış Ekibi Telefonları', type: 'text', placeholder: '905551234567,905551234568' },
   ],
 };
@@ -125,6 +125,13 @@ export function SettingsForm({
             </Button>
           </div>
         </div>
+        {serviceName === 'proposal_notifications' && !settings.find(s => s.setting_key === 'sales_phones')?.setting_value && (
+          <div className="bg-amber-50 border border-amber-200 rounded-md p-2 mb-3 mt-3">
+            <p className="text-xs text-amber-800">
+              ⚠️ Satış ekibi telefonları yapılandırılmadı. Teklif gönderimi yapılamaz.
+            </p>
+          </div>
+        )}
       </CardHeader>
       <CardContent className="space-y-4">
         {fields.map((field) => {
@@ -139,7 +146,10 @@ export function SettingsForm({
           return (
             <div key={field.key} className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor={field.key}>{field.label}</Label>
+                <Label htmlFor={field.key}>
+                  {field.label}
+                  {field.key === 'sales_phones' && <span className="text-red-500 ml-1">*</span>}
+                </Label>
                 <div className="flex items-center gap-2">
                   <Switch
                     checked={setting.is_active}
@@ -189,7 +199,12 @@ export function SettingsForm({
                   </Button>
                 )}
               </div>
-              {setting.description && (
+              {field.key === 'sales_phones' && (
+                <p className="text-sm text-amber-600">
+                  ⚠️ Zorunlu: Teklif bildirimleri için en az bir telefon numarası girilmelidir. Virgül ile ayırarak birden fazla numara ekleyebilirsiniz.
+                </p>
+              )}
+              {setting.description && field.key !== 'sales_phones' && (
                 <p className="text-sm text-muted-foreground">{setting.description}</p>
               )}
             </div>
