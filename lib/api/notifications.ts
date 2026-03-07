@@ -15,39 +15,10 @@ interface NotificationResult {
 }
 
 /**
- * Get sales team phone numbers from users collection
- * Returns all users with 'sales' or 'admin' role who have a phone number
+ * Get sales team phone numbers from app_settings
+ * This is the ONLY source for sales team phones (single source of truth)
  */
 async function getSalesTeamPhones(pb: PocketBase): Promise<string[]> {
-  try {
-    // Get all admin and sales users
-    const adminResult = await pb.collection('users').getList(1, 50, {
-      filter: 'role = "admin" || role = "sales"',
-    });
-
-    const phones: string[] = [];
-    for (const user of adminResult.items) {
-      if (user.phone) {
-        // Normalize phone number (remove non-digits, ensure +90 prefix)
-        const normalizedPhone = user.phone.replace(/\D/g, '');
-        if (normalizedPhone.length >= 10) {
-          phones.push(normalizedPhone);
-        }
-      }
-    }
-
-    return phones;
-  } catch (error) {
-    console.error('Get sales team phones error:', error);
-    return [];
-  }
-}
-
-/**
- * Get configured sales team phones from app_settings
- * This allows override of users collection for flexibility
- */
-async function getConfiguredSalesPhones(pb: PocketBase): Promise<string[]> {
   try {
     const records = await pb.collection('app_settings').getList(1, 10, {
       filter: 'service_name = "proposal_notifications" && setting_key = "sales_phones"',
@@ -64,7 +35,7 @@ async function getConfiguredSalesPhones(pb: PocketBase): Promise<string[]> {
 
     return [];
   } catch (error) {
-    console.error('Get configured sales phones error:', error);
+    console.error('Get sales team phones error:', error);
     return [];
   }
 }
@@ -90,6 +61,20 @@ async function areProposalNotificationsEnabled(pb: PocketBase): Promise<boolean>
 }
 
 /**
+ * Validate that sales team phones are configured in app_settings
+ */
+export async function validateSalesPhonesConfigured(pb: PocketBase): Promise<{ valid: boolean; error?: string }> {
+  const phones = await getSalesTeamPhones(pb);
+  if (phones.length === 0) {
+    return {
+      valid: false,
+      error: 'Satış ekibi telefon numaraları yapılandırılmamış. Settings sayfasından "Satış Ekibi Telefonları" alanını doldurun.'
+    };
+  }
+  return { valid: true };
+}
+
+/**
  * Send WhatsApp notification to sales team about proposal response
  */
 async function notifySalesTeam(
@@ -100,19 +85,13 @@ async function notifySalesTeam(
   const errors: string[] = [];
   let notified_count = 0;
 
-  // Try configured phones first, fallback to users collection
-  let phones = await getConfiguredSalesPhones(pb);
+  // Get phones from app_settings only (single source of truth)
+  const phones = await getSalesTeamPhones(pb);
 
+  // If no phones found, return error
   if (phones.length === 0) {
-    phones = await getSalesTeamPhones(pb);
-  }
-
-  // If no phones found, check for env var fallback
-  if (phones.length === 0) {
-    const envPhone = process.env.SALES_WHATSAPP_NUMBER;
-    if (envPhone) {
-      phones = [envPhone.replace(/\D/g, '')];
-    }
+    errors.push('Satış ekibi telefon numarası bulunamadı. Settings sayfasından "Satış Ekibi Telefonları" alanını yapılandırın.');
+    return { notified_count: 0, errors };
   }
 
   // Send to each phone number
