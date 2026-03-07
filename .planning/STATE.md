@@ -10,19 +10,19 @@ See: .planning/PROJECT.md (updated 2025-03-01)
 ## Current Position
 
 Phase: 4.2 of 9 (Phase 4.2: Proposal Management - INSERTED)
-Plan: 03 of 3
-Status: Phase 4.2-03 (Proposal Response Tracking and Notifications) complete
-Last activity: 2026-03-05 — Completed proposal response tracking with sales team notifications
+Plan: 05 of 5
+Status: Phase 4.2-05 (Simplify Sales Team Phone Notifications) - Code complete, UAT pending
+Last activity: 2026-03-07 — Simplified sales team phone notifications to single source of truth, added status automation tracking
 
-Progress: [█████████░] 61% (5/9 phases complete, 32/30 plans targeted)
+Progress: [█████████░] 61% (5/9 phases complete, 33/36 plans targeted)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 32
+- Total plans completed: 33
 - Average duration: 11 min
-- Total execution time: 4 hours 8 min
+- Total execution time: 4 hours 11 min
 
 **By Phase:**
 
@@ -33,7 +33,7 @@ Progress: [█████████░] 61% (5/9 phases complete, 32/30 plans
 | 03-email-communication   | 3 of 3    | 17 min    | 5.7 min  |
 | 04-appointments          | 4 of 4    | 20 min    | 5 min    |
 | 04.1-lead-capture        | 4 of 4    | 46 min    | 11.5 min |
-| 04.2-proposal-management | 3 of 3    | 71 min    | 23.7 min |
+| 04.2-proposal-management | 5 of 5    | 74 min    | 14.8 min |
 
 **Recent Trend:**
 
@@ -187,6 +187,11 @@ Recent decisions affecting current work:
 | Timeline view for proposals | Color-coded status icons (green/yellow/red) with filtering and sorting | 2026-03-05 |
 | Proposal history audit trail | Full history tracking with created, responded_at, response, response_comment fields | 2026-03-05 |
 | Notification settings configuration | Admin settings page for proposal notifications with test endpoint | 2026-03-05 |
+| Single source of truth for sales phones | app_settings only - no users.phone dependency, no SALES_WHATSAPP_NUMBER env var | 2026-03-07 |
+| Pre-send validation for proposals | Validate sales phones configured before allowing proposal send | 2026-03-07 |
+| Auto-update tracking fields | auto_updated_status boolean and auto_updated_at timestamp for proposal-driven changes | 2026-03-07 |
+| Appointment completion no status change | Randevu süreçleri statüyü etkilemez - only proposal responses affect status | 2026-03-07 |
+| Admin-only status override | Force checkbox + permission check for auto-updated status changes | 2026-03-07 |
 
 ### Pending Todos
 
@@ -220,9 +225,9 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-05 (Phase 4.2-03 complete)
-Stopped at: Completed proposal response tracking with sales team notifications
+Last session: 2026-03-07 (Phase 4.2-05 code complete, UAT pending)
+Stopped at: Completed sales team phone notification simplification and status automation implementation
 Resume file: None
 Dev server: Running at http://localhost:3001
 
-**Note**: Phase 4.2-03 complete - Sales team WhatsApp notifications on proposal accept/reject with multi-source phone configuration (users collection + app_settings override), timeline view for response history with filtering and sorting, full audit trail using existing record fields, and admin settings page for notification configuration with test endpoint. Phase 4.2 (Proposal Management) is now complete with all 3 plans finished.
+**Note**: Phase 4.2-05 code complete - Simplified sales team phone notifications to use app_settings as single source of truth (removed broken users.phone and env var fallbacks), added pre-send validation preventing proposal sending without configured phones, enhanced settings UI with required field indicators, implemented status automation tracking (auto_updated_status, auto_updated_at fields), and added role-based manual override (admin only with force checkbox, sales blocked). UAT pending - requires database migration to add new fields to leads collection.
