@@ -11,6 +11,7 @@ import {
 import { LeadForm, LeadFormValues } from './LeadForm';
 import { Lead, CreateLeadDto, UpdateLeadDto, LeadSource, LeadStatus } from '@/types/lead';
 import { useLeadsStore } from '@/lib/stores/leads';
+import { useAuthStore } from '@/lib/stores/auth';
 import { toast } from 'sonner';
 
 interface LeadModalProps {
@@ -22,6 +23,7 @@ interface LeadModalProps {
 
 export function LeadModal({ open, onOpenChange, lead, mode = 'create' }: LeadModalProps) {
   const { createLead, updateLead } = useLeadsStore();
+  const { user } = useAuthStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const defaultValues = lead
@@ -35,10 +37,11 @@ export function LeadModal({ open, onOpenChange, lead, mode = 'create' }: LeadMod
         source: lead.source,
         status: lead.status,
         tags: lead.tags,
+        auto_updated_status: lead.auto_updated_status,
       }
     : undefined;
 
-  const handleSubmit = async (data: LeadFormValues) => {
+  const handleSubmit = async (data: LeadFormValues, force?: boolean) => {
     setIsSubmitting(true);
     try {
       if (mode === 'create' && !lead) {
@@ -79,7 +82,7 @@ export function LeadModal({ open, onOpenChange, lead, mode = 'create' }: LeadMod
           status: data.status,
           tags: data.tags || [],
         };
-        await updateLead(lead.id, updateData);
+        await updateLead(lead.id, updateData, { force, userRole: user?.role });
         toast.success(`${data.name} başarıyla güncellendi.`);
       }
       onOpenChange(false);
@@ -111,6 +114,7 @@ export function LeadModal({ open, onOpenChange, lead, mode = 'create' }: LeadMod
           isSubmitting={isSubmitting}
           defaultValues={defaultValues}
           mode={mode}
+          userRole={user?.role}
         />
       </DialogContent>
     </Dialog>

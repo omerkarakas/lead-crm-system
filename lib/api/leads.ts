@@ -109,7 +109,33 @@ export async function createLead(data: CreateLeadDto): Promise<Lead> {
 /**
  * Update an existing lead
  */
-export async function updateLead(id: string, data: UpdateLeadDto): Promise<Lead> {
+export async function updateLead(
+  id: string,
+  data: UpdateLeadDto,
+  options?: { force?: boolean; userRole?: 'admin' | 'sales' | 'marketing' }
+): Promise<Lead> {
+  // Get current lead to check if status is auto-updated
+  const currentLead = await pb.collection('leads').getOne<Lead>(id);
+
+  // If status is being changed and it was auto-updated
+  if (data.status && data.status !== currentLead.status && currentLead.auto_updated_status) {
+    const userRole = options?.userRole || 'sales';
+
+    // Check if user is admin
+    if (userRole !== 'admin') {
+      throw new Error('Otomatik güncellenen statüyü değiştirmek için admin yetkisi gerekli.');
+    }
+
+    // Check if admin is forcing the override
+    if (!options?.force) {
+      throw new Error('Statüyü değiştirmek için "Zorla" checkbox\'unu işaretleyin.');
+    }
+
+    // Clear auto-updated flags when admin overrides
+    data.auto_updated_status = false;
+    data.auto_updated_at = undefined;
+  }
+
   return await pb.collection('leads').update<Lead>(id, data);
 }
 

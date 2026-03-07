@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerPb } from '@/lib/pocketbase/server';
-import { updateLeadStatusBasedOnProposal } from '@/lib/utils/status';
 import type { Appointment, Lead } from '@/types/lead';
 
 /**
  * POST /api/appointments/[id]/complete
- * Mark appointment as completed and check lead status based on proposal response
+ * Mark appointment as completed
+ * IMPORTANT: Does NOT update lead status - only proposal responses affect lead status
  */
 export async function POST(
   req: NextRequest,
@@ -35,40 +35,19 @@ export async function POST(
       status: 'completed'
     });
 
-    // Check if lead has proposal response and update status
+    // Get current lead status for response (read-only, no update)
     const lead = appointment.expand?.lead_id;
-    let statusUpdateInfo = null;
+    const currentLeadStatus = lead?.status;
 
-    if (lead) {
-      // Check if status is already CUSTOMER or LOST from proposal response
-      if (lead.status === 'customer' || lead.status === 'lost') {
-        statusUpdateInfo = {
-          status_updated: false,
-          previousStatus: lead.status,
-          newStatus: lead.status,
-          reason: lead.status === 'customer'
-            ? 'Durum zaten müşteri (teklif kabul edildi)'
-            : 'Durum zaten kaybedildi (teklif reddedildi)'
-        };
-        console.log('[POST /api/appointments/[id]/complete] Status already updated from proposal response');
-      } else {
-        // Check if there's a proposal response and update status
-        const statusUpdate = await updateLeadStatusBasedOnProposal(pb, appointment.lead_id);
-        statusUpdateInfo = {
-          status_updated: statusUpdate.updated,
-          previousStatus: statusUpdate.previousStatus,
-          newStatus: statusUpdate.newStatus,
-          reason: statusUpdate.reason
-        };
-      }
-    }
+    console.log(`[POST /api/appointments/[id]/complete] Appointment ${id} completed. Lead ${appointment.lead_id} status remains: ${currentLeadStatus} (appointment completion does not change lead status)`);
 
     return NextResponse.json({
       success: true,
-      message: 'Appointment completed',
+      message: 'Randevu tamamlandı',
       appointment: updatedAppointment,
       lead_id: appointment.lead_id,
-      status_update: statusUpdateInfo
+      lead_status: currentLeadStatus,
+      note: 'Randevu tamamlanması lead statüsünü değiştirmez. Sadece teklif cevabı statüyü günceller.'
     });
   } catch (error) {
     console.error('[POST /api/appointments/[id]/complete] Error:', error);

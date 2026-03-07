@@ -94,12 +94,14 @@ export async function updateLeadStatusBasedOnProposal(
       };
     }
 
-    // Update lead status
+    // Update lead status with auto-update tracking
     await pb.collection('leads').update(leadId, {
-      status: newStatus
+      status: newStatus,
+      auto_updated_status: true,
+      auto_updated_at: new Date().toISOString()
     });
 
-    console.log(`[updateLeadStatusBasedOnProposal] Lead ${leadId}: ${previousStatus} → ${newStatus} (${reason})`);
+    console.log(`[updateLeadStatusBasedOnProposal] Lead ${leadId}: ${previousStatus} → ${newStatus} (${reason}, auto_updated: true)`);
 
     return {
       updated: true,
@@ -130,12 +132,7 @@ export function canOverrideStatus(userRole: Role): boolean {
  * Check if status was auto-updated from proposal response
  */
 export function isStatusAutoUpdated(lead: Lead): boolean {
-  const hasProposalResponse = lead.offer_response && lead.offer_response !== 'cevap_bekleniyor';
-  const statusMatchesProposal =
-    (lead.status === 'customer' && lead.offer_response === 'kabul') ||
-    (lead.status === 'lost' && lead.offer_response === 'red');
-
-  return hasProposalResponse && statusMatchesProposal;
+  return lead.auto_updated_status === true;
 }
 
 /**

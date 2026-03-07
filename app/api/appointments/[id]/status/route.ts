@@ -87,11 +87,16 @@ export async function PATCH(
     }
 
     // Update lead status
-    await pb.collection('leads').update(body.lead_id, {
-      status: newStatus
-    });
+    // If admin is forcing an override on auto-updated status, clear the auto-updated flags
+    const updateData: any = { status: newStatus };
+    if (force && isAdmin && lead.auto_updated_status) {
+      updateData.auto_updated_status = false;
+      updateData.auto_updated_at = null;
+    }
 
-    console.log(`[PATCH /api/appointments/[id]/status] Lead ${body.lead_id}: ${previousStatus} → ${newStatus} (${reason}, forced: ${force && isAdmin})`);
+    await pb.collection('leads').update(body.lead_id, updateData);
+
+    console.log(`[PATCH /api/appointments/[id]/status] Lead ${body.lead_id}: ${previousStatus} → ${newStatus} (${reason}, forced: ${force && isAdmin}, auto_updated_cleared: ${force && isAdmin && lead.auto_updated_status})`);
 
     return NextResponse.json({
       success: true,

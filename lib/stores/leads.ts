@@ -21,7 +21,7 @@ interface LeadsState {
   fetchLeads: (params?: LeadsListParams) => Promise<void>;
   fetchLead: (id: string) => Promise<Lead>;
   createLead: (data: CreateLeadDto) => Promise<Lead>;
-  updateLead: (id: string, data: UpdateLeadDto) => Promise<void>;
+  updateLead: (id: string, data: UpdateLeadDto, options?: { force?: boolean; userRole?: 'admin' | 'sales' | 'marketing' }) => Promise<void>;
   deleteLead: (id: string) => Promise<void>;
   setFilters: (filters: Partial<LeadsState['filters']>) => void;
   clearError: () => void;
@@ -89,10 +89,10 @@ export const useLeadsStore = create<LeadsState>((set, get) => ({
     }
   },
 
-  updateLead: async (id: string, data: UpdateLeadDto) => {
+  updateLead: async (id: string, data: UpdateLeadDto, options?: { force?: boolean; userRole?: 'admin' | 'sales' | 'marketing' }) => {
     set({ loading: true, error: null });
     try {
-      await leadsApi.updateLead(id, data);
+      await leadsApi.updateLead(id, data, options);
       await get().fetchLeads();
       set({ loading: false });
     } catch (error: any) {
