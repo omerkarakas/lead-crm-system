@@ -23,7 +23,7 @@ interface CampaignsState {
   // Actions
   fetchCampaigns: () => Promise<void>;
   fetchCampaign: (id: string) => Promise<void>;
-  createCampaign: (data: CreateCampaignDto) => Promise<void>;
+  createCampaign: (data: CreateCampaignDto) => Promise<Campaign>;
   updateCampaign: (id: string, data: UpdateCampaignDto) => Promise<void>;
   deleteCampaign: (id: string) => Promise<void>;
   setActiveCampaign: (campaign: Campaign | null) => void;
@@ -92,13 +92,14 @@ export const useCampaignsStore = create<CampaignsState>()(
       createCampaign: async (data: CreateCampaignDto) => {
         set({ loading: true, error: null });
         try {
-          await fetchFromAPI('/api/campaigns', {
+          const campaign = await fetchFromAPI('/api/campaigns', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
           });
           await get().fetchCampaigns();
           set({ loading: false });
+          return campaign;
         } catch (error: any) {
           set({
             error: error.message || 'Kampanya oluşturulurken hata oluştu',

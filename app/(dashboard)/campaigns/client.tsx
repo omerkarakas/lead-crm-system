@@ -1,6 +1,9 @@
 'use client';
 
+'use client';
+
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Campaign } from '@/types/campaign';
 import { Button } from '@/components/ui/button';
 import { Plus, Megaphone } from 'lucide-react';
@@ -16,8 +19,11 @@ import { CampaignList } from '@/components/campaigns/CampaignList';
 import { CampaignForm } from '@/components/campaigns/CampaignForm';
 import { toast } from 'sonner';
 import { CreateCampaignDto, UpdateCampaignDto } from '@/types/campaign';
+import type { SequenceStep } from '@/types/campaign';
+import * as campaignApi from '@/lib/api/campaigns';
 
 export function CampaignsClient() {
+  const router = useRouter();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCampaign, setEditingCampaign] = useState<Campaign | undefined>();
   const { campaigns, loading, error, fetchCampaigns, createCampaign, updateCampaign, deleteCampaign } =
@@ -51,19 +57,39 @@ export function CampaignsClient() {
   };
 
   const handleViewSequences = (campaign: Campaign) => {
-    // TODO: Implement sequence viewing
-    toast.info('Sıralar görüntüleme özelliği yakında eklenecek');
+    router.push(`/campaigns/${campaign.id}/sequences`);
   };
 
-  const handleSave = async (data: CreateCampaignDto | UpdateCampaignDto) => {
+  const handleSave = async (data: CreateCampaignDto | UpdateCampaignDto, sequenceData?: { name: string; steps: SequenceStep[] }) => {
     try {
+      let campaignId: string;
+
       if (editingCampaign) {
         await updateCampaign(editingCampaign.id, data);
+        campaignId = editingCampaign.id;
         toast.success('Kampanya güncellendi');
       } else {
-        await createCampaign(data as CreateCampaignDto);
+        const newCampaign = await createCampaign(data as CreateCampaignDto);
+        campaignId = newCampaign.id;
         toast.success('Kampanya oluşturuldu');
       }
+
+      // Create sequence if data provided
+      if (sequenceData && sequenceData.steps.length > 0) {
+        try {
+          await campaignApi.createSequence({
+            campaign_id: campaignId,
+            name: sequenceData.name,
+            steps: sequenceData.steps,
+            is_active: true,
+          });
+          toast.success('Sıra oluşturuldu');
+        } catch (sequenceError: any) {
+          console.error('Failed to create sequence:', sequenceError);
+          toast.warning('Kampanya oluşturuldu ancak sıra oluşturulamadı');
+        }
+      }
+
       setDialogOpen(false);
       setEditingCampaign(undefined);
     } catch (error: any) {
