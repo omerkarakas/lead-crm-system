@@ -169,3 +169,44 @@ export interface SegmentPreview {
 export interface CampaignWithSequences extends Campaign {
   sequences?: Sequence[];
 }
+
+// Enrollment Status
+export enum EnrollmentStatus {
+  Active = 'active',
+  Completed = 'completed',
+  Failed = 'failed',
+  Unsubscribed = 'unsubscribed'
+}
+
+// Campaign Enrollment
+export interface CampaignEnrollment {
+  id: string;
+  campaign_id: string;
+  sequence_id: string;
+  lead_id: string;
+  status: EnrollmentStatus;
+  current_step: number;
+  enrolled_at: string;
+  completed_at?: string;
+  unsubscribed_at?: string;
+  unsubscribe_token: string;
+  created: string;
+  updated: string;
+  expand?: {
+    campaign_id?: Campaign;
+    sequence_id?: Sequence;
+    lead_id?: any; // Lead type - imported from lead.ts to avoid circular dependency
+  };
+}
+
+// Enrollment DTOs
+export interface CreateEnrollmentDto {
+  campaign_id: string;
+  sequence_id: string;
+  lead_id: string;
+}
+
+export interface UnsubscribeRequest {
+  token: string;
+  campaign_ids?: string[];
+}
