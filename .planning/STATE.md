@@ -10,19 +10,19 @@ See: .planning/PROJECT.md (updated 2025-03-01)
 ## Current Position
 
 Phase: 05 of 9 (Phase 5: Campaigns & Nurturing)
-Plan: 01 of 6
+Plan: 02 of 6
 Status: In progress
-Last activity: 2026-03-08 — Campaign and sequence data models with audience segmentation, preview functionality, and admin-only CRUD operations implemented
+Last activity: 2026-03-08 — Sequence builder foundation with Zustand store, step form modal, table/flow chart views, and step reordering capabilities
 
-Progress: [████████░░] 64% (7/9 phases complete, 34/39 plans targeted)
+Progress: [████████░░] 67% (7/9 phases complete, 35/39 plans targeted)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 34
-- Average duration: 10.6 min
-- Total execution time: 4 hours 15 min
+- Total plans completed: 35
+- Average duration: 10.4 min
+- Total execution time: 4 hours 17 min
 
 **By Phase:**
 
@@ -34,7 +34,7 @@ Progress: [████████░░] 64% (7/9 phases complete, 34/39 plans
 | 04-appointments          | 4 of 4    | 20 min    | 5 min    |
 | 04.1-lead-capture        | 4 of 4    | 46 min    | 11.5 min |
 | 04.2-proposal-management | 5 of 5    | 74 min    | 14.8 min |
-| 05-campaigns-nurturing   | 1 of 6    | 4 min     | 4 min    |
+| 05-campaigns-nurturing   | 2 of 6    | 6 min     | 3 min    |
 
 **Recent Trend:**
 
@@ -204,6 +204,11 @@ Recent decisions affecting current work:
 | Auto-update tracking fields | auto_updated_status boolean and auto_updated_at timestamp for proposal-driven changes | 2026-03-07 |
 | Appointment completion no status change | Randevu süreçleri statüyü etkilemez - only proposal responses affect status | 2026-03-07 |
 | Admin-only status override | Force checkbox + permission check for auto-updated status changes | 2026-03-07 |
+| Zustand persist for builder state | localStorage persistence prevents data loss on page refresh | 2026-03-08 |
+| Separate view components for sequence builder | SequenceList (table) and SequenceFlowChart (visual) for different visualization needs | 2026-03-08 |
+| Card-based step type selection | Clickable cards with icons for Email/WhatsApp/Delay step types | 2026-03-08 |
+| Quick select delay buttons | Preset buttons (15 dk, 1 saat, 1 gün, 1 hafta) for common delay intervals | 2026-03-08 |
+| Color-coded step types | Blue (email), green (WhatsApp), gray (delay) consistent across all components | 2026-03-08 |
 
 ### Pending Todos
 
@@ -237,9 +242,9 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-08 (Phase 05-01 complete)
-Stopped at: Completed campaign and sequence data models with audience segmentation
+Last session: 2026-03-08 (Phase 05-02 complete)
+Stopped at: Completed sequence builder foundation with UI components
 Resume file: None
 Dev server: Running at http://localhost:3001
 
-**Note**: Phase 05-01 complete - Created campaigns and sequences PocketBase collections with JSON fields for complex data structures, implemented TypeScript types for campaigns and sequences, built campaign API functions with segment preview and validation, created campaign UI components with form builder and list view, added CAN_MANAGE_CAMPAIGNS permission to admin and marketing roles, and implemented admin-only access control for campaign management.
+**Note**: Phase 05-02 complete - Created sequence builder TypeScript types (BuilderViewMode, SequenceBuilderState, StepFormData), implemented Zustand store with persist middleware for builder state management, built SequenceStepForm modal for adding/editing steps with type selection and template dropdown, created SequenceList table view with step actions and reordering, and implemented SequenceFlowChart visualization with step cards and connecting arrows.
