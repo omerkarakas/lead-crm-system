@@ -102,23 +102,23 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Campaign & Nurturing
 
-- [ ] **CAMP-01**: Admin can create email campaign (name, description)
-- [ ] **CAMP-02**: Admin can create WhatsApp campaign (name, description)
-- [ ] **CAMP-03**: Admin can define audience segment for campaign (filter criteria)
-- [ ] **CAMP-04**: Admin can create time-based sequence (series of messages)
-- [ ] **CAMP-05**: Admin can add step to sequence (channel: email/WhatsApp, delay, template)
-- [ ] **CAMP-06**: Admin can edit sequence step
-- [ ] **CAMP-07**: Admin can delete sequence step
-- [ ] **CAMP-08**: Admin can reorder sequence steps
-- [ ] **CAMP-09**: System supports message delays (e.g., "send 3 days after previous step")
-- [ ] **CAMP-10**: System can assign sequence to lead
-- [ ] **CAMP-11**: System automatically enrolls low-score leads to nurturing sequence
-- [ ] **CAMP-12**: System sends sequence messages based on schedule
-- [ ] **CAMP-13**: System tracks which messages sent to each lead
-- [ ] **CAMP-14**: User can view lead's campaign enrollment status
-- [ ] **CAMP-15**: User can view campaign performance stats (total sent, delivered, failed)
-- [ ] **CAMP-16**: User can manually enroll lead to sequence
-- [ ] **CAMP-17**: User can manually unsubscribe lead from sequence
+- [x] **CAMP-01**: Admin can create email campaign (name, description) ✅
+- [x] **CAMP-02**: Admin can create WhatsApp campaign (name, description) ✅
+- [x] **CAMP-03**: Admin can define audience segment for campaign (filter criteria) ✅
+- [x] **CAMP-04**: Admin can create time-based sequence (series of messages) ✅
+- [x] **CAMP-05**: Admin can add step to sequence (channel: email/WhatsApp, delay, template) ✅
+- [x] **CAMP-06**: Admin can edit sequence step ✅
+- [x] **CAMP-07**: Admin can delete sequence step ✅
+- [x] **CAMP-08**: Admin can reorder sequence steps ✅
+- [x] **CAMP-09**: System supports message delays (e.g., "send 3 days after previous step") ✅
+- [x] **CAMP-10**: System can assign sequence to lead ✅
+- [x] **CAMP-11**: System automatically enrolls low-score leads to nurturing sequence ✅
+- [x] **CAMP-12**: System sends sequence messages based on schedule ✅
+- [x] **CAMP-13**: System tracks which messages sent to each lead ✅
+- [x] **CAMP-14**: User can view lead's campaign enrollment status ✅
+- [x] **CAMP-15**: User can view campaign performance stats (total sent, delivered, failed) ✅
+- [x] **CAMP-16**: User can manually enroll lead to sequence ✅
+- [x] **CAMP-17**: User can manually unsubscribe lead from sequence ✅
 
 ## v2 Requirements
 
@@ -176,7 +176,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | WHATS-01 to WHATS-10 | Phase 2 | ✅ Complete |
 | EMAIL-01 to EMAIL-10 | Phase 3 | ✅ Complete |
 | APPT-01 to APPT-14 | Phase 4 | ✅ Complete |
-| QUAL-14, QUAL-15, CAMP-01 to CAMP-17 | Phase 5 | Pending |
+| QUAL-14, QUAL-15, CAMP-01 to CAMP-17 | Phase 5 | ✅ Complete |
 | LEAD-09, LEAD-10, LEAD-13, LEAD-14 | Phase 6 | Pending |
 
 **Coverage:**
@@ -186,4 +186,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2025-03-01*
-*Last updated: 2026-03-04 - Phase 4 complete (APPT-01 to APPT-14)*
+*Last updated: 2026-03-08 - Phase 5 complete (CAMP-01 to CAMP-17)*

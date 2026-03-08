@@ -17,8 +17,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Email Communication** - Email sending, templates, and manual messaging ✅ Completed 2026-03-04
 - [x] **Phase 4: Appointments** - Cal.com integration with booking workflow ✅ Completed 2026-03-04
 - [x] **Phase 4.1: Lead Capture & Pipeline Automation** - Public form, booking link settings, Meta Ads webhook ✅ Completed 2026-03-05
-- [ ] **Phase 4.2: Proposal Management** - Proposal templates, sending, response tracking
-- [ ] **Phase 5: Campaigns & Nurturing** - Multi-channel sequences and automation
+- [x] **Phase 4.2: Proposal Management** - Proposal templates, sending, response tracking ✅ Completed 2026-03-07
+- [x] **Phase 5: Campaigns & Nurturing** - Multi-channel sequences and automation ✅ Completed 2026-03-08
 - [ ] **Phase 6: Polish & Integration** - Webhooks, activity timeline, and final touches
 
 ## Phase Details
@@ -193,11 +193,12 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 05-01: Campaign and sequence management
-- [ ] 05-02: Sequence builder (steps, delays, reordering)
-- [ ] 05-03: Automatic lead enrollment based on qualification
-- [ ] 05-04: Sequence execution engine with scheduling
-- [ ] 05-05: Campaign enrollment and performance views
+- [x] 05-01: Campaign and sequence management ✅
+- [x] 05-02: Sequence builder (steps, delays, reordering) ✅
+- [x] 05-03: Automatic lead enrollment based on qualification ✅
+- [x] 05-04: Sequence execution engine with scheduling ✅
+- [x] 05-05: Campaign enrollment and performance views ✅
+- [x] 05-06: Sequence management pages and views ✅
 
 ### Phase 6: Polish & Integration
 
@@ -232,5 +233,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 4.1 → 4.2 → 5 → 6
 | 4. Appointments | 4/4 | ✅ Complete | 2026-03-04 |
 | 4.1 Lead Capture & Pipeline | 4/4 | ✅ Complete | 2026-03-05 |
 | 4.2 Proposal Management | 5/5 | ✅ Complete | 2026-03-07 |
-| 5. Campaigns & Nurturing | 0/5 | Not started | - |
+| 5. Campaigns & Nurturing | 6/6 | ✅ Complete | 2026-03-08 |
 | 6. Polish & Integration | 0/3 | Not started | - |
