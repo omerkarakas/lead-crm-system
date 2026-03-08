@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Campaign, CreateCampaignDto, UpdateCampaignDto, CampaignType, AudienceSegment, SegmentOperator, RuleOperator } from '@/types/campaign';
+import { Campaign, CreateCampaignDto, UpdateCampaignDto, CampaignType, AudienceSegment, SegmentOperator } from '@/types/campaign';
+import { RuleOperator } from '@/types/campaign';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,10 +13,13 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, Mail, MessageSquare, Plus, Trash2, Users, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCampaignsStore } from '@/lib/stores/campaigns';
+import { SequenceBuilder } from './SequenceBuilder';
+import { useSequencesStore } from '@/lib/stores/sequences';
+import type { SequenceStep } from '@/types/campaign';
 
 interface CampaignFormProps {
   campaign?: Campaign;
-  onSave: (data: CreateCampaignDto | UpdateCampaignDto) => Promise<void>;
+  onSave: (data: CreateCampaignDto | UpdateCampaignDto, sequenceData?: { name: string; steps: SequenceStep[] }) => Promise<void>;
   onCancel: () => void;
   isLoading?: boolean;
 }
@@ -69,14 +73,19 @@ export function CampaignForm({
     })) || []
   );
   const [previewExpanded, setPreviewExpanded] = useState(false);
+  const [showSequenceBuilder, setShowSequenceBuilder] = useState(false);
+  const [createdCampaignId, setCreatedCampaignId] = useState<string | null>(null);
+  const [sequenceName, setSequenceName] = useState('');
 
   const { previewData, showPreview, isPreviewOpen, hidePreview } = useCampaignsStore();
+  const { builderState, initBuilder, resetBuilder: resetSequenceBuilder } = useSequencesStore();
 
   useEffect(() => {
     return () => {
       hidePreview();
+      resetSequenceBuilder();
     };
-  }, [hidePreview]);
+  }, [hidePreview, resetSequenceBuilder]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,6 +98,33 @@ export function CampaignForm({
     if (rules.length === 0) {
       toast.error('En az bir segment kuralı ekleyin');
       return;
+    }
+
+    // Validate sequence if builder is shown
+    if (showSequenceBuilder) {
+      if (builderState?.steps.length === 0) {
+        toast.error('En az bir adım ekleyin veya sequence oluşturma işaretini kaldırın');
+        return;
+      }
+
+      // Validate all steps have required fields
+      const steps = builderState?.steps || [];
+      for (const step of steps) {
+        if ((step.type === 'email' || step.type === 'whatsapp') && !step.template_id) {
+          toast.error(`Email ve WhatsApp adımları için şablon seçimi zorunludur`);
+          return;
+        }
+        if (step.type === 'delay') {
+          if (step.delay_type === 'relative' && !step.delay_minutes) {
+            toast.error(`Gecikme adımları için dakika değeri zorunludur`);
+            return;
+          }
+          if (step.delay_type === 'absolute' && !step.scheduled_time) {
+            toast.error(`Mutlak zamanlama için zaman değeri zorunludur`);
+            return;
+          }
+        }
+      }
     }
 
     const audienceSegment: AudienceSegment = {
@@ -109,11 +145,14 @@ export function CampaignForm({
       is_active: isActive,
     };
 
-    await onSave(data);
+    await onSave(data, showSequenceBuilder ? {
+      name: sequenceName || `${name} Sırası`,
+      steps: builderState?.steps || [],
+    } : undefined);
   };
 
   const handleAddRule = () => {
-    setRules([...rules, { field: 'score', operator: 'eq', value: '' }]);
+    setRules([...rules, { field: 'score', operator: RuleOperator.Eq, value: '' }]);
   };
 
   const handleRemoveRule = (index: number) => {
@@ -421,6 +460,46 @@ export function CampaignForm({
           onCheckedChange={setIsActive}
           disabled={isLoading}
         />
+      </div>
+
+      {/* Sequence Builder Section */}
+      <div className="space-y-4 border rounded-lg p-4 bg-muted/30">
+        <div className="flex items-center justify-between">
+          <Label className="text-base">Sequence Adımları</Label>
+          <Switch
+            checked={showSequenceBuilder}
+            onCheckedChange={setShowSequenceBuilder}
+            disabled={isLoading}
+          />
+        </div>
+        <p className="text-sm text-muted-foreground">
+          {showSequenceBuilder
+            ? 'Kampanya ile birlikte sıra oluşturun'
+            : 'Kampanya oluşturduktan sonra sıra ekleyebilirsiniz'}
+        </p>
+
+        {showSequenceBuilder && (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="sequenceName">Sıra Adı</Label>
+              <Input
+                id="sequenceName"
+                value={sequenceName}
+                onChange={(e) => setSequenceName(e.target.value)}
+                placeholder={`Örn: ${name} Sırası`}
+                disabled={isLoading}
+              />
+            </div>
+
+            <SequenceBuilder
+              inline={true}
+              sequenceName={sequenceName}
+              onSequenceSaved={(sequenceId) => {
+                setCreatedCampaignId(sequenceId);
+              }}
+            />
+          </>
+        )}
       </div>
 
       {/* Actions */}

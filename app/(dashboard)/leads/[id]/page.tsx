@@ -10,6 +10,8 @@ import { ScoreDisplay } from '@/components/leads/ScoreDisplay';
 import { QAAnswersTable } from '@/components/leads/QAAnswersTable';
 import { EmailHistory } from '@/components/leads/EmailHistory';
 import { LeadDetailProposalsTab } from '@/components/leads/LeadDetailProposalsTab';
+import { LeadEnrollments } from '@/components/leads/LeadEnrollments';
+import { EnrollmentBadge } from '@/components/leads/EnrollmentBadge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft } from 'lucide-react';
@@ -62,9 +64,14 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
           </Link>
           <div>
             <h1 className="text-3xl font-bold tracking-tight">{lead.name}</h1>
-            <p className="text-muted-foreground">
-              {lead.company || 'Müşteri Adayı Detayı'}
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="text-muted-foreground">
+                {lead.company || 'Müşteri Adayı Detayı'}
+              </p>
+              {(lead as any).enrollment_count > 0 && (
+                <EnrollmentBadge enrollmentCount={(lead as any).enrollment_count || 0} />
+              )}
+            </div>
           </div>
         </div>
         <LeadDetailActions leadId={lead.id} leadName={lead.name} lead={lead} />
@@ -113,13 +120,14 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
             </section>
           )}
 
-          {/* Tabs for WhatsApp, Email, Appointments, Proposals, Notes */}
+          {/* Tabs for WhatsApp, Email, Appointments, Proposals, Campaigns, Notes */}
           <Tabs defaultValue="whatsapp" className="w-full">
             <TabsList className="w-full justify-start">
               <TabsTrigger value="whatsapp">WhatsApp</TabsTrigger>
               <TabsTrigger value="email">E-posta</TabsTrigger>
               <TabsTrigger value="appointments">Randevular</TabsTrigger>
               <TabsTrigger value="proposals">Teklif</TabsTrigger>
+              <TabsTrigger value="campaigns">Kampanyalar</TabsTrigger>
               <TabsTrigger value="notes">Notlar</TabsTrigger>
             </TabsList>
 
@@ -142,6 +150,10 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
                 leadPhone={lead.phone}
                 leadCompany={lead.company}
               />
+            </TabsContent>
+
+            <TabsContent value="campaigns" className="mt-4">
+              <LeadEnrollments leadId={lead.id} />
             </TabsContent>
 
             <TabsContent value="notes" className="mt-4">

@@ -1,6 +1,6 @@
 'use client';
 
-import { Campaign, CampaignType } from '@/types/campaign';
+import { Campaign, CampaignType, CampaignWithSequences } from '@/types/campaign';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 interface CampaignListProps {
-  campaigns: Campaign[];
+  campaigns: CampaignWithSequences[];
   onEdit: (campaign: Campaign) => void;
   onDelete: (campaign: Campaign) => void;
   onViewSequences: (campaign: Campaign) => void;
@@ -68,6 +68,7 @@ export function CampaignList({
             <TableHead>Kampanya Adı</TableHead>
             <TableHead>Tür</TableHead>
             <TableHead>Segment</TableHead>
+            <TableHead>Sıralar</TableHead>
             <TableHead>Min. Skor</TableHead>
             <TableHead>Durum</TableHead>
             <TableHead className="text-right">İşlemler</TableHead>
@@ -76,69 +77,88 @@ export function CampaignList({
         <TableBody>
           {campaigns.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+              <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                 Henüz kampanya yok. İlk kampanyanızı oluşturun.
               </TableCell>
             </TableRow>
           ) : (
-            campaigns.map((campaign) => (
-              <TableRow key={campaign.id}>
-                <TableCell className="font-medium">{campaign.name}</TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    {campaign.type === CampaignType.Email ? (
-                      <Mail className="h-4 w-4 text-blue-500" />
+            campaigns.map((campaign) => {
+              const sequenceCount = campaign.sequences?.length || 0;
+              const firstSequenceName = campaign.sequences?.[0]?.name || null;
+
+              return (
+                <TableRow key={campaign.id}>
+                  <TableCell className="font-medium">{campaign.name}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      {campaign.type === CampaignType.Email ? (
+                        <Mail className="h-4 w-4 text-blue-500" />
+                      ) : (
+                        <MessageSquare className="h-4 w-4 text-green-500" />
+                      )}
+                      <span className="capitalize">{campaign.type === CampaignType.Email ? 'E-posta' : 'WhatsApp'}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-sm text-muted-foreground">
+                      {getSegmentDescription(campaign)}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    {sequenceCount > 0 ? (
+                      <div className="flex flex-col gap-1">
+                        <Badge variant="secondary">{sequenceCount} sıra</Badge>
+                        {firstSequenceName && (
+                          <span className="text-xs text-muted-foreground truncate max-w-[150px]">
+                            {firstSequenceName}
+                          </span>
+                        )}
+                      </div>
                     ) : (
-                      <MessageSquare className="h-4 w-4 text-green-500" />
+                      <span className="text-muted-foreground text-sm">-</span>
                     )}
-                    <span className="capitalize">{campaign.type === CampaignType.Email ? 'E-posta' : 'WhatsApp'}</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <span className="text-sm text-muted-foreground">
-                    {getSegmentDescription(campaign)}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  {campaign.auto_enroll_min_score ? (
-                    <Badge variant="secondary">{campaign.auto_enroll_min_score}</Badge>
-                  ) : (
-                    <span className="text-muted-foreground">-</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <Badge variant={campaign.is_active ? 'default' : 'secondary'}>
-                    {campaign.is_active ? 'Aktif' : 'Pasif'}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => onViewSequences(campaign)}>
-                        <List className="h-4 w-4 mr-2" />
-                        Sıraları Görüntüle
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onEdit(campaign)}>
-                        <Pencil className="h-4 w-4 mr-2" />
-                        Düzenle
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => onDelete(campaign)}
-                        className="text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Sil
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))
+                  </TableCell>
+                  <TableCell>
+                    {campaign.auto_enroll_min_score ? (
+                      <Badge variant="secondary">{campaign.auto_enroll_min_score}</Badge>
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={campaign.is_active ? 'default' : 'secondary'}>
+                      {campaign.is_active ? 'Aktif' : 'Pasif'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => onViewSequences(campaign)}>
+                          <List className="h-4 w-4 mr-2" />
+                          Sıraları Görüntüle
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onEdit(campaign)}>
+                          <Pencil className="h-4 w-4 mr-2" />
+                          Düzenle
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => onDelete(campaign)}
+                          className="text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Sil
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              );
+            })
           )}
         </TableBody>
       </Table>
