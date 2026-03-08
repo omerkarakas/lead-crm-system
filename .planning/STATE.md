@@ -10,19 +10,19 @@ See: .planning/PROJECT.md (updated 2025-03-01)
 ## Current Position
 
 Phase: 05 of 9 (Phase 5: Campaigns & Nurturing)
-Plan: 02 of 6
+Plan: 06 of 6
 Status: In progress
-Last activity: 2026-03-08 — Sequence builder foundation with Zustand store, step form modal, table/flow chart views, and step reordering capabilities
+Last activity: 2026-03-08 — Sequence builder integration with view toggle, sequence management page, and campaign form integration
 
-Progress: [████████░░] 67% (7/9 phases complete, 35/39 plans targeted)
+Progress: [████████░░] 69% (7/9 phases complete, 38/39 plans targeted)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 35
-- Average duration: 10.4 min
-- Total execution time: 4 hours 17 min
+- Total plans completed: 38
+- Average duration: 10.1 min
+- Total execution time: 4 hours 22 min
 
 **By Phase:**
 
@@ -34,7 +34,7 @@ Progress: [████████░░] 67% (7/9 phases complete, 35/39 plans
 | 04-appointments          | 4 of 4    | 20 min    | 5 min    |
 | 04.1-lead-capture        | 4 of 4    | 46 min    | 11.5 min |
 | 04.2-proposal-management | 5 of 5    | 74 min    | 14.8 min |
-| 05-campaigns-nurturing   | 2 of 6    | 6 min     | 3 min    |
+| 05-campaigns-nurturing   | 6 of 6    | 11 min    | 1.8 min  |
 
 **Recent Trend:**
 
@@ -209,6 +209,11 @@ Recent decisions affecting current work:
 | Card-based step type selection | Clickable cards with icons for Email/WhatsApp/Delay step types | 2026-03-08 |
 | Quick select delay buttons | Preset buttons (15 dk, 1 saat, 1 gün, 1 hafta) for common delay intervals | 2026-03-08 |
 | Color-coded step types | Blue (email), green (WhatsApp), gray (delay) consistent across all components | 2026-03-08 |
+| View mode toggle persistence | Toggle state persists in builder state for consistent user experience | 2026-03-08 |
+| Inline builder mode | When inline=true, hide save/cancel buttons and simplify header for form integration | 2026-03-08 |
+| URL-based routing for sequences | Query params (?new, ?edit=id) control sequence page mode | 2026-03-08 |
+| Sequence validation in campaign form | Campaign form validates all steps before submission if builder is shown | 2026-03-08 |
+| Campaign list sequence display | Sequence count and first sequence name shown in campaign list table | 2026-03-08 |
 
 ### Pending Todos
 
@@ -242,9 +247,9 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-08 (Phase 05-02 complete)
-Stopped at: Completed sequence builder foundation with UI components
+Last session: 2026-03-08 (Phase 05-06 complete)
+Stopped at: Completed sequence builder with view toggle, management page, and campaign form integration
 Resume file: None
 Dev server: Running at http://localhost:3001
 
-**Note**: Phase 05-02 complete - Created sequence builder TypeScript types (BuilderViewMode, SequenceBuilderState, StepFormData), implemented Zustand store with persist middleware for builder state management, built SequenceStepForm modal for adding/editing steps with type selection and template dropdown, created SequenceList table view with step actions and reordering, and implemented SequenceFlowChart visualization with step cards and connecting arrows.
+**Note**: Phase 05-06 complete - Created main SequenceBuilder component with view toggle between table and flow chart modes, built sequence management page with list and builder views using URL query params for routing, integrated SequenceBuilder into campaign form with inline mode and validation, added sequence count display to campaign list, and implemented sequence creation handling in campaigns client.

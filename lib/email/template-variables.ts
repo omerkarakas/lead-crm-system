@@ -24,9 +24,26 @@ const STATUS_TURKISH_MAP: Record<LeadStatus, string> = {
 };
 
 /**
- * Get variable value from lead data
+ * Variable replacement context
+ * Includes lead data and optional custom variables
  */
-export function getVariableValue(variable: string, lead: Lead): string {
+export interface VariableContext {
+  lead: Lead;
+  customVars?: Record<string, string>;
+}
+
+/**
+ * Get variable value from lead data or custom variables
+ */
+export function getVariableValue(variable: string, context: VariableContext): string {
+  const { lead, customVars } = context;
+
+  // Check custom variables first
+  if (customVars && variable in customVars) {
+    return customVars[variable];
+  }
+
+  // Lead data variables
   switch (variable) {
     case 'name':
       return lead.name || '';
@@ -63,13 +80,22 @@ export function getVariableValue(variable: string, lead: Lead): string {
 /**
  * Replace template variables with lead data
  * Supports {variable} syntax
+ * Can also accept custom variables (like unsubscribe_link)
  */
-export function replaceVariables(template: string, lead: Lead): string {
+export function replaceVariables(template: string, context: VariableContext): string {
   // Find all {variable} patterns and replace them
   return template.replace(/\{(\w+)\}/g, (match, variableName) => {
-    const value = getVariableValue(variableName, lead);
+    const value = getVariableValue(variableName, context);
     return value !== '' ? value : match;
   });
+}
+
+/**
+ * Replace template variables with lead data (legacy signature)
+ * @deprecated Use replaceVariables with VariableContext instead
+ */
+export function replaceVariablesLegacy(template: string, lead: Lead): string {
+  return replaceVariables(template, { lead });
 }
 
 /**
