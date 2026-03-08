@@ -148,6 +148,19 @@ export async function POST(req: NextRequest) {
       qa_completed_at: new Date().toISOString()
     });
 
+    // Trigger auto-enrollment for low-score leads (fire-and-forget)
+    if (quality === LeadQuality.PENDING) {
+      // Call QA completion webhook to trigger auto-enrollment
+      fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/webhooks/qa-complete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lead_id: lead.id }),
+      }).catch((err) => {
+        // Log error but don't fail the request
+        console.error('[WhatsApp Webhook] Failed to trigger auto-enrollment:', err);
+      });
+    }
+
     // Send response based on score
     const chatIdClean = phone.replace(/\D/g, '') + '@c.us';
     let responseMessage = '';
