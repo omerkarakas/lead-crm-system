@@ -9,20 +9,20 @@ See: .planning/PROJECT.md (updated 2025-03-01)
 
 ## Current Position
 
-Phase: 4.2 of 9 (Phase 4.2: Proposal Management - INSERTED) ✅ COMPLETE
-Plan: 05 of 5
-Status: Phase 4.2 complete
-Last activity: 2026-03-07 — Sales team phone notifications simplified, status automation from proposal responses implemented, role-based manual override added
+Phase: 05 of 9 (Phase 5: Campaigns & Nurturing)
+Plan: 01 of 6
+Status: In progress
+Last activity: 2026-03-08 — Campaign and sequence data models with audience segmentation, preview functionality, and admin-only CRUD operations implemented
 
-Progress: [█████████░] 61% (6/9 phases complete, 33/33 plans targeted)
+Progress: [████████░░] 64% (7/9 phases complete, 34/39 plans targeted)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 33
-- Average duration: 10.8 min
-- Total execution time: 4 hours 11 min
+- Total plans completed: 34
+- Average duration: 10.6 min
+- Total execution time: 4 hours 15 min
 
 **By Phase:**
 
@@ -34,9 +34,17 @@ Progress: [█████████░] 61% (6/9 phases complete, 33/33 plans
 | 04-appointments          | 4 of 4    | 20 min    | 5 min    |
 | 04.1-lead-capture        | 4 of 4    | 46 min    | 11.5 min |
 | 04.2-proposal-management | 5 of 5    | 74 min    | 14.8 min |
+| 05-campaigns-nurturing   | 1 of 6    | 4 min     | 4 min    |
 
 **Recent Trend:**
 
+- Campaign and sequence data models with JSON fields for complex structures
+- Audience segment builder with AND/OR operators
+- Segment preview functionality with real-time lead count
+- Campaign CRUD operations with admin-only access control
+- CAN_MANAGE_CAMPAIGNS permission added to admin and marketing roles
+- Campaign UI with type selection (email/whatsapp) and segment testing
+- Campaign list view with status badges and action dropdown
 - Appointment filtering with date range, status, and search
 - View toggle between table and card layouts with localStorage persistence
 - URL query params for filter state (shareable filtered views)
@@ -139,6 +147,10 @@ Recent decisions affecting current work:
 | Failed booking tracking | Create appointments with null lead_id for manual reconciliation | 2026-03-04 |
 | Webhook idempotency | Check for existing appointment via calcom_booking_id before creating | 2026-03-04 |
 | Lead status auto-update | Automatically update lead status to 'booked' when appointment created | 2026-03-04 |
+| Campaign JSON field types | PocketBase JSON fields for audience_segment and steps to support nested structures | 2026-03-08 |
+| Segment preview functionality | Real-time lead count preview to test audience segments before saving | 2026-03-08 |
+| Admin-only campaign management | CAN_MANAGE_CAMPAIGNS permission for admin and marketing roles | 2026-03-08 |
+| Campaign soft delete pattern | is_active flag instead of hard deletion for recovery capability | 2026-03-08 |
 | Fire-and-forget messaging | Log WhatsApp errors but don't throw to prevent cascade failures | 2026-03-04 |
 | WhatsApp confirmation flow | Send confirmation on appointment creation (manual and webhook) | 2026-03-04 |
 | Turkish appointment messages | WhatsApp confirmations/reminders in Turkish with DD.MM.YYYY format | 2026-03-04 |
@@ -225,9 +237,9 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-07 (Phase 4.2-05 code complete, UAT pending)
-Stopped at: Completed sales team phone notification simplification and status automation implementation
+Last session: 2026-03-08 (Phase 05-01 complete)
+Stopped at: Completed campaign and sequence data models with audience segmentation
 Resume file: None
 Dev server: Running at http://localhost:3001
 
-**Note**: Phase 4.2-05 code complete - Simplified sales team phone notifications to use app_settings as single source of truth (removed broken users.phone and env var fallbacks), added pre-send validation preventing proposal sending without configured phones, enhanced settings UI with required field indicators, implemented status automation tracking (auto_updated_status, auto_updated_at fields), and added role-based manual override (admin only with force checkbox, sales blocked). UAT pending - requires database migration to add new fields to leads collection.
+**Note**: Phase 05-01 complete - Created campaigns and sequences PocketBase collections with JSON fields for complex data structures, implemented TypeScript types for campaigns and sequences, built campaign API functions with segment preview and validation, created campaign UI components with form builder and list view, added CAN_MANAGE_CAMPAIGNS permission to admin and marketing roles, and implemented admin-only access control for campaign management.
