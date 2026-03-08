@@ -28,6 +28,9 @@ export const PERMISSIONS = {
 
   // Settings management
   CAN_MANAGE_SETTINGS: 'can_manage_settings',
+
+  // Campaign management
+  CAN_MANAGE_CAMPAIGNS: 'can_manage_campaigns',
 } as const;
 
 export const ROLE_PERMISSIONS: Record<Role, string[]> = {
@@ -46,6 +49,7 @@ export const ROLE_PERMISSIONS: Record<Role, string[]> = {
     PERMISSIONS.CAN_MANAGE_PROPOSAL_TEMPLATES,
     PERMISSIONS.CAN_SEND_PROPOSALS,
     PERMISSIONS.CAN_MANAGE_SETTINGS,
+    PERMISSIONS.CAN_MANAGE_CAMPAIGNS,
   ],
   [Role.SALES]: [
     PERMISSIONS.CAN_CREATE_LEADS,
@@ -61,6 +65,7 @@ export const ROLE_PERMISSIONS: Record<Role, string[]> = {
     PERMISSIONS.CAN_VIEW_ALL_LEADS,
     PERMISSIONS.CAN_ADD_NOTES,
     PERMISSIONS.CAN_MANAGE_TAGS,
+    PERMISSIONS.CAN_MANAGE_CAMPAIGNS,
   ],
 };
 
@@ -122,4 +127,8 @@ export function canSendProposals(role: Role): boolean {
 
 export function canSendEmails(role: Role): boolean {
   return hasPermission(role, PERMISSIONS.CAN_SEND_EMAILS);
+}
+
+export function canManageCampaigns(role: Role): boolean {
+  return hasPermission(role, PERMISSIONS.CAN_MANAGE_CAMPAIGNS);
 }
