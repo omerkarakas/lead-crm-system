@@ -210,3 +210,30 @@ export interface UnsubscribeRequest {
   token: string;
   campaign_ids?: string[];
 }
+
+// Sequence Execution Types
+export enum SequenceMessageStatus {
+  Pending = 'pending',
+  Sent = 'sent',
+  Failed = 'failed'
+}
+
+export interface SequenceMessage {
+  id: string;
+  enrollment_id: string;
+  step_id: string;
+  step_order: number;
+  step_type: StepType;
+  template_id?: string;
+  status: SequenceMessageStatus;
+  sent_at?: string;
+  error_message?: string;
+  created: string;
+  updated: string;
+}
+
+export interface ExecutionResult {
+  success: boolean;
+  message_id?: string;
+  error?: string;
+}
