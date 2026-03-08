@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2025-03-01)
 ## Current Position
 
 Phase: 05 of 9 (Phase 5: Campaigns & Nurturing)
-Plan: 06 of 6
+Plan: 03 of 6
 Status: In progress
-Last activity: 2026-03-08 — Sequence builder integration with view toggle, sequence management page, and campaign form integration
+Last activity: 2026-03-08 — Automatic lead enrollment system with triggers, manual enrollment/unenrollment, and public unsubscribe page
 
 Progress: [████████░░] 69% (7/9 phases complete, 38/39 plans targeted)
 
@@ -20,9 +20,9 @@ Progress: [████████░░] 69% (7/9 phases complete, 38/39 plans
 
 **Velocity:**
 
-- Total plans completed: 38
-- Average duration: 10.1 min
-- Total execution time: 4 hours 22 min
+- Total plans completed: 39
+- Average duration: 10.0 min
+- Total execution time: 4 hours 28 min
 
 **By Phase:**
 
@@ -34,7 +34,7 @@ Progress: [████████░░] 69% (7/9 phases complete, 38/39 plans
 | 04-appointments          | 4 of 4    | 20 min    | 5 min    |
 | 04.1-lead-capture        | 4 of 4    | 46 min    | 11.5 min |
 | 04.2-proposal-management | 5 of 5    | 74 min    | 14.8 min |
-| 05-campaigns-nurturing   | 6 of 6    | 11 min    | 1.8 min  |
+| 05-campaigns-nurturing   | 3 of 6    | 17 min    | 5.7 min  |
 
 **Recent Trend:**
 
@@ -214,6 +214,15 @@ Recent decisions affecting current work:
 | URL-based routing for sequences | Query params (?new, ?edit=id) control sequence page mode | 2026-03-08 |
 | Sequence validation in campaign form | Campaign form validates all steps before submission if builder is shown | 2026-03-08 |
 | Campaign list sequence display | Sequence count and first sequence name shown in campaign list table | 2026-03-08 |
+| Campaign enrollment collection | PocketBase collection with unique constraint on (lead_id, campaign_id) to prevent duplicates | 2026-03-08 |
+| Enrollment count tracking | enrollment_count field on leads collection tracks total enrollments | 2026-03-08 |
+| Auto-enrollment triggers | QA completion and lead data changes trigger automatic campaign enrollment | 2026-03-08 |
+| Fire-and-forget enrollment webhook | Returns 200 OK even on errors to prevent retry storms | 2026-03-08 |
+| Dynamic segmentation re-evaluation | ANY lead field change (score, status, tags, source) triggers re-evaluation | 2026-03-08 |
+| Preserve existing enrollments | Re-evaluation only adds new enrollments, never removes existing ones | 2026-03-08 |
+| Token-based public unsubscribe | 32-character random token for public unsubscribe page access | 2026-03-08 |
+| Template custom variables | Extended template variable system to support custom variables like unsubscribe_link | 2026-03-08 |
+| Enrollment UI integration | Kampanyalar tab on lead detail page with enrollment count badge | 2026-03-08 |
 
 ### Pending Todos
 
@@ -226,6 +235,7 @@ None yet.
 [Issues that affect future work]
 
 - **Phase 4 was approved without testing** — Need to verify Lead Scoring, WhatsApp, and Cal.com integrations before Phase 5
+- **Sequence executor not yet implemented** — Enrollment system created but unsubscribe_token not automatically included in emails. Need lib/api/sequence-executor.ts or equivalent to handle step execution and pass unsubscribe_token to template variables.
 - Previous concern resolved: Auth redirect issue fixed with server-side token validation
 - Previous concern resolved: PocketBase API rules configuration - createdBy nonempty property removed
 - Previous concern resolved: PocketBase migrations applied (UTM fields, message field, email optional)
@@ -247,9 +257,9 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-08 (Phase 05-06 complete)
-Stopped at: Completed sequence builder with view toggle, management page, and campaign form integration
+Last session: 2026-03-08 (Phase 05-03 complete)
+Stopped at: Completed automatic lead enrollment system with triggers, manual enrollment/unenrollment, and public unsubscribe page
 Resume file: None
 Dev server: Running at http://localhost:3001
 
-**Note**: Phase 05-06 complete - Created main SequenceBuilder component with view toggle between table and flow chart modes, built sequence management page with list and builder views using URL query params for routing, integrated SequenceBuilder into campaign form with inline mode and validation, added sequence count display to campaign list, and implemented sequence creation handling in campaigns client.
+**Note**: Phase 05-03 complete - Created campaign_enrollments PocketBase collection with unique constraints, built enrollment API functions with eligibility checking and duplicate prevention, implemented QA completion webhook for auto-enrollment of low-score leads, added dynamic segmentation re-evaluation on lead data changes, created enrollment UI components (badge, list, dialog) integrated into lead detail page with Kampanyalar tab, and built public unsubscribe page with Turkish UI and token-based access control.
