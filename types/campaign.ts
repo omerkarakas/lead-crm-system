@@ -58,6 +58,47 @@ export interface CampaignStep {
   scheduled_time?: string;
 }
 
+// Alias for SequenceStep (used in builder context)
+export type SequenceStep = CampaignStep;
+
+// Builder View Mode
+export enum BuilderViewMode {
+  FlowChart = 'flowchart',
+  Table = 'table'
+}
+
+// Sequence Builder State
+export interface SequenceBuilderState {
+  campaign_id?: string;
+  sequence_id?: string;
+  name: string;
+  steps: SequenceStep[];
+  viewMode: BuilderViewMode;
+  isDirty: boolean;
+}
+
+// Step Validation Error
+export interface StepValidationError {
+  step_id: string;
+  field: string;
+  message: string;
+}
+
+// Step Form Data
+export interface StepFormData {
+  type: StepType;
+  template_id?: string;
+  delay_type?: DelayType;
+  delay_minutes?: number;
+  scheduled_time?: string;
+}
+
+// Reorder Action
+export interface ReorderAction {
+  from_index: number;
+  to_index: number;
+}
+
 // Campaign
 export interface Campaign {
   id: string;
