@@ -10,19 +10,19 @@ See: .planning/PROJECT.md (updated 2025-03-01)
 ## Current Position
 
 Phase: 05 of 9 (Phase 5: Campaigns & Nurturing)
-Plan: 03 of 6
+Plan: 05 of 6
 Status: In progress
-Last activity: 2026-03-08 — Automatic lead enrollment system with triggers, manual enrollment/unenrollment, and public unsubscribe page
+Last activity: 2026-03-08 — Campaign performance reporting with visual charts and analytics
 
-Progress: [████████░░] 69% (7/9 phases complete, 38/39 plans targeted)
+Progress: [████████░░] 73% (7/9 phases complete, 41/42 plans targeted)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 39
-- Average duration: 10.0 min
-- Total execution time: 4 hours 28 min
+- Total plans completed: 41
+- Average duration: 10.1 min
+- Total execution time: 5 hours 19 min
 
 **By Phase:**
 
@@ -34,7 +34,7 @@ Progress: [████████░░] 69% (7/9 phases complete, 38/39 plans
 | 04-appointments          | 4 of 4    | 20 min    | 5 min    |
 | 04.1-lead-capture        | 4 of 4    | 46 min    | 11.5 min |
 | 04.2-proposal-management | 5 of 5    | 74 min    | 14.8 min |
-| 05-campaigns-nurturing   | 3 of 6    | 17 min    | 5.7 min  |
+| 05-campaigns-nurturing   | 5 of 6    | 68 min    | 13.6 min  |
 
 **Recent Trend:**
 
@@ -223,6 +223,19 @@ Recent decisions affecting current work:
 | Token-based public unsubscribe | 32-character random token for public unsubscribe page access | 2026-03-08 |
 | Template custom variables | Extended template variable system to support custom variables like unsubscribe_link | 2026-03-08 |
 | Enrollment UI integration | Kampanyalar tab on lead detail page with enrollment count badge | 2026-03-08 |
+| Fire-and-forget sequence execution | Log errors but don't throw to prevent cascade failures across enrollments | 2026-03-08 |
+| Batch processing for cron | Process enrollments in groups of 50 to avoid timeout limits | 2026-03-08 |
+| Auto-refresh monitoring UI | 30-second polling for real-time execution updates | 2026-03-08 |
+| Timeline execution history | Vertical timeline with icons and connecting lines for message tracking | 2026-03-08 |
+| Relative and absolute delays | Support both X-minutes-after and specific-time scheduling | 2026-03-08 |
+| Template custom variables | Extended variable system for unsubscribe_link in templates | 2026-03-08 |
+| Manual sequence control | Admin can start sequences or retry failed enrollments | 2026-03-08 |
+| Recharts for analytics | Chose recharts over chart.js for React-native design, simpler API, and TypeScript support | 2026-03-08 |
+| Campaign analytics API | Comprehensive metrics calculation with 5-minute in-memory caching for performance | 2026-03-08 |
+| Email engagement estimation | Using industry averages (20% open, 3% click) since Resend basic tier lacks tracking | 2026-03-08 |
+| Multi-dimensional metrics | Delivery, engagement, conversion, and funnel metrics with time-based filtering | 2026-03-08 |
+| Lead-level performance | Timeline and list views for enrollment history with stuck enrollment indicators | 2026-03-08 |
+| Auto-refresh dashboard | 60-second interval with manual refresh and last updated timestamp | 2026-03-08 |
 
 ### Pending Todos
 
@@ -235,7 +248,7 @@ None yet.
 [Issues that affect future work]
 
 - **Phase 4 was approved without testing** — Need to verify Lead Scoring, WhatsApp, and Cal.com integrations before Phase 5
-- **Sequence executor not yet implemented** — Enrollment system created but unsubscribe_token not automatically included in emails. Need lib/api/sequence-executor.ts or equivalent to handle step execution and pass unsubscribe_token to template variables.
+- Previous concern resolved: Sequence executor implemented with lib/api/sequence-executor.ts
 - Previous concern resolved: Auth redirect issue fixed with server-side token validation
 - Previous concern resolved: PocketBase API rules configuration - createdBy nonempty property removed
 - Previous concern resolved: PocketBase migrations applied (UTM fields, message field, email optional)
@@ -257,9 +270,9 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-08 (Phase 05-03 complete)
-Stopped at: Completed automatic lead enrollment system with triggers, manual enrollment/unenrollment, and public unsubscribe page
+Last session: 2026-03-08 (Phase 05-05 complete)
+Stopped at: Completed campaign performance reporting with visual charts and analytics
 Resume file: None
 Dev server: Running at http://localhost:3001
 
-**Note**: Phase 05-03 complete - Created campaign_enrollments PocketBase collection with unique constraints, built enrollment API functions with eligibility checking and duplicate prevention, implemented QA completion webhook for auto-enrollment of low-score leads, added dynamic segmentation re-evaluation on lead data changes, created enrollment UI components (badge, list, dialog) integrated into lead detail page with Kampanyalar tab, and built public unsubscribe page with Turkish UI and token-based access control.
+**Note**: Phase 05-05 complete - Created comprehensive campaign analytics API with 7 metric functions, built recharts integration for visualizations (bar, line, pie charts), implemented time-based filtering (7d, 30d, 90d, all time), developed lead-level performance view with timeline and list views, added auto-refresh capability (60-second interval), created PerformanceDashboard component orchestrating all analytics, and built /campaigns/[id]/analytics page with breadcrumb navigation.
