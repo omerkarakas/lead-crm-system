@@ -77,16 +77,30 @@ export function CampaignsClient() {
       // Create sequence if data provided
       if (sequenceData && sequenceData.steps.length > 0) {
         try {
-          await campaignApi.createSequence({
-            campaign_id: campaignId,
-            name: sequenceData.name,
-            steps: sequenceData.steps,
-            is_active: true,
+          if (!sequenceData.name || sequenceData.name.trim() === '') {
+            throw new Error('Sequence name is required');
+          }
+
+          const response = await fetch('/api/sequences', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              campaign_id: campaignId,
+              name: sequenceData.name,
+              steps: sequenceData.steps,
+              is_active: true,
+            }),
           });
+
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to create sequence');
+          }
+
           toast.success('Sıra oluşturuldu');
         } catch (sequenceError: any) {
           console.error('Failed to create sequence:', sequenceError);
-          toast.warning('Kampanya oluşturuldu ancak sıra oluşturulamadı');
+          toast.error(sequenceError.message || 'Sıra oluşturulamadı');
         }
       }
 

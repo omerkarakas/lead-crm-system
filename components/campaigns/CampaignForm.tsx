@@ -78,7 +78,14 @@ export function CampaignForm({
   const [sequenceName, setSequenceName] = useState('');
 
   const { previewData, showPreview, isPreviewOpen, hidePreview } = useCampaignsStore();
-  const { builderState, initBuilder, resetBuilder: resetSequenceBuilder } = useSequencesStore();
+  const { builderState, initBuilder, updateBuilderName, resetBuilder: resetSequenceBuilder } = useSequencesStore();
+
+  // Sync sequenceName with builderState
+  useEffect(() => {
+    if (showSequenceBuilder && sequenceName !== builderState?.name) {
+      updateBuilderName(sequenceName);
+    }
+  }, [sequenceName, showSequenceBuilder, builderState?.name, updateBuilderName]);
 
   useEffect(() => {
     return () => {
@@ -102,6 +109,10 @@ export function CampaignForm({
 
     // Validate sequence if builder is shown
     if (showSequenceBuilder) {
+      if (!sequenceName.trim()) {
+        toast.error('Lütfen sıra adı girin veya sequence oluşturma işaretini kaldırın');
+        return;
+      }
       if (builderState?.steps.length === 0) {
         toast.error('En az bir adım ekleyin veya sequence oluşturma işaretini kaldırın');
         return;
@@ -145,8 +156,12 @@ export function CampaignForm({
       is_active: isActive,
     };
 
+    console.log('[CampaignForm handleSubmit] sequenceName:', sequenceName);
+    console.log('[CampaignForm handleSubmit] builderState.name:', builderState?.name);
+    console.log('[CampaignForm handleSubmit] showSequenceBuilder:', showSequenceBuilder);
+
     await onSave(data, showSequenceBuilder ? {
-      name: sequenceName || `${name} Sırası`,
+      name: sequenceName.trim() || `${name} Sırası`,
       steps: builderState?.steps || [],
     } : undefined);
   };

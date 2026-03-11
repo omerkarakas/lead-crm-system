@@ -3,16 +3,28 @@ import PocketBase from 'pocketbase';
 import { autoEnrollLead } from '@/lib/api/enrollments';
 import { fetchLead } from '@/lib/api/leads';
 import type { Lead } from '@/types/lead';
+import { verifyWebhookApiKey } from '@/lib/utils/webhook-signature';
 
 /**
  * POST /api/webhooks/qa-complete
  * Webhook endpoint called when QA is completed
  * Automatically enrolls low-score leads in nurturing campaigns
+ *
+ * Security: Verifies X-Webhook-Key header
  */
 export async function POST(req: NextRequest) {
+  let body: any = null;
   try {
+    // Verify webhook API key
+    if (!verifyWebhookApiKey(req)) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Invalid webhook key' },
+        { status: 401 }
+      );
+    }
+
     // Parse request body
-    const body = await req.json();
+    body = await req.json();
     const { lead_id } = body;
 
     if (!lead_id) {

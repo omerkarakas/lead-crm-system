@@ -1,5 +1,6 @@
 import type PocketBase from 'pocketbase';
-import type { Lead, LeadStatus } from '@/types/lead';
+import type { Lead } from '@/types/lead';
+import { LeadStatus } from '@/types/lead';
 import type { ProposalResponse } from '@/types/proposal';
 import type { Role } from '@/types/user';
 
@@ -27,7 +28,7 @@ async function getLatestProposal(
     });
 
     if (proposals.items.length > 0) {
-      return proposals.items[0] as { response: ProposalResponse };
+      return proposals.items[0] as unknown as { response: ProposalResponse };
     }
 
     return null;
@@ -68,11 +69,11 @@ export async function updateLeadStatusBasedOnProposal(
 
     switch (latestProposal.response) {
       case 'kabul':
-        newStatus = 'customer';
+        newStatus = LeadStatus.CUSTOMER;
         reason = 'Teklif kabul edildi';
         break;
       case 'red':
-        newStatus = 'lost';
+        newStatus = LeadStatus.LOST;
         reason = 'Teklif reddedildi';
         break;
       case 'cevap_bekleniyor':

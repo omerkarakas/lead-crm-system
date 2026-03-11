@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -30,30 +30,47 @@ export function QuestionBuilder({
   onSave,
   editingQuestion,
 }: QuestionBuilderProps) {
-  const [questionText, setQuestionText] = useState(editingQuestion?.question_text || '');
-  const [optionA, setOptionA] = useState(
-    editingQuestion?.options.find(o => o.startsWith('a)'))?.replace('a) ', '') || ''
-  );
-  const [optionB, setOptionB] = useState(
-    editingQuestion?.options.find(o => o.startsWith('b)'))?.replace('b) ', '') || ''
-  );
-  const [optionC, setOptionC] = useState(
-    editingQuestion?.options.find(o => o.startsWith('c)'))?.replace('c) ', '') || ''
-  );
-  const [pointsA, setPointsA] = useState(editingQuestion?.points?.a || 30);
-  const [pointsB, setPointsB] = useState(editingQuestion?.points?.b || 60);
-  const [pointsC, setPointsC] = useState(editingQuestion?.points?.c || 100);
-  const [order, setOrder] = useState(editingQuestion?.order || 1);
-  const [isActive, setIsActive] = useState(editingQuestion?.is_active ?? true);
+  const [questionText, setQuestionText] = useState('');
+  const [optionA, setOptionA] = useState('');
+  const [optionB, setOptionB] = useState('');
+  const [optionC, setOptionC] = useState('');
+  const [pointsA, setPointsA] = useState(30);
+  const [pointsB, setPointsB] = useState(60);
+  const [pointsC, setPointsC] = useState(100);
+  const [isActive, setIsActive] = useState(true);
   const [loading, setLoading] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
   const isEditing = !!editingQuestion;
 
+  // Update form when editingQuestion changes
+  useEffect(() => {
+    if (editingQuestion) {
+      setQuestionText(editingQuestion.question_text || '');
+      setOptionA(editingQuestion.options.find(o => o.startsWith('a)'))?.replace('a) ', '') || '');
+      setOptionB(editingQuestion.options.find(o => o.startsWith('b)'))?.replace('b) ', '') || '');
+      setOptionC(editingQuestion.options.find(o => o.startsWith('c)'))?.replace('c) ', '') || '');
+      setPointsA(editingQuestion.points?.a ?? 30);
+      setPointsB(editingQuestion.points?.b ?? 60);
+      setPointsC(editingQuestion.points?.c ?? 100);
+      setIsActive(editingQuestion.is_active ?? true);
+    } else {
+      // Reset form for new question
+      setQuestionText('');
+      setOptionA('');
+      setOptionB('');
+      setOptionC('');
+      setPointsA(30);
+      setPointsB(60);
+      setPointsC(100);
+      setIsActive(true);
+    }
+  }, [editingQuestion, open]);
+
   const formatWhatsAppMessage = () => {
     if (!questionText) return '';
 
-    let message = `*${order}. ${questionText}*\n\n`;
+    let message = `*${questionText}*\n\n`;
     message += `${optionA ? `a) ${optionA}` : ''}${optionB ? `\nb) ${optionB}` : ''}${optionC ? `\nc) ${optionC}` : ''}`;
 
     return message;
@@ -71,13 +88,14 @@ export function QuestionBuilder({
         question_text: questionText,
         options: [`a) ${optionA}`, `b) ${optionB}`, `c) ${optionC}`],
         points: { a: pointsA, b: pointsB, c: pointsC },
-        order,
         is_active: isActive,
       };
 
       if (isEditing && editingQuestion) {
+        // Keep existing order when editing
         await onSave({ ...data, id: editingQuestion.id } as UpdateQAQuestionDto);
       } else {
+        // For new questions, order will be set by the backend (questions.length + 1)
         await onSave(data);
       }
 
@@ -89,7 +107,6 @@ export function QuestionBuilder({
       setPointsA(30);
       setPointsB(60);
       setPointsC(100);
-      setOrder(1);
       setIsActive(true);
       setShowPreview(false);
       onClose();
@@ -209,21 +226,6 @@ export function QuestionBuilder({
                 />
               </div>
             </div>
-          </div>
-
-          {/* Order */}
-          <div className="space-y-2">
-            <Label htmlFor="order">Sıra *</Label>
-            <Input
-              id="order"
-              type="number"
-              min="1"
-              value={order}
-              onChange={(e) => setOrder(Number(e.target.value))}
-            />
-            <p className="text-sm text-muted-foreground">
-              Sorular bu sıraya göre gösterilecek
-            </p>
           </div>
 
           {/* Active */}

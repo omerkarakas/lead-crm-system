@@ -12,8 +12,8 @@ import type {
   SequenceMessageStatus,
   ExecutionResult,
   StepType,
-  DelayType,
 } from '@/types/campaign';
+import { DelayType } from '@/types/campaign';
 import type { WhatsAppMessage, WhatsAppDirection, WhatsAppMessageType, WhatsAppStatus } from '@/types/qa';
 
 // Create dedicated PocketBase instance for sequence execution
@@ -89,7 +89,7 @@ export async function startSequence(
       const delayMinutes = firstStepInSequence.delay_minutes || 0;
       const nextStepTime = calculateNextStepTime(
         delayMinutes,
-        firstStepInSequence.delay_type || 'relative'
+        firstStepInSequence.delay_type || DelayType.Relative
       );
       await scheduleNextStep(pbInstance, enrollment_id, nextStepTime);
     }
@@ -165,7 +165,7 @@ export async function processNextStep(
         const delayMinutes = nextStep.delay_minutes || 0;
         const nextStepTime = calculateNextStepTime(
           delayMinutes,
-          nextStep.delay_type || 'relative',
+          nextStep.delay_type || DelayType.Relative,
           nextStep.scheduled_time
         );
 
@@ -256,10 +256,10 @@ async function scheduleNextStep(
  */
 export function calculateNextStepTime(
   delayMinutes: number,
-  delayType: DelayType = 'relative',
+  delayType: DelayType = DelayType.Relative,
   scheduledTime?: string
 ): Date {
-  if (delayType === 'absolute' && scheduledTime) {
+  if (delayType === DelayType.Absolute && scheduledTime) {
     // Absolute time - use the provided scheduled time
     return new Date(scheduledTime);
   }
@@ -295,7 +295,7 @@ export function validateDelaySettings(step: CampaignStep): { valid: boolean; err
     return { valid: true };
   }
 
-  if (step.delay_type === 'relative') {
+  if (step.delay_type === DelayType.Relative) {
     if (!step.delay_minutes || step.delay_minutes <= 0) {
       return {
         valid: false,
@@ -304,7 +304,7 @@ export function validateDelaySettings(step: CampaignStep): { valid: boolean; err
     }
   }
 
-  if (step.delay_type === 'absolute') {
+  if (step.delay_type === DelayType.Absolute) {
     if (!step.scheduled_time) {
       return {
         valid: false,
@@ -373,17 +373,9 @@ async function sendEmailStep(
       };
     }
 
-    // Prepare custom variables (unsubscribe link)
-    const customVars: Record<string, string> = {};
-    if (enrollment) {
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-      customVars.unsubscribe_link = `${baseUrl}/unsubscribe/${enrollment.unsubscribe_token}`;
-    }
-
     // Send email
     const result = await sendEmailToLead(lead.id, {
       template_id: templateId,
-      customVars
     });
 
     if (result.success) {

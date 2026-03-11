@@ -300,7 +300,7 @@ export function ExecutionPageClient({
                       <div className="p-4 border-t">
                         <div className="space-y-4">
                           {/* Enrollment Details */}
-                          <div className="grid grid-cols-3 gap-4 text-sm">
+                          <div className="grid grid-cols-2 gap-4 text-sm">
                             <div>
                               <span className="text-muted-foreground">Kayıt Tarihi: </span>
                               <span className="font-medium">
@@ -310,14 +310,6 @@ export function ExecutionPageClient({
                             <div>
                               <span className="text-muted-foreground">Sıra: </span>
                               <span className="font-medium">{sequence?.name || '-'}</span>
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">Sonraki Adım: </span>
-                              <span className="font-medium">
-                                {enrollment.next_step_scheduled
-                                  ? new Date(enrollment.next_step_scheduled).toLocaleString('tr-TR')
-                                  : 'Planlanmadı'}
-                              </span>
                             </div>
                           </div>
 

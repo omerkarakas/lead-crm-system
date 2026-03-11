@@ -1,209 +1,23 @@
-❯ Faz 4.2'de manuel test adımlarını listele 
+  📋 API Kullanım Örnekleri
 
-● Read 1 file (ctrl+o to expand)
+  Lead API (API Key gerektirir)
 
-● Faz 4.2 - Proposal Management Manuel Test Adımları
+  POST /api/leads
+  X-API-Key: your_lead_api_key_here
 
-  Test Hazırlığı:
-  - Dev server çalışıyor mu? http://localhost:3001
-  - Green API WhatsApp yapılandırması yapılmış mı?
-  - Test lead'leri ve randevuları mevcut mu?
+  {
+    "name": "Mehmet Demir",
+    "email": "mehmet@example.com",
+    "source": "api"
+  }
 
-  ---
-  1. Teklif Şablon Yönetimi (Admin)
+  Rate Limiting
 
-  1.1 Şablon Oluşturma
+  - Standart limit: 100 istek/dakika (IP başına)
+  - Lead creation: 10 istek/dakika (daha sıkı)
 
-  - Admin olarak giriş yap
-  - Sol menüden "Teklif Şablonları" sayfasına git
-  - "Yeni Şablon" butonuna tıkla
-  - Şablon adı gir (örn: "Web Paketi")
-  - Açıklama ekle
-  - Editör tipi seç (TipTap veya Markdown)
-  - İçerik alanına değişkenler ekle: {company}, {contact}, {budget}, {service}, {duration}   
-  - Değişken ekle butonu ile özel değişken tanımla:
-    - İsim: discount
-    - Label: İndirim
-    - Varsayılan: "%10"
-  - "Aktif" checkbox'ını işaretle
-  - Kaydet butonuna tıkla
-  - Şablon listesinde göründüğünü doğrula
+  Webhook Güvenliği
 
-  1.2 Şablon Düzenleme
+  - Meta Ads: X-Hub-Signature-256 header ile HMAC doğrulaması
+  - QA Complete: X-Webhook-Key header ile API key doğrulaması
 
-  - Mevcut bir şablonun düzenle butonuna tıkla
-  - İçeriği değiştir
-  - Güncelle
-  - Değişikliklerin kaydedildiğini kontrol et
-
-  1.3 Şablon Silme (Soft Delete)
-
-  - Bir şablonun sil butonuna tıkla
-  - Onayla
-  - Şablon "Arşivlendi" sekmesine taşıdığını kontrol et
-  - "Arşivlendi" sekmesinden geri yükle
-
-  ---
-  2. Teklif Üretimi ve Gönderimi
-
-  2.1 Lead Detayından Teklif Gönderme
-
-  - Lead detay sayfasına git
-  - "Teklif" tabına tıkla
-  - "Yeni Teklif" butonuna tıkla
-  - Şablon seç (dropdown'dan)
-  - Değişken önizlemesini gör
-  - WhatsApp gönder butonuna tıkla
-  - Başarılı mesajını gör
-  - Lead'ın telefonuna WhatsApp mesajının geldiğini kontrol et
-  - Mesajdaki linkin doğru formatta olduğunu doğrula
-
-  2.2 Randevu Modal'ından Teklif Gönderme
-
-  - Randevu listesinden bir randevu seç
-  - Detay modal'ında "Teklif" tabına tıkla
-  - "Yeni Teklif" butonuna tıkla
-  - Şablon seç ve gönder
-  - Başarılı olduğunu doğrula
-
-  ---
-  3. Teklif Görüntüleme ve Yanıt (Public Page)
-
-  3.1 Teklif Linki ile Görüntüleme
-
-  - WhatsApp'tan gelen teklif linkine tıkla
-  - Tarayıcıda teklif sayfasının açıldığını gör
-  - Şablon içeriğinin düzgün göründüğünü kontrol et
-  - Değişkenlerin doğru değerlerle doldurulduğunu doğrula
-
-  3.2 Teklif Kabul Etme
-
-  - "Teklifi Kabul Et" butonuna tıkla
-  - Başarılı mesajını gör ("Teklif kabul edildi")
-  - Sayfanın yenilendiğini ve "KABUL" statüsünde gösterdiğini kontrol et
-
-  3.3 Teklif Reddetme
-
-  - Yeni bir teklif oluştur
-  - "Teklifi Reddet" butonuna tıkla
-  - Gerekçe açıklaması gir (örn: "Bütçe yüksek")
-  - Reddet butonuna tıkla
-  - Başarılı mesajını gör ("Teklif reddedildi")
-  - Sayfanın "RED" statüsünde gösterdiğini kontrol et
-
-  3.4 Süresi Geçmiş Teklif
-
-  - Veritabanında eski expires_at tarihli bir teklif oluştur
-  - Link ile erişmeyi dene
-  - "Bu teklifin süresi dolmuş" mesajını gör
-
-  ---
-  4. Yanıt Takibi ve Bildirimler
-
-  4.1 Lead Statüsü Güncellemesi
-
-  - Lead'in teklif kabul etmesinden SONRA:
-    - Lead detay sayfasına git
-    - Statüsünün "CUSTOMER" olduğunu gör
-    - "(Teklif kabul edildi)" nedenini gör
-    - offer_response = "KABUL"
-    - offer_responded_at tarih dolu
-  - Lead'in teklif reddetmesinden SONRA:
-    - Lead detay sayfasına git
-    - Statüsünün "LOST" olduğunu gör
-    - "(Teklif reddedildi)" nedenini gör
-    - offer_response = "RED"
-    - Gerekçe gösterildiğini kontrol et
-
-  4.2 Teklif Geçmişi
-
-  - Lead detay sayfasında "Teklif" tabına tıkla
-  - Tüm tekliflerin listelendiğini gör
-  - Durum badge'lerinin doğru olduğunu (KABUL=yeşil, RED=kırmızı, BEKLENIYOR=sarı)
-  - Yanıt tarihlerinin gösterildiğini kontrol et
-
-  4.3 Filtreleme ve Sıralama
-
-  - "Tümü" filtresini seç
-  - "Bekleyen" filtresini seç
-  - "Kabul Edilen" filtresini seç
-  - "Reddedilen" filtresini seç
-  - Sıralama: "En yeni" seç
-  - Sıralama: "En eski" seç
-
-  4.4 Satış Ekibi Bildirimi
-
-  - Admin settings sayfasına git (/admin/settings)
-  - "Teklif Bildirimleri" tab'ına tıkla
-  - Bildirimleri aktif et
-  - Test bildirimi gönder butonuna tıkla
-  - Sales/admin WhatsApp numaralarına mesaj geldiğini kontrol et
-
-  ---
-  5. Statüs Otomasyonu ve Manuel Override
-
-  5.1 Otomatik Statüs Güncellemesi
-
-  - Yeni bir lead oluştur
-  - Teklif gönder ve kabul ettir
-  - Lead statüsünün otomatik "CUSTOMER" olduğunu gör
-  - Randevu oluştur ve tamamla
-  - Statüsün "CUSTOMER" olarak kaldığını doğrula
-
-  5.2 Admin Manuel Override
-
-  - Admin olarak giriş yap
-  - Auto-update yapılmış bir lead'ın statüsünü değiştirmeyi dene
-  - Uyarı mesajını gör ("Bu statü otomatik güncellendi...")
-  - Force checkbox'ını işaretle
-  - Statüyü değiştir ve kaydet
-  - Başarılı olduğunu doğrula
-
-  5.3 Sales Override (Engelli)
-
-  - Sales rolüyle giriş yap
-  - Auto-update yapılmış bir lead'ın statüsünü değiştirmeyi dene
-  - Yetki hatası aldığını gör ("Yeterli yetkiniz yok")
-  - Statünün değişmediğini kontrol et
-
-  ---
-  6. Randevu Entegrasyonu
-
-  6.1 Randevu Detay Modal'ı
-
-  - Randevu listesinden bir randevu seç
-  - Modal'da teklif statüsü badge'ini gör
-  - Teklif verileri varsa badge gösterildiğini kontrol et
-
-  6.2 Randevu Tamamlama
-
-  - Teklifi kabul edilmiş bir lead için randevu oluştur
-  - Randevuyu tamamla
-  - Lead statüsünün "CUSTOMER" olarak güncellendiğini gör
-
-  ---
-  Test Sonuçları
-
-  ┌───────────────────┬─────────────────────────┬────────┐
-  │       Test        │          Sonuç          │ Notlar │
-  ├───────────────────┼─────────────────────────┼────────┤
-  │ Şablon Yönetimi   │ ⬜ Geçti / ⬜ Başarısız │        │
-  ├───────────────────┼─────────────────────────┼────────┤
-  │ Teklif Gönderimi  │ ⬜ Geçti / ⬜ Başarısız │        │
-  ├───────────────────┼─────────────────────────┼────────┤
-  │ Public Viewing    │ ⬜ Geçti / ⬜ Başarısız │        │
-  ├───────────────────┼─────────────────────────┼────────┤
-  │ Yanıt Takibi      │ ⬜ Geçti / ⬜ Başarısız │        │
-  ├───────────────────┼─────────────────────────┼────────┤
-  │ Bildirimler       │ ⬜ Geçti / ⬜ Başarısız │        │
-  ├───────────────────┼─────────────────────────┼────────┤
-  │ Statüs Otomasyonu │ ⬜ Geçti / ⬜ Başarısız │        │
-  ├───────────────────┼─────────────────────────┼────────┤
-  │ Manuel Override   │ ⬜ Geçti / ⬜ Başarısız │        │
-  └───────────────────┴─────────────────────────┴────────┘
-
-  ---
-  Testi tamamladıktan sonra:
-  /gsd:verify-work 4.2
-
-  Başarısız olan testleri varsa, sorunları detaylı açıkla.

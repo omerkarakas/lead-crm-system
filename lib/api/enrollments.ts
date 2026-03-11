@@ -9,7 +9,6 @@ import type {
 } from '@/types/campaign';
 import type { Lead } from '@/types/lead';
 import { fetchCampaigns, leadMatchesSegment } from './campaigns';
-import { fetchLead } from './leads';
 
 // Create dedicated PocketBase instance for enrollments
 const PB_URL = process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090';
@@ -91,7 +90,7 @@ export async function checkEnrollmentEligibility(
     }
 
     // Fetch lead and campaign
-    const lead = await fetchLead(lead_id);
+    const lead = await pb.collection('leads').getOne<Lead>(lead_id);
     const campaign = await pb.collection('campaigns').getOne<Campaign>(campaign_id);
 
     if (!lead) {
@@ -352,7 +351,7 @@ export async function evaluateAndEnroll(pb: PocketBase, lead_id: string): Promis
 }> {
   try {
     // Fetch lead
-    const lead = await fetchLead(lead_id);
+    const lead = await pb.collection('leads').getOne<Lead>(lead_id);
     if (!lead) {
       throw new Error('Lead not found');
     }

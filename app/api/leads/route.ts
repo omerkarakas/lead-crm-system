@@ -6,12 +6,23 @@ import { fetchActiveQuestions } from '@/lib/api/qa';
 import { formatPollMessage as formatWhatsAppPollMessage } from '@/lib/whatsapp/message-formatter';
 import { sendWhatsAppMessage, logWhatsAppMessage } from '@/lib/api/whatsapp';
 import { canViewAllLeads, canCreateLeads } from '@/lib/utils/permissions';
+import { validateApiKey } from '@/lib/utils/api-keys';
+import { checkRateLimit, extractIp, STRICT_RATE_LIMIT } from '@/lib/utils/rate-limit';
 
 /**
  * GET /api/leads - Get all leads with pagination and filtering
  */
 export async function GET(request: NextRequest) {
   try {
+    // Rate limiting check
+    const ip = extractIp(request);
+    if (!checkRateLimit(ip)) {
+      return NextResponse.json(
+        { error: 'Too many requests' },
+        { status: 429 }
+      );
+    }
+
     const pb = await getServerPb();
     const user = pb.authStore.model as any;
 
@@ -182,9 +193,12 @@ export async function createOrUpdateLead(
     return { lead, action: 'updated' };
   } else {
     // Create new lead
+    // Phone yoksa quality = 'followup', yoksa verilen değer veya 'pending'
+    const quality = data.quality || (!data.phone ? 'followup' : 'pending');
+
     const createData: any = {
       name: data.name,
-      phone: data.phone,
+      phone: data.phone || '',
       email: data.email,
       company: data.company,
       website: data.website,
@@ -192,7 +206,7 @@ export async function createOrUpdateLead(
       source: data.source,
       status: data.status || 'new',
       score: data.score ?? 0,
-      quality: data.quality || 'pending',
+      quality: quality,
       tags: data.tags || [],
       qa_sent: false,
       qa_completed: false,
@@ -226,6 +240,23 @@ export async function createOrUpdateLead(
  */
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting check (stricter for lead creation)
+    const ip = extractIp(request);
+    if (!checkRateLimit(ip, STRICT_RATE_LIMIT)) {
+      return NextResponse.json(
+        { error: 'Too many requests' },
+        { status: 429 }
+      );
+    }
+
+    // API key check for lead creation
+    if (!validateApiKey(request)) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Invalid API key' },
+        { status: 401 }
+      );
+    }
+
     const pb = await getServerPb();
     const body = await request.json() as CreateLeadDto;
 

@@ -118,7 +118,7 @@ export function SequenceFlowChart({
     if (step.type === 'email' || step.type === 'whatsapp') {
       return step.template_id ? `Şablon ID: ${step.template_id.slice(0, 8)}...` : 'Şablon seçilmedi';
     }
-    return null;
+    return '-';
   };
 
   if (steps.length === 0) {

@@ -16,13 +16,14 @@ export enum LeadSource {
 
 export enum LeadQuality {
   PENDING = 'pending',
-  QUALIFIED = 'qualified'
+  QUALIFIED = 'qualified',
+  FOLLOWUP = 'followup'
 }
 
 export interface Lead {
   id: string;
   name: string;
-  phone: string;
+  phone?: string;
   email?: string;
   company?: string;
   website?: string;
@@ -54,7 +55,7 @@ export interface Lead {
 
 export interface CreateLeadDto {
   name: string;
-  phone: string;
+  phone?: string;
   email?: string;
   company?: string;
   website?: string;

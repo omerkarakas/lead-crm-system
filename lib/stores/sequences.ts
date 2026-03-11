@@ -5,11 +5,10 @@ import type {
   SequenceStep,
   SequenceBuilderState,
   StepValidationError,
-  BuilderViewMode,
   CreateSequenceDto,
   UpdateSequenceDto,
 } from '@/types/campaign';
-import * as campaignApi from '@/lib/api/campaigns';
+import { BuilderViewMode } from '@/types/campaign';
 
 interface SequencesState {
   sequences: Sequence[];
@@ -25,6 +24,7 @@ interface SequencesState {
   fetchSequences: (campaignId: string) => Promise<void>;
   setActiveSequence: (sequence: Sequence | null) => void;
   initBuilder: (campaignId?: string, sequence?: Sequence) => void;
+  updateBuilderName: (name: string) => void;
   addStep: (step: SequenceStep) => void;
   updateStep: (index: number, step: SequenceStep) => void;
   deleteStep: (index: number) => void;
@@ -37,6 +37,31 @@ interface SequencesState {
   validateSequence: () => StepValidationError[];
   resetBuilder: () => void;
   clearError: () => void;
+}
+
+// Helper function to fetch from API
+async function fetchFromAPI(endpoint: string, options?: RequestInit): Promise<any> {
+  console.log(`[fetchFromAPI] ${options?.method || 'GET'} ${endpoint}`);
+
+  const response = await fetch(endpoint, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options?.headers,
+    },
+  });
+
+  console.log(`[fetchFromAPI] Response status: ${response.status} ${response.statusText}`);
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+    console.error(`[fetchFromAPI] Error response:`, error);
+    throw new Error(error.error || error.message || `HTTP ${response.status}`);
+  }
+
+  const result = await response.json();
+  console.log(`[fetchFromAPI] Success response:`, result);
+  return result;
 }
 
 export const useSequencesStore = create<SequencesState>()(
@@ -54,8 +79,8 @@ export const useSequencesStore = create<SequencesState>()(
       fetchSequences: async (campaignId: string) => {
         set({ loading: true, error: null });
         try {
-          const sequences = await campaignApi.fetchSequences(campaignId);
-          set({ sequences, loading: false });
+          const response = await fetchFromAPI(`/api/sequences?campaign_id=${campaignId}`);
+          set({ sequences: response.items || response, loading: false });
         } catch (error: any) {
           set({
             error: error.message || 'Sıralar yüklenirken hata oluştu',
@@ -78,6 +103,19 @@ export const useSequencesStore = create<SequencesState>()(
           isDirty: false,
         };
         set({ builderState, activeSequence: sequence || null });
+      },
+
+      updateBuilderName: (name: string) => {
+        const { builderState } = get();
+        if (!builderState) return;
+
+        set({
+          builderState: {
+            ...builderState,
+            name,
+            isDirty: true,
+          },
+        });
       },
 
       addStep: (step: SequenceStep) => {
@@ -199,17 +237,27 @@ export const useSequencesStore = create<SequencesState>()(
 
           if (builderState.sequence_id) {
             // Update existing sequence
-            await campaignApi.updateSequence(builderState.sequence_id, sequenceData);
+            await fetchFromAPI(`/api/sequences/${builderState.sequence_id}`, {
+              method: 'PATCH',
+              body: JSON.stringify(sequenceData),
+            });
           } else {
             // Create new sequence
             if (!builderState.campaign_id) {
               throw new Error('Kampanya ID gerekli');
             }
             const createData: CreateSequenceDto = {
-              ...sequenceData,
               campaign_id: builderState.campaign_id,
+              name: builderState.name,
+              steps: builderState.steps as any[],
             };
-            await campaignApi.createSequence(createData);
+
+            console.log('[sequences store] Creating sequence with data:', JSON.stringify(createData, null, 2));
+
+            await fetchFromAPI('/api/sequences', {
+              method: 'POST',
+              body: JSON.stringify(createData),
+            });
           }
 
           // Reload sequences if we have a campaign

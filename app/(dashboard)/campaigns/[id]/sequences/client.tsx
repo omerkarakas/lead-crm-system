@@ -37,10 +37,12 @@ export function SequencesPageClient({
 }: SequencesPageClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [sequences, setSequences] = useState<Sequence[]>(initialSequences);
+  const [sequences, setSequences] = useState<Sequence[]>(initialSequences || []);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [sequenceToDelete, setSequenceToDelete] = useState<Sequence | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  console.log('[SequencesPageClient] Initial sequences:', initialSequences);
 
   // Determine which sequence to edit
   const activeSequence = editingSequenceId
@@ -58,10 +60,15 @@ export function SequencesPageClient({
 
   const loadSequences = async () => {
     try {
-      const data = await campaignApi.fetchSequences(campaign.id);
-      setSequences(data);
+      const response = await fetch(`/api/sequences?campaign_id=${campaign.id}`);
+      if (!response.ok) {
+        throw new Error('Failed to load sequences');
+      }
+      const data = await response.json();
+      setSequences(data.items || []);
     } catch (error) {
       console.error('Failed to load sequences:', error);
+      toast.error('Sıralar yüklenirken hata oluştu');
     }
   };
 
@@ -83,7 +90,14 @@ export function SequencesPageClient({
 
     setIsLoading(true);
     try {
-      await campaignApi.deleteSequence(sequenceToDelete.id);
+      const response = await fetch(`/api/sequences/${sequenceToDelete.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete sequence');
+      }
+
       toast.success('Sıra silindi');
       setSequences(sequences.filter(s => s.id !== sequenceToDelete.id));
       setDeleteDialogOpen(false);
@@ -140,7 +154,7 @@ export function SequencesPageClient({
         <SequenceBuilder
           campaignId={campaign.id}
           sequenceId={editingSequenceId}
-          sequenceName={activeSequence?.name || ''}
+          sequence={activeSequence || undefined}
           onSequenceSaved={handleSequenceSaved}
           onSequenceCancelled={handleSequenceCancelled}
         />

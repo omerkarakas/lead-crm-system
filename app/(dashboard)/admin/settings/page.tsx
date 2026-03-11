@@ -15,7 +15,7 @@ import type { ServiceName } from '@/types/setting';
 export default function AdminSettingsPage() {
   const { user, isLoading, checkAuth } = useAuthStore();
   const router = useRouter();
-  const { settings, loading, error, fetchSettings, updateSetting, testConnection, clearError } = useSettingsStore();
+  const { settings, loading, error, fetchSettings, updateSetting, createSetting, testConnection, clearError } = useSettingsStore();
 
   const [activeTab, setActiveTab] = useState<ServiceName>('green_api');
   const [testingService, setTestingService] = useState<ServiceName | null>(null);
@@ -55,6 +55,21 @@ export default function AdminSettingsPage() {
     try {
       await updateSetting(id, { setting_value: value, ...(isActive !== undefined && { is_active: isActive }) });
       toast.success('Ayar güncellendi');
+    } catch (error: any) {
+      toast.error(error.message || 'Bir hata oluştu');
+    }
+  };
+
+  const handleCreate = async (key: string, value: string) => {
+    clearError();
+    try {
+      await createSetting({
+        service_name: activeTab,
+        setting_key: key,
+        setting_value: value,
+        is_active: true,
+      });
+      toast.success('Ayar oluşturuldu');
     } catch (error: any) {
       toast.error(error.message || 'Bir hata oluştu');
     }
@@ -158,6 +173,7 @@ export default function AdminSettingsPage() {
             testResult={null}
             isTesting={testingService === 'proposal_notifications'}
             onUpdate={handleUpdate}
+            onCreate={handleCreate}
             onTest={() => handleTest('proposal_notifications')}
           />
         </TabsContent>

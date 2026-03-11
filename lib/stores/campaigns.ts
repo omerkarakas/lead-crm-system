@@ -170,8 +170,9 @@ export const useCampaignsStore = create<CampaignsState>()(
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
           });
-          if (get().activeCampaign) {
-            await get().fetchCampaign(get().activeCampaign.id);
+          const activeCampaign = get().activeCampaign;
+          if (activeCampaign) {
+            await get().fetchCampaign(activeCampaign.id);
           }
           set({ loading: false });
         } catch (error: any) {
@@ -191,8 +192,9 @@ export const useCampaignsStore = create<CampaignsState>()(
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
           });
-          if (get().activeCampaign) {
-            await get().fetchCampaign(get().activeCampaign.id);
+          const activeCampaign = get().activeCampaign;
+          if (activeCampaign) {
+            await get().fetchCampaign(activeCampaign.id);
           }
           set({ loading: false });
         } catch (error: any) {
@@ -210,8 +212,9 @@ export const useCampaignsStore = create<CampaignsState>()(
           await fetchFromAPI(`/api/sequences/${id}`, {
             method: 'DELETE',
           });
-          if (get().activeCampaign) {
-            await get().fetchCampaign(get().activeCampaign.id);
+          const activeCampaign = get().activeCampaign;
+          if (activeCampaign) {
+            await get().fetchCampaign(activeCampaign.id);
           }
           set({ loading: false });
         } catch (error: any) {

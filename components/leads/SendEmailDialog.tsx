@@ -94,9 +94,9 @@ export function SendEmailDialog({
   useEffect(() => {
     const fullHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        ${subject ? `<h2 style="color: #333; margin-bottom: 16px;">${replaceVariables(subject, lead)}</h2>` : ''}
+        ${subject ? `<h2 style="color: #333; margin-bottom: 16px;">${replaceVariables(subject, { lead })}</h2>` : ''}
         <div style="color: #555; line-height: 1.6;">
-          ${body ? replaceVariables(body, lead) : '<em style="color: #999;">E-posta içeriği burada görünecek...</em>'}
+          ${body ? replaceVariables(body, { lead }) : '<em style="color: #999;">E-posta içeriği burada görünecek...</em>'}
         </div>
       </div>
     `;

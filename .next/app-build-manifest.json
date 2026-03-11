@@ -1,15 +1,20 @@
 {
   "pages": {
-    "/page": [
+    "/login/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/page.js"
+      "static/chunks/app/login/page.js"
     ],
     "/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
+    ],
+    "/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/page.js"
     ],
     "/(dashboard)/leads/page": [
       "static/chunks/webpack.js",
@@ -21,20 +26,25 @@
       "static/chunks/main-app.js",
       "static/chunks/app/(dashboard)/layout.js"
     ],
-    "/(dashboard)/admin/settings/page": [
+    "/(dashboard)/campaigns/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/admin/settings/page.js"
+      "static/chunks/app/(dashboard)/campaigns/page.js"
+    ],
+    "/(dashboard)/campaigns/[id]/sequences/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(dashboard)/campaigns/[id]/sequences/page.js"
+    ],
+    "/(dashboard)/users/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(dashboard)/users/page.js"
     ],
     "/(dashboard)/leads/[id]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/(dashboard)/leads/[id]/page.js"
-    ],
-    "/proposals/[token]/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/proposals/[token]/page.js"
     ],
     "/_not-found/page": [
       "static/chunks/webpack.js",

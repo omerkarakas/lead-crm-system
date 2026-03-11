@@ -71,7 +71,7 @@ const leadFormSchema = z
     },
   );
 
-type LeadFormValues = z.infer<typeof leadFormSchema>;
+export type LeadFormValues = z.infer<typeof leadFormSchema>;
 
 interface LeadFormProps {
   onSubmit: (data: LeadFormValues, force?: boolean) => Promise<void>;

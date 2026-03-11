@@ -18,11 +18,12 @@ import { SequenceList } from './SequenceList';
 import { SequenceFlowChart } from './SequenceFlowChart';
 import { SequenceStepForm } from './SequenceStepForm';
 import { BuilderViewMode, StepType } from '@/types/campaign';
-import type { SequenceStep } from '@/types/campaign';
+import type { SequenceStep, Sequence } from '@/types/campaign';
 
 interface SequenceBuilderProps {
   campaignId?: string;
   sequenceId?: string;
+  sequence?: Sequence;
   inline?: boolean;
   sequenceName?: string;
   onSequenceSaved?: (sequenceId: string) => void;
@@ -32,6 +33,7 @@ interface SequenceBuilderProps {
 export function SequenceBuilder({
   campaignId,
   sequenceId,
+  sequence,
   inline = false,
   sequenceName: initialSequenceName = '',
   onSequenceSaved,
@@ -57,13 +59,17 @@ export function SequenceBuilder({
     discardChanges,
     resetBuilder,
     clearError,
+    updateBuilderName,
   } = useSequencesStore();
 
   // Initialize builder when component mounts or props change
   useEffect(() => {
-    if (campaignId || sequenceId) {
-      // For existing sequences, we would fetch from API
-      // For now, initialize with empty state
+    if (sequence) {
+      // Edit mode: use existing sequence data
+      initBuilder(campaignId, sequence);
+      setSequenceName(sequence.name);
+    } else if (campaignId || sequenceId) {
+      // Create mode: initialize with empty state
       initBuilder(campaignId, sequenceId ? { id: sequenceId, name: sequenceName, steps: [], campaign_id: campaignId || '', is_active: true, created: '', updated: '' } : undefined);
       setSequenceName(initialSequenceName);
     }
@@ -72,7 +78,14 @@ export function SequenceBuilder({
         resetBuilder();
       }
     };
-  }, [campaignId, sequenceId, initialSequenceName]);
+  }, [campaignId, sequenceId, sequence, initialSequenceName]);
+
+  // Sync sequenceName with builderState when it changes
+  useEffect(() => {
+    if (builderState && sequenceName !== builderState.name) {
+      updateBuilderName(sequenceName);
+    }
+  }, [sequenceName, builderState?.name, updateBuilderName]);
 
   const steps = builderState?.steps || [];
   const viewMode = builderState?.viewMode || BuilderViewMode.FlowChart;
@@ -109,6 +122,9 @@ export function SequenceBuilder({
   };
 
   const handleSave = async () => {
+    console.log('[SequenceBuilder handleSave] sequenceName:', sequenceName);
+    console.log('[SequenceBuilder handleSave] builderState.name:', builderState?.name);
+
     if (!sequenceName.trim()) {
       toast.error('Lütfen sıra adı girin');
       return;

@@ -3,6 +3,7 @@ import PocketBase from 'pocketbase';
 import type { Lead } from '@/types/lead';
 import { LeadSource } from '@/types/lead';
 import { createOrUpdateLead } from '@/app/api/leads/route';
+import { verifyMetaAdsSignature, getMetaWebhookSecret } from '@/lib/utils/webhook-signature';
 
 /**
  * Get unauthenticated PocketBase instance for Meta Ads webhook
@@ -104,7 +105,7 @@ function transformFacebookPayload(payload: FacebookLeadAdsPayload) {
  * Processes lead submissions from Facebook Lead Ads forms.
  * Handles duplicate detection and updates existing leads with 're-apply' status.
  *
- * Security: For production, verify X-Hub-Signature header
+ * Security: Verifies X-Hub-Signature-256 header using HMAC SHA-256
  * Error handling: Returns 200 OK for malformed data (Facebook retries on 5xx)
  */
 export async function POST(req: NextRequest) {
@@ -117,8 +118,22 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Get raw body for signature verification
+    const rawBody = await req.text();
+    const signature = req.headers.get('X-Hub-Signature-256');
+    const secret = getMetaWebhookSecret();
+
+    // Verify webhook signature if secret is configured
+    if (secret && !verifyMetaAdsSignature(rawBody, signature || '', secret)) {
+      console.error('[Meta Ads Webhook] Invalid signature');
+      return NextResponse.json(
+        { success: false, message: 'Invalid signature' },
+        { status: 401 }
+      );
+    }
+
     // Parse webhook payload
-    const payload = await req.json() as FacebookLeadAdsPayload;
+    const payload = JSON.parse(rawBody) as FacebookLeadAdsPayload;
 
     // Get UNAUTHENTICATED PocketBase instance (deliberately not using auth)
     // This prevents createdBy from being auto-populated by auth context

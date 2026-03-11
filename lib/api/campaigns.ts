@@ -9,9 +9,9 @@ import type {
   SegmentPreview,
   AudienceSegment,
   SegmentRule,
-  RuleOperator,
   CampaignWithSequences,
 } from '@/types/campaign';
+import { RuleOperator } from '@/types/campaign';
 import type { Lead } from '@/types/lead';
 
 // Create dedicated PocketBase instance for Campaigns
@@ -235,7 +235,16 @@ export function validateSegment(segment: AudienceSegment): {
   }
 
   const validFields = ['score', 'status', 'source', 'tags', 'name', 'phone', 'email', 'company', 'quality'];
-  const validOperators: RuleOperator[] = ['eq', 'ne', 'gt', 'lt', 'gte', 'lte', 'contains', 'not_contains'];
+  const validOperators: RuleOperator[] = [
+    RuleOperator.Eq,
+    RuleOperator.Ne,
+    RuleOperator.Gt,
+    RuleOperator.Lt,
+    RuleOperator.Gte,
+    RuleOperator.Lte,
+    RuleOperator.Contains,
+    RuleOperator.NotContains,
+  ];
 
   segment.rules.forEach((rule, index) => {
     if (!rule.field) {

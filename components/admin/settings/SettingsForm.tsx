@@ -16,6 +16,7 @@ interface SettingsFormProps {
   testResult?: { success: boolean; message: string; timestamp?: number } | null;
   isTesting?: boolean;
   onUpdate: (id: string, value: string, isActive?: boolean) => Promise<void>;
+  onCreate?: (key: string, value: string) => Promise<void>;
   onTest: () => Promise<void>;
 }
 
@@ -40,8 +41,7 @@ const SERVICE_FIELDS: Record<
     { key: 'from_name', label: 'From Name', type: 'text', placeholder: 'Moka CRM' },
   ],
   proposal_notifications: [
-    { key: 'enabled', label: 'Bildirimler Aktif', type: 'password', placeholder: 'true' },
-    { key: 'sales_phones', label: 'Satış Ekibi Telefonları', type: 'text', placeholder: '905551234567,905551234568' },
+    { key: 'sales_phones', label: 'Satış Ekibi Telefonları', type: 'text', placeholder: '+905551234567,+905551234568' },
   ],
 };
 
@@ -53,6 +53,7 @@ export function SettingsForm({
   testResult,
   isTesting,
   onUpdate,
+  onCreate,
   onTest,
 }: SettingsFormProps) {
   const [editingValues, setEditingValues] = useState<Record<string, string>>({});
@@ -69,11 +70,20 @@ export function SettingsForm({
 
   const handleSave = async (key: string) => {
     const value = editingValues[key];
-    if (value === undefined || value === settingsMap[key]?.setting_value) return;
+    const existingSetting = settingsMap[key];
+
+    // Don't save if value hasn't changed
+    if (value === undefined || value === existingSetting?.setting_value) return;
 
     setSaving((prev) => ({ ...prev, [key]: true }));
     try {
-      await onUpdate(settingsMap[key].id, value);
+      if (existingSetting) {
+        // Update existing setting
+        await onUpdate(existingSetting.id, value);
+      } else if (onCreate) {
+        // Create new setting
+        await onCreate(key, value);
+      }
       setEditingValues((prev) => {
         const newValues = { ...prev };
         delete newValues[key];
@@ -141,8 +151,6 @@ export function SettingsForm({
           const hasChanges = editValue !== undefined && editValue !== setting?.setting_value;
           const showPassword = showPasswords[field.key];
 
-          if (!setting) return null;
-
           return (
             <div key={field.key} className="space-y-2">
               <div className="flex items-center justify-between">
@@ -150,15 +158,17 @@ export function SettingsForm({
                   {field.label}
                   {field.key === 'sales_phones' && <span className="text-red-500 ml-1">*</span>}
                 </Label>
-                <div className="flex items-center gap-2">
-                  <Switch
-                    checked={setting.is_active}
-                    onCheckedChange={(checked) => onUpdate(setting.id, setting.setting_value, checked)}
-                  />
-                  <span className="text-sm text-muted-foreground">
-                    {setting.is_active ? 'Aktif' : 'Pasif'}
-                  </span>
-                </div>
+                {setting && (
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      checked={setting.is_active}
+                      onCheckedChange={(checked) => onUpdate(setting.id, setting.setting_value, checked)}
+                    />
+                    <span className="text-sm text-muted-foreground">
+                      {setting.is_active ? 'Aktif' : 'Pasif'}
+                    </span>
+                  </div>
+                )}
               </div>
               <div className="flex gap-2">
                 <div className="relative flex-1">
@@ -166,7 +176,7 @@ export function SettingsForm({
                     id={field.key}
                     type={field.type === 'password' && !showPassword ? 'password' : 'text'}
                     placeholder={field.placeholder}
-                    defaultValue={setting.setting_value}
+                    defaultValue={setting?.setting_value || ''}
                     onChange={(e) => setEditingValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
                     onKeyDown={(e) => handleKeyDown(field.key, e)}
                     disabled={isSaving}
@@ -200,11 +210,11 @@ export function SettingsForm({
                 )}
               </div>
               {field.key === 'sales_phones' && (
-                <p className="text-sm text-amber-600">
-                  ⚠️ Zorunlu: Teklif bildirimleri için en az bir telefon numarası girilmelidir. Virgül ile ayırarak birden fazla numara ekleyebilirsiniz.
+                <p className="text-sm font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-md p-3">
+                  <span className="font-bold">⚠️ Zorunlu:</span> Teklif bildirimleri için en az bir telefon numarası girilmelidir. Format: <code className="bg-amber-100 px-1 py-0.5 rounded text-xs">+905551234567</code>. Virgül ile ayırarak birden fazla numara ekleyebilirsiniz.
                 </p>
               )}
-              {setting.description && field.key !== 'sales_phones' && (
+              {setting?.description && field.key !== 'sales_phones' && (
                 <p className="text-sm text-muted-foreground">{setting.description}</p>
               )}
             </div>

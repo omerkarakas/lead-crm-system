@@ -1,17 +1,36 @@
-import { redirect } from 'next/navigation';
-import { getCachedUser } from '@/lib/auth-utils';
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/lib/stores/auth';
 import { canManageCampaigns } from '@/lib/utils/permissions';
 import { CampaignsClient } from './client';
 
-export default async function CampaignsPage() {
-  const user = await getCachedUser();
+export default function CampaignsPage() {
+  const router = useRouter();
+  const { user, isLoading, checkAuth } = useAuthStore();
 
-  if (!user) {
-    redirect('/login');
+  useEffect(() => {
+    const initAuth = async () => {
+      await checkAuth();
+    };
+    initAuth();
+  }, [checkAuth]);
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push('/login');
+    } else if (!isLoading && user && !canManageCampaigns(user.role)) {
+      router.push('/leads');
+    }
+  }, [user, isLoading, router]);
+
+  if (isLoading) {
+    return null;
   }
 
-  if (!canManageCampaigns(user.role)) {
-    redirect('/leads');
+  if (!user || !canManageCampaigns(user.role)) {
+    return null;
   }
 
   return <CampaignsClient />;

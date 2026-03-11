@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerPb } from '@/lib/pocketbase/server';
 import { createProposal } from '@/lib/api/proposals';
 import type { CreateProposalDto } from '@/types/proposal';
+import { canViewAllLeads } from '@/lib/utils/permissions';
 
 /**
  * GET /api/proposals
@@ -10,6 +11,15 @@ import type { CreateProposalDto } from '@/types/proposal';
 export async function GET(request: NextRequest) {
   try {
     const pb = await getServerPb();
+    const user = pb.authStore.model as any;
+
+    // Permission check - user must be able to view leads
+    if (!user || !canViewAllLeads(user?.role)) {
+      return NextResponse.json(
+        { error: 'Forbidden - You do not have permission to view proposals' },
+        { status: 403 }
+      );
+    }
 
     const searchParams = request.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') || '1');
@@ -64,6 +74,15 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const pb = await getServerPb();
+    const user = pb.authStore.model as any;
+
+    // Permission check - user must be able to view leads (create proposal requires lead access)
+    if (!user || !canViewAllLeads(user?.role)) {
+      return NextResponse.json(
+        { error: 'Forbidden - You do not have permission to create proposals' },
+        { status: 403 }
+      );
+    }
 
     const body = await request.json();
 

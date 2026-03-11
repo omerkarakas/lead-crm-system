@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerPb } from '@/lib/pocketbase/server';
-import type { Appointment, Lead } from '@/types/lead';
+import type { Appointment } from '@/types/appointment';
+import type { Lead } from '@/types/lead';
 
 /**
  * POST /api/appointments/[id]/complete

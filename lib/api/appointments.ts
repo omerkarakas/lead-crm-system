@@ -9,6 +9,7 @@ import {
   formatRescheduledMessage
 } from '@/lib/whatsapp/appointment-messages';
 import type { Lead } from '@/types/lead';
+import { LeadStatus } from '@/types/lead';
 import type {
   Appointment,
   CreateAppointmentDto,
@@ -117,7 +118,7 @@ export async function matchLeadToAppointment(
  * Update lead status to 'booked'
  */
 export async function updateLeadStatusToBooked(leadId: string): Promise<void> {
-  await updateLead(leadId, { status: 'booked' });
+  await updateLead(leadId, { status: LeadStatus.BOOKED });
 }
 
 /**

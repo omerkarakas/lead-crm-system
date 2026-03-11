@@ -18,7 +18,7 @@ export interface CreateQAQuestionDto {
 }
 
 export interface UpdateQAQuestionDto {
-  id: string;
+  id?: string;
   question_text?: string;
   options?: string[];
   points?: Record<string, number>;
@@ -40,7 +40,7 @@ export interface WhatsAppMessage {
   lead_id: string;
   direction: 'incoming' | 'outgoing';
   message_text: string;
-  message_type: 'poll' | 'booking_link' | 'info' | 'error';
+  message_type: 'poll' | 'booking_link' | 'info' | 'error' | 'text';
   status: 'sent' | 'delivered' | 'read' | 'failed' | 'received';
   sent_at?: string;
   green_api_id?: string;
@@ -51,3 +51,8 @@ export interface QAAnswerWithQuestion extends QAAnswer {
     question_id?: QAQuestion;
   };
 }
+
+// Type aliases for WhatsApp message properties
+export type WhatsAppDirection = 'incoming' | 'outgoing';
+export type WhatsAppMessageType = 'poll' | 'booking_link' | 'info' | 'error' | 'text';
+export type WhatsAppStatus = 'sent' | 'delivered' | 'read' | 'failed' | 'received';

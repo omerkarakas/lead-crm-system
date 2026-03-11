@@ -22,7 +22,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
-import type { SequenceStep, StepType, DelayType } from '@/types/campaign';
+import type { SequenceStep } from '@/types/campaign';
+import { StepType, DelayType } from '@/types/campaign';
 import type { EmailTemplate } from '@/types/email';
 import * as emailTemplatesApi from '@/lib/api/email-templates';
 
@@ -45,7 +46,7 @@ export function SequenceStepForm({
 }: SequenceStepFormProps) {
   const [selectedType, setSelectedType] = useState<FormStepType>(null);
   const [templateId, setTemplateId] = useState<string>('');
-  const [delayType, setDelayType] = useState<DelayType>('relative');
+  const [delayType, setDelayType] = useState<DelayType>(DelayType.Relative);
   const [delayMinutes, setDelayMinutes] = useState<number>(60);
   const [scheduledTime, setScheduledTime] = useState<string>('');
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
@@ -70,7 +71,7 @@ export function SequenceStepForm({
     if (step) {
       setSelectedType(step.type);
       setTemplateId(step.template_id || '');
-      setDelayType(step.delay_type || 'relative');
+      setDelayType(step.delay_type || DelayType.Relative);
       setDelayMinutes(step.delay_minutes || 60);
       setScheduledTime(step.scheduled_time || '');
 
@@ -109,11 +110,11 @@ export function SequenceStepForm({
     const newStep: SequenceStep = {
       id: step?.id || crypto.randomUUID(),
       order: step?.order || 0,
-      type: selectedType,
+      type: selectedType as StepType,
       template_id: (selectedType === 'email' || selectedType === 'whatsapp') ? templateId : undefined,
       delay_type: selectedType === 'delay' ? delayType : undefined,
-      delay_minutes: selectedType === 'delay' && delayType === 'relative' ? delayMinutes : undefined,
-      scheduled_time: selectedType === 'delay' && delayType === 'absolute' ? scheduledTime : undefined,
+      delay_minutes: selectedType === 'delay' && delayType === DelayType.Relative ? delayMinutes : undefined,
+      scheduled_time: selectedType === 'delay' && delayType === DelayType.Absolute ? scheduledTime : undefined,
     };
 
     onSave(newStep);
@@ -123,7 +124,7 @@ export function SequenceStepForm({
   const handleClose = () => {
     setSelectedType(null);
     setTemplateId('');
-    setDelayType('relative');
+    setDelayType(DelayType.Relative);
     setDelayMinutes(60);
     setScheduledTime('');
     setSelectedTemplate(null);
@@ -138,7 +139,7 @@ export function SequenceStepForm({
     }
 
     if (selectedType === 'delay') {
-      if (delayType === 'relative') {
+      if (delayType === DelayType.Relative) {
         return delayMinutes > 0;
       } else {
         return !!scheduledTime;
@@ -282,16 +283,16 @@ export function SequenceStepForm({
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">Mutlak Zaman</span>
                   <Switch
-                    checked={delayType === 'absolute'}
+                    checked={delayType === DelayType.Absolute}
                     onCheckedChange={(checked) =>
-                      setDelayType(checked ? 'absolute' : 'relative')
+                      setDelayType(checked ? DelayType.Absolute : DelayType.Relative)
                     }
                   />
                   <span className="text-sm">Adım Sonrası</span>
                 </div>
               </div>
 
-              {delayType === 'relative' ? (
+              {delayType === DelayType.Relative ? (
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="delayMinutes">

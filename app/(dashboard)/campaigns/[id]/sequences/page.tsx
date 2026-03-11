@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { canManageCampaigns } from '@/lib/utils/permissions';
-import pb from '@/lib/pocketbase';
+import { getServerPb } from '@/lib/pocketbase/server';
 import type { Campaign, Sequence } from '@/types/campaign';
 import { SequencesPageClient } from './client';
 
@@ -16,6 +16,7 @@ interface SequencesPageProps {
 
 async function getCampaign(id: string): Promise<Campaign> {
   try {
+    const pb = await getServerPb();
     const campaign = await pb.collection('campaigns').getOne<Campaign>(id);
     return campaign;
   } catch (error) {
@@ -26,6 +27,7 @@ async function getCampaign(id: string): Promise<Campaign> {
 
 async function getSequences(campaignId: string): Promise<Sequence[]> {
   try {
+    const pb = await getServerPb();
     const response = await pb.collection('sequences').getList<Sequence>(1, 100, {
       filter: `campaign_id = "${campaignId}"`,
       sort: '-created',

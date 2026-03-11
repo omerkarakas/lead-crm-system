@@ -192,8 +192,8 @@ export async function sendEmailToLead(
     }
 
     // Replace variables with lead data
-    const processedSubject = replaceVariables(subject, lead);
-    const processedBody = replaceVariables(body, lead);
+    const processedSubject = replaceVariables(subject, { lead });
+    const processedBody = replaceVariables(body, { lead });
 
     // Create initial email log with pending status
     const emailLogId = await logEmailMessage({

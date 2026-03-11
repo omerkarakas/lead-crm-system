@@ -36,6 +36,16 @@ export interface Appointment {
   notes?: string;
   created: string;
   updated: string;
+  expand?: {
+    lead_id?: {
+      id: string;
+      name: string;
+      phone?: string;
+      email?: string;
+      company?: string;
+      offer_response?: string;
+    };
+  };
 }
 
 /**
