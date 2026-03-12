@@ -10,19 +10,19 @@ See: .planning/PROJECT.md (updated 2025-03-01)
 ## Current Position
 
 Phase: 06 of 9 (Phase 6: Polish & Integration)
-Plan: 01 of 3
+Plan: 02 of 3
 Status: In progress
-Last activity: 2026-03-12 — Completed Activity Timeline with event aggregation from multiple collections
+Last activity: 2026-03-12 — Completed Webhook API endpoints for external lead integration
 
-Progress: [████████░░] 79% (8/9 phases complete, 47/48 plans targeted)
+Progress: [████████░░] 80% (8/9 phases complete, 48/48 plans targeted)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 46
-- Average duration: 10.1 min
-- Total execution time: 5 hours 26 min
+- Total plans completed: 47
+- Average duration: 10.0 min
+- Total execution time: 5 hours 34 min
 
 **By Phase:**
 
@@ -35,7 +35,7 @@ Progress: [████████░░] 79% (8/9 phases complete, 47/48 plans
 | 04.1-lead-capture        | 4 of 4    | 46 min    | 11.5 min |
 | 04.2-proposal-management | 5 of 5    | 74 min    | 14.8 min |
 | 05-campaigns-nurturing   | 6 of 6    | 74 min    | 12.3 min  |
-| 06-polish-integration    | 1 of 3    | 4 min     | 4 min    |
+| 06-polish-integration    | 2 of 3    | 12 min    | 6 min    |
 
 **Recent Trend:**
 
@@ -241,6 +241,12 @@ Recent decisions affecting current work:
 | Event aggregation pattern | Multi-collection fetch with sort, filter, and paginate for unified timeline | 2026-03-12 |
 | Newest-first timeline | Chronological sorting with most recent events first for better UX | 2026-03-12 |
 | Expandable timeline items | Compact default view with click-to-expand for event details | 2026-03-12 |
+| Webhook authentication methods | Support API key, bearer token, and HMAC signature for external integration | 2026-03-12 |
+| Timing-safe signature verification | Use crypto.timingSafeEqual to prevent timing attacks on HMAC | 2026-03-12 |
+| Webhook admin privileges | Grant webhooks admin-level status update capabilities for automation | 2026-03-12 |
+| Duplicate lead webhook handling | Create new lead with 're-apply' status instead of updating existing | 2026-03-12 |
+| Structured webhook responses | Success/error response pattern with Turkish messages for consistency | 2026-03-12 |
+| CORS support for webhooks | Wildcard origin and preflight handling for cross-origin webhook requests | 2026-03-12 |
 
 ### Pending Todos
 
@@ -275,9 +281,9 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-12 (Phase 6, Plan 1 complete)
-Stopped at: Completed Activity Timeline implementation with event aggregation, timeline component, and lead detail page integration
+Last session: 2026-03-12 (Phase 6, Plan 2 complete)
+Stopped at: Completed Webhook API implementation with authentication utilities, lead creation endpoint, and status update endpoint
 Resume file: None
 Dev server: Running at http://localhost:3001
 
-**Note**: Plan 06-01 complete - Activity timeline with event types, aggregation API, timeline component with filters and pagination, integrated into lead detail page. All 9 verification criteria passed.
+**Note**: Plan 06-02 complete - Webhook API with TypeScript types, authentication utilities (API key/bearer/HMAC), lead creation endpoint with duplicate handling, status update endpoint with admin privileges. All 4 tasks completed.
