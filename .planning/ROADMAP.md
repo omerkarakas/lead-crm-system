@@ -19,7 +19,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4.1: Lead Capture & Pipeline Automation** - Public form, booking link settings, Meta Ads webhook ✅ Completed 2026-03-05
 - [x] **Phase 4.2: Proposal Management** - Proposal templates, sending, response tracking ✅ Completed 2026-03-07
 - [x] **Phase 5: Campaigns & Nurturing** - Multi-channel sequences and automation ✅ Completed 2026-03-08
-- [ ] **Phase 6: Polish & Integration** - Webhooks, activity timeline, and final touches
+- [x] **Phase 6: Polish & Integration** - Webhooks, activity timeline, and final touches ✅ Completed 2026-03-12
 
 ## Phase Details
 
@@ -206,19 +206,19 @@ Plans:
 
 **Depends on**: Phase 5 (all features complete, need comprehensive timeline)
 
-**Requirements**: LEAD-09, LEAD-10, LEAD-13, LEAD-14
+**Requirements**: LEAD-09, LEAD-10, LEAD-13, LEAD-14, LEAD-17, LEAD-18
 
 **Success Criteria** (what must be TRUE):
 1. Lead detail page displays complete activity timeline (notes, WhatsApp messages, emails, status changes, QA answers, appointments)
 2. API webhooks allow n8n to create leads and update lead status for external automation
-3. Lead quality status (qualified/pending) displays correctly based on score threshold
+3. Lead quality status (qualified/pending) displays correctly based on score threshold (80 points)
 
-**Plans**: TBD
+**Plans**: 3 plans in 2 waves
 
 Plans:
-- [ ] 06-01: Activity timeline aggregation and display
-- [ ] 06-02: API webhooks for n8n integration
-- [ ] 06-03: Lead quality status display logic
+- [x] 06-01: Activity timeline aggregation and display ✅
+- [x] 06-02: API webhooks for n8n integration ✅
+- [x] 06-03: Lead quality status display logic ✅
 
 ## Progress
 
@@ -234,4 +234,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 4.1 → 4.2 → 5 → 6
 | 4.1 Lead Capture & Pipeline | 4/4 | ✅ Complete | 2026-03-05 |
 | 4.2 Proposal Management | 5/5 | ✅ Complete | 2026-03-07 |
 | 5. Campaigns & Nurturing | 6/6 | ✅ Complete | 2026-03-08 |
-| 6. Polish & Integration | 0/3 | Not started | - |
+| 6. Polish & Integration | 3/3 | ✅ Complete | 2026-03-12 |

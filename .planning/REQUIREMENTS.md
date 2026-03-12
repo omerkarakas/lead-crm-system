@@ -27,15 +27,15 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **LEAD-07**: User can edit lead information ✅
 - [x] **LEAD-08**: User can delete lead (with confirmation) ✅
 - [x] **LEAD-09**: User can add notes to lead ✅
-- [ ] **LEAD-10**: System displays lead activity timeline (notes, messages, status changes) ⏳ Phase 6
+- [x] **LEAD-10**: System displays lead activity timeline (notes, messages, status changes) ✅
 - [x] **LEAD-11**: User can add tags to lead ✅
 - [x] **LEAD-12**: User can remove tags from lead ✅
 - [x] **LEAD-13**: System displays lead score (calculated from QA answers) ✅
 - [x] **LEAD-14**: System displays lead quality (pending/qualified based on score threshold) ✅
 - [x] **LEAD-15**: User can change lead status manually ✅
 - [x] **LEAD-16**: System records lead source (web_form, api, manual, whatsapp) ✅
-- [ ] **LEAD-17**: API can create lead via webhook (for n8n integration) ⏳ Phase 6
-- [ ] **LEAD-18**: API can update lead status (for n8n automation) ⏳ Phase 6
+- [x] **LEAD-17**: API can create lead via webhook (for n8n integration) ✅
+- [x] **LEAD-18**: API can update lead status (for n8n automation) ✅
 
 ### Lead Qualification
 
@@ -171,19 +171,19 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | AUTH-01 to AUTH-06 | Phase 1 | ✅ Complete |
 | LEAD-01 to LEAD-16 | Phase 1 | ✅ Complete |
-| LEAD-17, LEAD-18 | Phase 6 | Pending |
+| LEAD-17, LEAD-18 | Phase 6 | ✅ Complete |
 | QUAL-01 to QUAL-17 | Phase 2 | ✅ Complete |
 | WHATS-01 to WHATS-10 | Phase 2 | ✅ Complete |
 | EMAIL-01 to EMAIL-10 | Phase 3 | ✅ Complete |
 | APPT-01 to APPT-14 | Phase 4 | ✅ Complete |
 | QUAL-14, QUAL-15, CAMP-01 to CAMP-17 | Phase 5 | ✅ Complete |
-| LEAD-09, LEAD-10, LEAD-13, LEAD-14 | Phase 6 | Pending |
+| LEAD-09, LEAD-10, LEAD-13, LEAD-14 | Phase 6 | ✅ Complete |
 
 **Coverage:**
 - v1 requirements: 98 total
 - Mapped to phases: 98
-- Unmapped: 0 ✓
+- Complete: 98/98 (100%) ✓
 
 ---
 *Requirements defined: 2025-03-01*
-*Last updated: 2026-03-08 - Phase 5 complete (CAMP-01 to CAMP-17)*
+*Last updated: 2026-03-12 - Phase 6 complete - All v1 requirements achieved!*
