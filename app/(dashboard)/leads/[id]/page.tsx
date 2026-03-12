@@ -12,6 +12,7 @@ import { EmailHistory } from '@/components/leads/EmailHistory';
 import { LeadDetailProposalsTab } from '@/components/leads/LeadDetailProposalsTab';
 import { LeadEnrollments } from '@/components/leads/LeadEnrollments';
 import { EnrollmentBadge } from '@/components/leads/EnrollmentBadge';
+import { ActivityTimeline } from '@/components/leads/ActivityTimeline';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft } from 'lucide-react';
@@ -129,6 +130,7 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
               <TabsTrigger value="proposals">Teklif</TabsTrigger>
               <TabsTrigger value="campaigns">Kampanyalar</TabsTrigger>
               <TabsTrigger value="notes">Notlar</TabsTrigger>
+              <TabsTrigger value="timeline">Aktivite</TabsTrigger>
             </TabsList>
 
             <TabsContent value="whatsapp" className="mt-4">
@@ -158,6 +160,10 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
 
             <TabsContent value="notes" className="mt-4">
               <NotesSection leadId={lead.id} />
+            </TabsContent>
+
+            <TabsContent value="timeline" className="mt-4">
+              <ActivityTimeline leadId={lead.id} />
             </TabsContent>
           </Tabs>
         </div>
