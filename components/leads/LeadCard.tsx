@@ -11,6 +11,8 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { Eye, Pencil, Phone, Mail } from 'lucide-react';
+import { LeadQualityBadge } from './LeadQualityBadge';
+import { calculateQualityStatus } from '@/lib/utils/lead-scoring';
 
 interface LeadCardProps {
   lead: Lead;
@@ -72,6 +74,12 @@ export function LeadCard({ lead, onEdit }: LeadCardProps) {
               <Badge variant={STATUS_VARIANTS[lead.status]} className="font-medium">
                 {STATUS_LABELS[lead.status]}
               </Badge>
+              <LeadQualityBadge
+                quality={calculateQualityStatus(lead.total_score || lead.score || 0)}
+                score={lead.total_score || lead.score || 0}
+                size="sm"
+                showIcon={false}
+              />
               <TooltipProvider>
                 <div className="flex gap-1">
                   <Tooltip>

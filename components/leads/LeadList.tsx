@@ -20,6 +20,8 @@ import {
 } from '@/components/ui/tooltip';
 import { ChevronLeft, ChevronRight, Loader2, Eye, Pencil } from 'lucide-react';
 import { LeadCard } from './LeadCard';
+import { LeadQualityBadge } from './LeadQualityBadge';
+import { calculateQualityStatus } from '@/lib/utils/lead-scoring';
 
 interface LeadListProps {
   leads: Lead[];
@@ -167,6 +169,12 @@ export function LeadList({
               </TableHead>
               <TableHead
                 className="cursor-pointer hover:bg-muted/50"
+                onClick={() => onSort('score')}
+              >
+                Kalite{getSortIndicator('score', sortField, sortOrder)}
+              </TableHead>
+              <TableHead
+                className="cursor-pointer hover:bg-muted/50"
                 onClick={() => onSort('source')}
               >
                 Kaynak{getSortIndicator('source', sortField, sortOrder)}
@@ -192,6 +200,14 @@ export function LeadList({
                   <Badge variant={STATUS_VARIANTS[lead.status]} className="font-medium">
                     {STATUS_LABELS[lead.status]}
                   </Badge>
+                </TableCell>
+                <TableCell>
+                  <LeadQualityBadge
+                    quality={calculateQualityStatus(lead.total_score || lead.score || 0)}
+                    score={lead.total_score || lead.score || 0}
+                    size="sm"
+                    showIcon={false}
+                  />
                 </TableCell>
                 <TableCell>{SOURCE_LABELS[lead.source] || lead.source}</TableCell>
                 <TableCell>
