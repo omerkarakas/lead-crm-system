@@ -12,11 +12,13 @@ import { EmailHistory } from '@/components/leads/EmailHistory';
 import { LeadDetailProposalsTab } from '@/components/leads/LeadDetailProposalsTab';
 import { LeadEnrollments } from '@/components/leads/LeadEnrollments';
 import { EnrollmentBadge } from '@/components/leads/EnrollmentBadge';
+import { LeadQualityBadge } from '@/components/leads/LeadQualityBadge';
 import { ActivityTimeline } from '@/components/leads/ActivityTimeline';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { calculateQualityStatus } from '@/lib/utils/lead-scoring';
 
 // Client component for appointments tab to handle state
 import { ClientAppointmentTab } from '@/components/leads/ClientAppointmentTab';
@@ -69,6 +71,11 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
               <p className="text-muted-foreground">
                 {lead.company || 'Müşteri Adayı Detayı'}
               </p>
+              <LeadQualityBadge
+                quality={calculateQualityStatus(lead.total_score || lead.score || 0)}
+                score={lead.total_score || lead.score || 0}
+                size="md"
+              />
               {(lead as any).enrollment_count > 0 && (
                 <EnrollmentBadge enrollmentCount={(lead as any).enrollment_count || 0} />
               )}
