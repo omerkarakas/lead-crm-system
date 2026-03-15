@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { formatError } from '@/lib/utils/errors';
 
 const forgotPasswordSchema = z.object({
   email: z.string().email('Geçerli bir e-posta adresi girin'),
@@ -37,8 +38,8 @@ export function ForgotPasswordForm() {
       await forgotPassword(data.email);
       setIsSuccess(true);
       toast.success('Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.');
-    } catch (error: any) {
-      const message = error?.message || 'Bir hata oluştu. Lütfen tekrar deneyin.';
+    } catch (error: unknown) {
+      const message = formatError(error);
       toast.error(message);
     } finally {
       setIsLoading(false);

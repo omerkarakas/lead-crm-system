@@ -21,3 +21,23 @@
   - Meta Ads: X-Hub-Signature-256 header ile HMAC doğrulaması
   - QA Complete: X-Webhook-Key header ile API key doğrulaması
 
+
+
+
+Temel Kararlar (Son)
+
+  - Recharts kullanıldı — React-native design, TypeScript desteği için
+   chart.js yerine seçildi
+  - Campaign analytics API — 5 dakikalık in-memory cache ile
+  performans optimizasyonu
+  - Email engagement estimation — Resend basic tier eksikliği
+  nedeniyle industry averages kullanılıyor
+
+  Blokajlar/endişeler
+
+  - Phase 4 test edilmeden onaylandı — Lead Scoring, WhatsApp ve      
+  Cal.com entegrasyonlarının Phase 5 öncesi doğrulanması gerekiyor    
+  - Notes lead record'da saklanıyor — Phase 6'da activity timeline    
+  için ayrı notes collection gerekebilir
+  - Background job setTimeout kullanıyor — Production'da proper job   
+  queue (Bull, Faktory, Vercel Cron) gerekli

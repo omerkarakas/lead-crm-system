@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuthStore } from '@/lib/stores/auth';
+import { formatError } from '@/lib/utils/errors';
 
 const loginSchema = z.object({
   email: z.string().email('Geçerli bir e-posta adresi girin'),
@@ -43,8 +44,8 @@ export function LoginForm() {
       await login(data.email, data.password);
       toast.success('Giriş başarılı!');
       router.push('/leads');
-    } catch (error: any) {
-      const message = error?.message || 'Giriş başarısız. Lütfen bilgilerinizi kontrol edin.';
+    } catch (error: unknown) {
+      const message = formatError(error);
       toast.error(message);
     } finally {
       setIsLoading(false);
