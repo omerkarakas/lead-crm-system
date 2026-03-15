@@ -18,17 +18,6 @@ interface PocketBaseError {
  * Parse PocketBase error and return Turkish message
  */
 export function getPocketBaseErrorMessage(error: unknown): string {
-  // Log for debugging
-  if (error instanceof Error) {
-    console.log('[Error Details]', {
-      name: error.name,
-      message: error.message,
-      toString: error.toString(),
-    });
-  } else {
-    console.log('[Error Details]', typeof error, error);
-  }
-
   // If error is already a string
   if (typeof error === 'string') {
     return error;
@@ -43,6 +32,14 @@ export function getPocketBaseErrorMessage(error: unknown): string {
   if (error instanceof DOMException) {
     if (error.name === 'NetworkError' || error.name === 'AbortError') {
       return 'Veritabanına bağlanılamadı. Lütfen PocketBase sunucusunun çalıştığından emin olun.';
+    }
+  }
+
+  // Handle PocketBase ClientResponseError with status 0 (network failure)
+  if (error instanceof Error && error.name.includes('ClientResponseError')) {
+    const pbError = error as any;
+    if (pbError.status === 0 || pbError.url) {
+      return 'Veritabanına bağlanılamadı. Lütfen PocketBase sunucusunun çalıştığından emin olun (http://127.0.0.1:8090).';
     }
   }
 
@@ -109,17 +106,17 @@ export function getPocketBaseErrorMessage(error: unknown): string {
   }
 
   // Check for common error messages
-  const errorMessage = pbError.message?.toLowerCase() || '';
-  if (errorMessage.includes('invalid')) {
+  const lowerMessage = pbError.message?.toLowerCase() || '';
+  if (lowerMessage.includes('invalid')) {
     return 'Geçersiz bilgiler.';
   }
-  if (errorMessage.includes('unauthorized') || errorMessage.includes('not authenticated')) {
+  if (lowerMessage.includes('unauthorized') || lowerMessage.includes('not authenticated')) {
     return 'Oturumunuz sonlandı. Lütfen tekrar giriş yapın.';
   }
-  if (errorMessage.includes('forbidden')) {
+  if (lowerMessage.includes('forbidden')) {
     return 'Bu işlem için yetkiniz yok.';
   }
-  if (errorMessage.includes('not found')) {
+  if (lowerMessage.includes('not found')) {
     return 'İstenen kaynak bulunamadı.';
   }
 

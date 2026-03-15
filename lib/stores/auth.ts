@@ -44,8 +44,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       });
     } catch (error) {
       set({ isLoading: false });
-      // Preserve error structure for formatError to parse
-      console.error('[Auth Error]', error);
       throw error;
     }
   },
