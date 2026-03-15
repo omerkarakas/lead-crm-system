@@ -18,9 +18,32 @@ interface PocketBaseError {
  * Parse PocketBase error and return Turkish message
  */
 export function getPocketBaseErrorMessage(error: unknown): string {
+  // Log for debugging
+  if (error instanceof Error) {
+    console.log('[Error Details]', {
+      name: error.name,
+      message: error.message,
+      toString: error.toString(),
+    });
+  } else {
+    console.log('[Error Details]', typeof error, error);
+  }
+
   // If error is already a string
   if (typeof error === 'string') {
     return error;
+  }
+
+  // Handle TypeError (network errors from fetch)
+  if (error instanceof TypeError) {
+    return 'Veritabanına bağlanılamadı. Lütfen PocketBase sunucusunun çalıştığından emin olun.';
+  }
+
+  // Handle DOMException
+  if (error instanceof DOMException) {
+    if (error.name === 'NetworkError' || error.name === 'AbortError') {
+      return 'Veritabanına bağlanılamadı. Lütfen PocketBase sunucusunun çalıştığından emin olun.';
+    }
   }
 
   // If error has a message property
@@ -29,12 +52,22 @@ export function getPocketBaseErrorMessage(error: unknown): string {
     return 'Beklenmeyen bir hata oluştu.';
   }
 
-  // Check for network/connection errors
-  if (pbError.message?.includes('Failed to fetch') ||
-      pbError.message?.includes('NetworkError') ||
-      pbError.message?.includes('ECONNREFUSED') ||
-      pbError.message?.includes('fetch failed')) {
-    return 'Veritabanına bağlanılamadı. Lütfen PocketBase sunucusunun çalıştığından emin olun.';
+  // Check for network/connection errors - check message and also convert to string
+  const errorMessage = pbError.message || '';
+  const errorString = String(error).toLowerCase();
+  const errorName = (pbError as any).name?.toLowerCase() || '';
+
+  if (errorMessage.includes('Failed to fetch') ||
+      errorMessage.includes('NetworkError') ||
+      errorMessage.includes('ECONNREFUSED') ||
+      errorMessage.includes('fetch failed') ||
+      errorString.includes('err_connection_refused') ||
+      errorString.includes('network error') ||
+      errorString.includes('connection refused') ||
+      errorString.includes('fetch') ||
+      errorName.includes('networkerror') ||
+      errorName.includes('typeerror')) {
+    return 'Veritabanına bağlanılamadı. Lütfen PocketBase sunucusunun çalıştığından emin olun (http://127.0.0.1:8090).';
   }
 
   // Check for timeout errors
