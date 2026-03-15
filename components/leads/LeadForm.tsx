@@ -79,7 +79,7 @@ interface LeadFormProps {
   isSubmitting?: boolean;
   defaultValues?: Partial<LeadFormValues> & { auto_updated_status?: boolean };
   mode?: "create" | "edit";
-  userRole?: 'admin' | 'sales' | 'marketing';
+  userRole?: "admin" | "sales" | "marketing";
 }
 
 const STATUS_LABELS: Record<LeadStatus, string> = {
@@ -98,12 +98,19 @@ const SOURCE_LABELS: Record<LeadSource, string> = {
   [LeadSource.WHATSAPP]: "WhatsApp",
 };
 
-export function LeadForm({ onSubmit, onCancel, isSubmitting = false, defaultValues, mode = "create", userRole = 'sales' }: LeadFormProps) {
+export function LeadForm({
+  onSubmit,
+  onCancel,
+  isSubmitting = false,
+  defaultValues,
+  mode = "create",
+  userRole = "sales",
+}: LeadFormProps) {
   const [tagInput, setTagInput] = useState("");
   const [forceOverride, setForceOverride] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<LeadStatus | undefined>(defaultValues?.status);
   const isAutoUpdated = defaultValues?.auto_updated_status === true;
-  const isAdmin = userRole === 'admin';
+  const isAdmin = userRole === "admin";
 
   const form = useForm<LeadFormValues>({
     resolver: zodResolver(leadFormSchema),
@@ -186,7 +193,7 @@ export function LeadForm({ onSubmit, onCancel, isSubmitting = false, defaultValu
                 <FormLabel>Cep Telefonu *</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="0555 123 4567"
+                    placeholder="555 123 4567"
                     maxLength={12}
                     {...field}
                     onChange={(e) => {
@@ -295,9 +302,7 @@ export function LeadForm({ onSubmit, onCancel, isSubmitting = false, defaultValu
                             Değiştirmek için aşağıdaki "Zorla" checkbox'unu işaretleyin.
                           </p>
                         ) : (
-                          <p className="text-xs text-amber-700 mt-1">
-                            Sadece admin bu statüyü değiştirebilir.
-                          </p>
+                          <p className="text-xs text-amber-700 mt-1">Sadece admin bu statüyü değiştirebilir.</p>
                         )}
                       </div>
                     </div>

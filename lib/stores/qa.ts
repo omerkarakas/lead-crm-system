@@ -91,7 +91,8 @@ export const useQAStore = create<QAState>((set, get) => ({
   toggleQuestionActive: async (id: string, isActive: boolean) => {
     set({ loading: true, error: null });
     try {
-      await qaApi.toggleQuestionActive(id, isActive);
+      // Ensure boolean value is explicitly sent
+      await qaApi.toggleQuestionActive(id, !!isActive);
       await get().fetchQuestions();
       set({ loading: false });
     } catch (error: any) {

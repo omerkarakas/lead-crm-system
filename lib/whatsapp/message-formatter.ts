@@ -1,28 +1,31 @@
-import { QAQuestion } from '@/types/qa';
-import type { Lead } from '@/types/lead';
-import { QA_CONFIG } from '@/lib/config/qa';
+import { QAQuestion } from "@/types/qa";
+import type { Lead } from "@/types/lead";
+import { QA_CONFIG } from "@/lib/config/qa";
 
 /**
  * Format poll message for WhatsApp
  */
 export function formatPollMessage(lead: Lead, questions: QAQuestion[]): string {
   // Format welcome message
-  let welcome = QA_CONFIG.welcomeMessage.replace('{name}', lead.name || 'Değerli Müşterimiz');
+  let welcome = QA_CONFIG.welcomeMessage.replace("{name}", lead.name || "Değerli Müşterimiz");
+  welcome = welcome.replace("{soru_sayisi}", String(questions.length));
 
   if (lead.company) {
-    welcome = welcome.replace('{company}', lead.company);
+    welcome = welcome.replace("{company}", lead.company);
   } else {
-    welcome = welcome.replace('{company}', '');
+    welcome = welcome.replace("{company}", "");
   }
 
   // Format questions
-  const questionsText = questions.map((q, index) => {
-    const num = index + 1;
-    const options = q.options.join('\n   ');
-    return `${num}. ${q.question_text}\n   ${options}`;
-  }).join('\n\n');
+  const questionsText = questions
+    .map((q, index) => {
+      const num = index + 1;
+      const options = q.options.join("\n   ");
+      return `${num}. ${q.question_text}\n   ${options}`;
+    })
+    .join("\n\n");
 
-  return welcome + '\n\n' + questionsText + QA_CONFIG.pollFooter;
+  return welcome + "\n\n" + questionsText + QA_CONFIG.pollFooter;
 }
 
 /**
@@ -43,5 +46,5 @@ export function formatLowQualityMessage(): string {
  * Format retry message for invalid answer format
  */
 export function formatRetryMessage(): string {
-  return `Cevap formatı hatalı. Lütfen "1a, 2b" formatında yazın. Örnek: 1a için ilk seçenek, 2b için ikinci sorunun ikinci seçeneği.`;
+  return `Cevap formatı hatalı. Lütfen "1a, 2c, 3b" formatında yazın. Örnek: 1a:birinci sorunun ilk seçeneği, 2c:ikinci sorunun üçüncü seçeneği gibi`;
 }

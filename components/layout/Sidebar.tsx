@@ -31,9 +31,15 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   {
+    href: '/dashboard',
+    label: 'Dashboard',
+    icon: <LayoutDashboard className="h-4 w-4" />,
+    permission: () => true, // All authenticated users can access dashboard
+  },
+  {
     href: '/leads',
     label: 'Müşteri Adayları',
-    icon: <LayoutDashboard className="h-4 w-4" />,
+    icon: <Users className="h-4 w-4" />,
     permission: () => true, // All users can access leads
   },
   {
@@ -110,7 +116,7 @@ export function Sidebar({ onClose }: SidebarProps) {
     <div className="flex flex-col h-full bg-card border-r">
       {/* Logo */}
       <div className="p-6 border-b">
-        <Link href="/leads" className="flex items-center gap-2" onClick={onClose}>
+        <Link href="/dashboard" className="flex items-center gap-2" onClick={onClose}>
           <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
             <span className="text-primary-foreground font-bold text-sm">M</span>
           </div>

@@ -1,28 +1,21 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Loader2, CheckCircle2 } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Loader2, CheckCircle2 } from "lucide-react";
 
 const leadFormSchema = z
   .object({
-    name: z.string().min(2, 'İsim en az 2 karakter olmalıdır'),
-    phone: z.string().min(10, 'Geçerli bir telefon numarası girin'),
-    email: z.string().email('Geçerli bir e-posta adresi girin').optional().or(z.literal('')),
-    company: z.string().min(2, 'Şirket adı en az 2 karakter olmalıdır'),
+    name: z.string().min(2, "İsim en az 2 karakter olmalıdır"),
+    phone: z.string().min(10, "Geçerli bir telefon numarası girin"),
+    email: z.string().email("Geçerli bir e-posta adresi girin").optional().or(z.literal("")),
+    company: z.string().min(2, "Şirket adı en az 2 karakter olmalıdır"),
     website: z.string().optional(),
     message: z.string().optional(),
     // Honeypot field - should always be empty
@@ -30,12 +23,12 @@ const leadFormSchema = z
   })
   .refine(
     (data) => {
-      if (!data.website || data.website.trim() === '') {
+      if (!data.website || data.website.trim() === "") {
         return true;
       }
       let urlToCheck = data.website.trim();
       if (!urlToCheck.match(/^https?:\/\//i)) {
-        urlToCheck = 'https://' + urlToCheck;
+        urlToCheck = "https://" + urlToCheck;
       }
       try {
         new URL(urlToCheck);
@@ -45,9 +38,9 @@ const leadFormSchema = z
       }
     },
     {
-      message: 'Geçerli bir website adresi girin (örn: google.com)',
-      path: ['website'],
-    }
+      message: "Geçerli bir website adresi girin (örn: google.com)",
+      path: ["website"],
+    },
   );
 
 type LeadFormValues = z.infer<typeof leadFormSchema>;
@@ -69,26 +62,26 @@ export function LeadFormComponent() {
   const form = useForm<LeadFormValues>({
     resolver: zodResolver(leadFormSchema),
     defaultValues: {
-      name: '',
-      phone: '',
-      email: '',
-      company: '',
-      website: '',
-      message: '',
-      fax_number: '',
+      name: "",
+      phone: "",
+      email: "",
+      company: "",
+      website: "",
+      message: "",
+      fax_number: "",
     },
   });
 
   // Extract UTM parameters from URL on mount
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const urlParams = new URLSearchParams(window.location.search);
       const utm: UtmParams = {
-        utm_source: urlParams.get('utm_source') || undefined,
-        utm_medium: urlParams.get('utm_medium') || undefined,
-        utm_campaign: urlParams.get('utm_campaign') || undefined,
-        utm_content: urlParams.get('utm_content') || undefined,
-        utm_term: urlParams.get('utm_term') || undefined,
+        utm_source: urlParams.get("utm_source") || undefined,
+        utm_medium: urlParams.get("utm_medium") || undefined,
+        utm_campaign: urlParams.get("utm_campaign") || undefined,
+        utm_content: urlParams.get("utm_content") || undefined,
+        utm_term: urlParams.get("utm_term") || undefined,
       };
       setUtmParams(utm);
     }
@@ -96,7 +89,7 @@ export function LeadFormComponent() {
 
   const onSubmit = async (data: LeadFormValues) => {
     // Honeypot check - if fax_number has a value, it's a bot
-    if (data.fax_number && data.fax_number.trim() !== '') {
+    if (data.fax_number && data.fax_number.trim() !== "") {
       // Return success anyway to not reveal the honeypot mechanism
       setSubmitSuccess(true);
       setTimeout(() => {
@@ -110,15 +103,15 @@ export function LeadFormComponent() {
     setSubmitError(null);
 
     try {
-      const response = await fetch('/api/leads', {
-        method: 'POST',
+      const response = await fetch("/api/leads", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           ...data,
-          source: 'web_form',
-          status: 'new',
+          source: "web_form",
+          status: "new",
           ...utmParams,
         }),
       });
@@ -126,7 +119,7 @@ export function LeadFormComponent() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.message || 'Bir hata oluştu');
+        throw new Error(result.message || "Bir hata oluştu");
       }
 
       setSubmitSuccess(true);
@@ -137,10 +130,8 @@ export function LeadFormComponent() {
         setSubmitSuccess(false);
       }, 5000);
     } catch (error) {
-      console.error('Form submission error:', error);
-      setSubmitError(
-        error instanceof Error ? error.message : 'Bir hata oluştu. Lütfen tekrar deneyin.'
-      );
+      console.error("Form submission error:", error);
+      setSubmitError(error instanceof Error ? error.message : "Bir hata oluştu. Lütfen tekrar deneyin.");
     } finally {
       setIsSubmitting(false);
     }
@@ -154,12 +145,8 @@ export function LeadFormComponent() {
             <CheckCircle2 className="w-8 h-8 text-green-600 dark:text-green-400" />
           </div>
         </div>
-        <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-50 mb-2">
-          Başvurunuz Alındı!
-        </h2>
-        <p className="text-slate-600 dark:text-slate-400 mb-6">
-          En kısa sürede sizinle iletişime geçeceğiz.
-        </p>
+        <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-50 mb-2">Başvurunuz Alındı!</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-6">En kısa sürede sizinle iletişime geçeceğiz.</p>
         <Button
           onClick={() => {
             setSubmitSuccess(false);
@@ -198,7 +185,7 @@ export function LeadFormComponent() {
               <FormItem>
                 <FormLabel>Telefon *</FormLabel>
                 <FormControl>
-                  <Input placeholder="0555 123 4567" {...field} />
+                  <Input placeholder="555 123 4567" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -257,11 +244,7 @@ export function LeadFormComponent() {
             <FormItem>
               <FormLabel>Mesajınız</FormLabel>
               <FormControl>
-                <Textarea
-                  placeholder="Bize kendinizden bahsedin..."
-                  className="min-h-[120px]"
-                  {...field}
-                />
+                <Textarea placeholder="Bize kendinizden bahsedin..." className="min-h-[120px]" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -279,8 +262,8 @@ export function LeadFormComponent() {
                   type="text"
                   {...field}
                   style={{
-                    position: 'absolute',
-                    left: '-5000px',
+                    position: "absolute",
+                    left: "-5000px",
                     opacity: 0,
                     height: 0,
                     width: 0,
@@ -303,13 +286,11 @@ export function LeadFormComponent() {
         <div className="flex justify-end">
           <Button type="submit" disabled={isSubmitting} className="w-full md:w-auto">
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isSubmitting ? 'Gönderiliyor...' : 'Başvuru Gönder'}
+            {isSubmitting ? "Gönderiliyor..." : "Başvuru Gönder"}
           </Button>
         </div>
 
-        <p className="text-xs text-slate-500 dark:text-slate-400 text-center">
-          * ile işaretlenen alanlar zorunludur
-        </p>
+        <p className="text-xs text-slate-500 dark:text-slate-400 text-center">* ile işaretlenen alanlar zorunludur</p>
       </form>
     </Form>
   );

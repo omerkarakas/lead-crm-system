@@ -24,8 +24,10 @@ import {
 import { LeadQualityBadge } from '@/components/leads/LeadQualityBadge';
 
 interface ScoreBreakdown {
-  question: string;
-  answer: string;
+  questionNumber: number;
+  questionText: string;
+  selectedOption: string;  // e.g., "a"
+  selectedOptionText: string;  // e.g., "a) Yıllık 1M+ TL ciro"
   points: number;
 }
 
@@ -34,17 +36,19 @@ interface ScoreDisplayProps {
   quality: LeadQuality;
   breakdown?: ScoreBreakdown[];
   maxScore?: number;
+  qaCompleted?: boolean;
 }
 
 export function ScoreDisplay({
   totalScore,
   quality,
   breakdown = [],
-  maxScore = 100
+  maxScore = 100,
+  qaCompleted = false
 }: ScoreDisplayProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const calculatedQuality = calculateQualityStatus(totalScore);
+  const calculatedQuality = calculateQualityStatus(totalScore, qaCompleted);
   const scorePercentage = getScorePercentage(totalScore, maxScore);
   const isQualified = totalScore >= QUALIFIED_SCORE_THRESHOLD;
 
@@ -136,12 +140,20 @@ export function ScoreDisplay({
                     {breakdown.map((item, index) => (
                       <div
                         key={index}
-                        className="border rounded-lg p-3 hover:bg-gray-50 transition-colors"
+                        className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
                       >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex-1">
-                            <p className="font-medium text-sm">{item.question}</p>
-                            <p className="text-sm text-gray-600 mt-1">{item.answer}</p>
+                        <div className="flex items-start gap-3">
+                          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-semibold text-sm">
+                            {item.questionNumber}
+                          </div>
+                          <div className="flex-1 space-y-2">
+                            <p className="font-medium">{item.questionText}</p>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-gray-500">Seçim:</span>
+                              <span className="text-sm font-medium text-gray-800 bg-gray-100 px-2 py-0.5 rounded">
+                                {item.selectedOptionText}
+                              </span>
+                            </div>
                           </div>
                           <Badge
                             variant={item.points > 0 ? 'default' : 'secondary'}

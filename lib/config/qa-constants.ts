@@ -5,13 +5,14 @@
 
 export const QA_CONFIG = {
   // Default welcome message template
-  welcomeMessage: 'Merhaba {name}! 👋\n\nBaşvurunuz için teşekkürler. Size yardımcı olabilmemiz için birkaç soru:',
+  welcomeMessage:
+    "Merhaba {name}! 👋\n\nBaşvurunuz için teşekkürler. Size yardımcı olabilmemiz için birkaç soruya cevap verin:",
 
   // Footer message for poll format
-  pollFooter: '\n\nCevapları "1a, 2b" formatında yazabilirsiniz.',
+  pollFooter: '\n\nCevapları "1a, 2b, 3c" formatında yazabilirsiniz.',
 
   // Default booking link (fallback if database is not available)
-  defaultBookingLink: 'https://cal.mokadijital.com/moka/30min',
+  defaultBookingLink: "https://cal.mokadijital.com/moka/30min",
 
   // Quality score threshold (leads above this score are qualified)
   qualityScoreThreshold: 80,
@@ -36,7 +37,7 @@ export function formatWelcomeMessage(name: string, company?: string): string {
   if (company) {
     message = message.replace(/{company}/g, company);
   } else {
-    message = message.replace(/{company}/g, '');
+    message = message.replace(/{company}/g, "");
   }
 
   return message;
@@ -45,13 +46,15 @@ export function formatWelcomeMessage(name: string, company?: string): string {
 /**
  * Format poll message with questions
  */
-export function formatPollMessage(questions: Array<{ question_text: string; options: string[]; order: number }>): string {
-  let message = '';
+export function formatPollMessage(
+  questions: Array<{ question_text: string; options: string[]; order: number }>,
+): string {
+  let message = "";
 
   for (const question of questions) {
     message += `*${question.order}. ${question.question_text}*\n\n`;
-    message += question.options.join('\n');
-    message += '\n\n';
+    message += question.options.join("\n");
+    message += "\n\n";
   }
 
   return message + QA_CONFIG.pollFooter;

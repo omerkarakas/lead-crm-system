@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import pb from '@/lib/pocketbase';
+import PocketBase from 'pocketbase';
 import { findLeadByPhone } from '@/lib/api/leads';
 import { updateLead } from '@/lib/api/leads';
 import { parsePollAnswer, validateAnswers } from '@/lib/whatsapp/poll-parser';
 import { saveAnswer, fetchActiveQuestions, calculateLeadTotalScore } from '@/lib/api/qa';
-import { logWhatsAppMessage, sendWhatsAppMessage } from '@/lib/api/whatsapp';
 import {
   formatBookingLinkMessage,
   formatLowQualityMessage,
@@ -13,81 +12,113 @@ import {
 import { QA_CONFIG, getBookingLink } from '@/lib/config/qa';
 import { LeadQuality } from '@/types/lead';
 
+const PB_URL = process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090';
+const GREEN_API_INSTANCE_ID = process.env.GREEN_API_INSTANCE_ID || '';
+const GREEN_API_TOKEN = process.env.GREEN_API_TOKEN || '';
+
 /**
  * Green API Webhook endpoint for incoming WhatsApp messages
  * POST /api/whatsapp/webhook
+ *
+ * Handles two webhook types:
+ * 1. incomingMessageReceived - User sends poll answer
+ * 2. outgoingMessageStatus - Status update for sent messages (ignored)
  */
 export async function POST(req: NextRequest) {
+  // Create server-side PocketBase instance (no auth needed for webhook)
+  const pb = new PocketBase(PB_URL);
+
   try {
     const body = await req.json();
 
-    // Extract phone and message from Green API webhook
-    const senderData = body.body?.senderData || body.senderData || {};
-    const messageData = body.body?.messageData || body.messageData || {};
+    // Log webhook type for debugging
+    console.log('[WhatsApp Webhook] typeWebhook:', body.typeWebhook);
+    console.log('[WhatsApp Webhook] Payload keys:', Object.keys(body));
 
-    let chatId = senderData.chatId || senderData.sender || '';
-    let phone = chatId.replace('@c.us', '').replace(/\D/g, '');
-
-    let messageText = '';
-    if (messageData.textMessageData) {
-      messageText = messageData.textMessageData.textMessage || '';
-    } else if (messageData.extendedTextMessageData) {
-      messageText = messageData.extendedTextMessageData.text || '';
+    // Handle status webhooks - just acknowledge and return
+    if (body.typeWebhook === 'outgoingMessageStatus' || body.typeWebhook === 'outgoingAPIMessageStatus') {
+      console.log('[WhatsApp Webhook] Status webhook received, acknowledging');
+      // Optional: Update message status in database if we track it
+      return NextResponse.json({ received: true });
     }
 
-    // Log incoming message (lead_id will be filled after finding lead)
-    const incomingMessageId = await logWhatsAppMessage({
-      lead_id: '',
-      direction: 'incoming',
-      message_text: messageText,
-      message_type: 'poll',
-      status: 'received',
-      sent_at: new Date().toISOString()
+    // Only process incoming message webhooks
+    if (body.typeWebhook !== 'incomingMessageReceived') {
+      console.log('[WhatsApp Webhook] Unknown webhook type:', body.typeWebhook);
+      return NextResponse.json({ received: true, message: 'Webhook type not handled' });
+    }
+
+    // Extract message data from incomingMessageReceived webhook
+    // Green API structure: body.messageData.textMessageData.textMessage
+    const messageData = body.messageData || {};
+    const senderData = body.senderData || {};
+    const chatId = senderData.chatId || '';
+    const phone = chatId.replace('@c.us', '').replace(/\D/g, '');
+
+    console.log('[WhatsApp Webhook] Processing incoming message from:', phone);
+
+    // Extract message text with multiple fallback strategies
+    let messageText = '';
+
+    if (messageData.textMessageData?.textMessage) {
+      const textMsg = messageData.textMessageData.textMessage;
+      messageText = typeof textMsg === 'string' ? textMsg : String(textMsg || '');
+    } else if (messageData.extendedTextMessageData?.text) {
+      const extText = messageData.extendedTextMessageData.text;
+      messageText = typeof extText === 'string' ? extText : String(extText || '');
+    }
+
+    // Ensure we have a string
+    messageText = String(messageText || '');
+
+    console.log('[WhatsApp Webhook] Extracted message:', {
+      length: messageText.length,
+      preview: messageText.substring(0, 50)
     });
 
-    // Find lead by phone
+    // Find lead by phone first
     const lead = await findLeadByPhone(phone);
     if (!lead) {
-      console.log('Unknown sender, phone:', phone);
+      console.log('[WhatsApp Webhook] Unknown sender, phone:', phone);
       return NextResponse.json({
         success: false,
         message: 'Unknown sender'
       });
     }
 
-    // Update the incoming message with the lead_id
-    if (incomingMessageId) {
-      try {
-        await pb.collection('whatsapp_messages').update(incomingMessageId, {
-          lead_id: lead.id
-        });
-      } catch (e) {
-        console.error('Failed to update message lead_id:', e);
-      }
+    // Log incoming message to database
+    try {
+      await pb.collection('whatsapp_messages').create({
+        lead_id: lead.id,
+        direction: 'incoming',
+        message_text: messageText,
+        message_type: 'poll',
+        status: 'received',
+        sent_at: new Date().toISOString()
+      });
+      console.log('[WhatsApp Webhook] Message logged successfully');
+    } catch (logError: any) {
+      console.error('[WhatsApp Webhook] Failed to log message:', logError.message);
+      // Continue anyway - logging failure shouldn't block processing
     }
 
     // Parse answer
     const answer = parsePollAnswer(messageText);
     if (!answer) {
-      // Invalid format - send retry message
+      console.log('[WhatsApp Webhook] Invalid answer format, sending retry message');
       const chatIdClean = phone.replace(/\D/g, '') + '@c.us';
       const retryMessage = formatRetryMessage();
-      await sendWhatsAppMessage(chatIdClean, retryMessage);
-      await logWhatsAppMessage({
-        lead_id: lead.id,
-        direction: 'outgoing',
-        message_text: retryMessage,
-        message_type: 'error',
-        status: 'sent',
-        sent_at: new Date().toISOString()
-      });
+
+      await sendWhatsAppMessageDirect(chatIdClean, retryMessage);
+      await logMessageDirect(pb, lead.id, 'outgoing', retryMessage, 'error', 'sent');
+
       return NextResponse.json({
         success: false,
         message: 'Invalid format'
       });
     }
 
-    // Fetch active questions to validate answers
+    // Fetch active questions
     const questions = await fetchActiveQuestions();
     if (questions.length === 0) {
       return NextResponse.json({
@@ -98,17 +129,13 @@ export async function POST(req: NextRequest) {
 
     // Validate answers
     if (!validateAnswers(answer, questions.length)) {
+      console.log('[WhatsApp Webhook] Invalid answer indices, sending retry message');
       const chatIdClean = phone.replace(/\D/g, '') + '@c.us';
       const retryMessage = formatRetryMessage();
-      await sendWhatsAppMessage(chatIdClean, retryMessage);
-      await logWhatsAppMessage({
-        lead_id: lead.id,
-        direction: 'outgoing',
-        message_text: retryMessage,
-        message_type: 'error',
-        status: 'sent',
-        sent_at: new Date().toISOString()
-      });
+
+      await sendWhatsAppMessageDirect(chatIdClean, retryMessage);
+      await logMessageDirect(pb, lead.id, 'outgoing', retryMessage, 'error', 'sent');
+
       return NextResponse.json({
         success: false,
         message: 'Invalid answer indices'
@@ -136,11 +163,11 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Calculate total score (including any previous answers)
+    // Calculate total score
     const finalScore = await calculateLeadTotalScore(lead.id);
 
     // Update lead score and quality
-    const quality = finalScore >= QA_CONFIG.qualityScoreThreshold ? LeadQuality.QUALIFIED : LeadQuality.PENDING;
+    const quality = finalScore >= QA_CONFIG.qualityScoreThreshold ? LeadQuality.QUALIFIED : LeadQuality.FOLLOWUP;
     await updateLead(lead.id, {
       total_score: finalScore,
       quality: quality,
@@ -148,15 +175,15 @@ export async function POST(req: NextRequest) {
       qa_completed_at: new Date().toISOString()
     });
 
-    // Trigger auto-enrollment for low-score leads (fire-and-forget)
-    if (quality === LeadQuality.PENDING) {
-      // Call QA completion webhook to trigger auto-enrollment
+    console.log('[WhatsApp Webhook] QA completed:', { leadId: lead.id, score: finalScore, quality });
+
+    // Trigger auto-enrollment for low-score leads
+    if (quality === LeadQuality.FOLLOWUP) {
       fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/webhooks/qa-complete`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lead_id: lead.id }),
       }).catch((err) => {
-        // Log error but don't fail the request
         console.error('[WhatsApp Webhook] Failed to trigger auto-enrollment:', err);
       });
     }
@@ -165,23 +192,16 @@ export async function POST(req: NextRequest) {
     const chatIdClean = phone.replace(/\D/g, '') + '@c.us';
     let responseMessage = '';
 
-    if (quality === 'qualified') {
+    if (quality === LeadQuality.QUALIFIED) {
       const bookingLink = await getBookingLink();
       responseMessage = formatBookingLinkMessage(bookingLink);
     } else {
       responseMessage = formatLowQualityMessage();
     }
 
-    const result = await sendWhatsAppMessage(chatIdClean, responseMessage);
-    await logWhatsAppMessage({
-      lead_id: lead.id,
-      direction: 'outgoing',
-      message_text: responseMessage,
-      message_type: quality === 'qualified' ? 'booking_link' : 'info',
-      status: 'sent',
-      sent_at: new Date().toISOString(),
-      green_api_id: result?.idMessage
-    });
+    const result = await sendWhatsAppMessageDirect(chatIdClean, responseMessage);
+    await logMessageDirect(pb, lead.id, 'outgoing', responseMessage,
+      quality === LeadQuality.QUALIFIED ? 'booking_link' : 'info', 'sent', result?.idMessage);
 
     return NextResponse.json({
       success: true,
@@ -190,7 +210,7 @@ export async function POST(req: NextRequest) {
     });
 
   } catch (error) {
-    console.error('WhatsApp webhook error:', error);
+    console.error('[WhatsApp Webhook] Error:', error);
     return NextResponse.json(
       { success: false, message: 'Internal error' },
       { status: 500 }
@@ -199,7 +219,68 @@ export async function POST(req: NextRequest) {
 }
 
 /**
- * GET endpoint for webhook verification (if needed by Green API)
+ * Send WhatsApp message directly via Green API
+ */
+async function sendWhatsAppMessageDirect(
+  chatId: string,
+  message: string
+): Promise<{ idMessage: string } | null> {
+  if (!GREEN_API_INSTANCE_ID || !GREEN_API_TOKEN) {
+    console.error('[sendWhatsAppMessageDirect] Green API credentials not configured');
+    return null;
+  }
+
+  try {
+    const response = await fetch(
+      `https://api.green-api.com/waInstance${GREEN_API_INSTANCE_ID}/sendMessage/${GREEN_API_TOKEN}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chatId, message })
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Green API error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('[sendWhatsAppMessageDirect] Error:', error);
+    throw error;
+  }
+}
+
+/**
+ * Log WhatsApp message directly to database
+ */
+async function logMessageDirect(
+  pb: PocketBase,
+  leadId: string,
+  direction: 'incoming' | 'outgoing',
+  messageText: string,
+  messageType: string,
+  status: string,
+  greenApiId?: string
+): Promise<void> {
+  try {
+    const record = await pb.collection('whatsapp_messages').create({
+      lead_id: leadId,
+      direction: direction,
+      message_text: String(messageText),
+      message_type: messageType,
+      status: status,
+      sent_at: new Date().toISOString(),
+      green_api_id: greenApiId
+    });
+    console.log('[logMessageDirect] Message logged:', record.id);
+  } catch (error: any) {
+    console.error('[logMessageDirect] Failed:', error.message);
+  }
+}
+
+/**
+ * GET endpoint for webhook verification
  */
 export async function GET(req: NextRequest) {
   return NextResponse.json({

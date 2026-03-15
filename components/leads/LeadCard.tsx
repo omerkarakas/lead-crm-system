@@ -75,7 +75,7 @@ export function LeadCard({ lead, onEdit }: LeadCardProps) {
                 {STATUS_LABELS[lead.status]}
               </Badge>
               <LeadQualityBadge
-                quality={calculateQualityStatus(lead.total_score || lead.score || 0)}
+                quality={calculateQualityStatus(lead.total_score || lead.score || 0, lead.qa_completed)}
                 score={lead.total_score || lead.score || 0}
                 size="sm"
                 showIcon={false}

@@ -2,11 +2,20 @@ import { LeadQuality } from '@/types/lead';
 
 export const QUALIFIED_SCORE_THRESHOLD = 80;
 
-export function calculateQualityStatus(score: number): LeadQuality {
+/**
+ * QA tamamlanmadıysa PENDING döner
+ * QA tamamlandıysa skora göre QUALIFIED veya FOLLOWUP döner
+ */
+export function calculateQualityStatus(score: number, qaCompleted?: boolean): LeadQuality {
+  // QA tamamlanmadıysa beklemede göster
+  if (!qaCompleted) {
+    return LeadQuality.PENDING;
+  }
+  // QA tamamlandıysa skora göre karar ver
   if (score >= QUALIFIED_SCORE_THRESHOLD) {
     return LeadQuality.QUALIFIED;
   }
-  return LeadQuality.PENDING;
+  return LeadQuality.FOLLOWUP;
 }
 
 export function getQualityBadgeColor(quality: LeadQuality): string {
@@ -29,7 +38,7 @@ export function getQualityStatusLabel(quality: LeadQuality): string {
     case LeadQuality.PENDING:
       return 'Beklemede';
     case LeadQuality.FOLLOWUP:
-      return 'Takip Gerekli';
+      return 'Takip';
     default:
       return 'Bilinmiyor';
   }

@@ -61,19 +61,47 @@ export async function sendWhatsAppMessage(
  */
 export async function logWhatsAppMessage(data: WhatsAppMessage): Promise<string | null> {
   try {
+    // Log input data for debugging
+    console.log('[logWhatsAppMessage] Input data type:', {
+      messageText_type: typeof data.message_text,
+      messageText_value: data.message_text,
+      fullData: {
+        lead_id: data.lead_id,
+        direction: data.direction,
+        message_type: data.message_type,
+        status: data.status
+      }
+    });
+
+    // Ensure message_text is always a string
+    let messageText = data.message_text;
+    if (typeof messageText !== 'string') {
+      console.warn('[logWhatsAppMessage] message_text is not a string:', typeof messageText, messageText);
+      messageText = typeof messageText === 'object' ? JSON.stringify(messageText) : String(messageText || '');
+    }
+
+    console.log('[logWhatsAppMessage] Creating record with messageText type:', typeof messageText);
+
     const record = await pb.collection('whatsapp_messages').create<WhatsAppMessage>({
       lead_id: data.lead_id,
       direction: data.direction,
-      message_text: data.message_text,
+      message_text: messageText,
       message_type: data.message_type,
       status: data.status,
       sent_at: data.sent_at || new Date().toISOString(),
       green_api_id: data.green_api_id
     });
 
+    console.log('[logWhatsAppMessage] Record created successfully:', record.id);
     return record.id || null;
-  } catch (error) {
-    console.error('Log WhatsApp message error:', error);
+  } catch (error: any) {
+    console.error('[logWhatsAppMessage] Error details:', {
+      message: error.message,
+      data: error.data,
+      status: error.status,
+      isAbortError: error.name === 'ClientAbortError',
+      errorMessage: error.toString()
+    });
     return null;
   }
 }

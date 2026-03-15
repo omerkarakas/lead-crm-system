@@ -203,7 +203,7 @@ export function LeadList({
                 </TableCell>
                 <TableCell>
                   <LeadQualityBadge
-                    quality={calculateQualityStatus(lead.total_score || lead.score || 0)}
+                    quality={calculateQualityStatus(lead.total_score || lead.score || 0, lead.qa_completed)}
                     score={lead.total_score || lead.score || 0}
                     size="sm"
                     showIcon={false}

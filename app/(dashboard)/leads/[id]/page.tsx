@@ -6,8 +6,7 @@ import { NotesSection } from '@/components/leads/NotesSection';
 import { TagsManager } from '@/components/leads/TagsManager';
 import { WhatsAppConversation } from '@/components/leads/WhatsAppConversation';
 import { LeadDetailActions } from '@/components/leads/LeadDetailActions';
-import { ScoreDisplay } from '@/components/leads/ScoreDisplay';
-import { QAAnswersTable } from '@/components/leads/QAAnswersTable';
+import { QualificationSection } from '@/components/leads/QualificationSection';
 import { EmailHistory } from '@/components/leads/EmailHistory';
 import { LeadDetailProposalsTab } from '@/components/leads/LeadDetailProposalsTab';
 import { LeadEnrollments } from '@/components/leads/LeadEnrollments';
@@ -35,9 +34,26 @@ async function getLeadData(id: string) {
     const lead = await pb.collection('leads').getOne<Lead>(id);
     const answers = await pb.collection('qa_answers').getList(1, 50, {
       filter: `lead_id = "${id}"`,
-      expand: 'question_id',
     });
-    return { lead, answers: answers.items };
+
+    // Fetch questions manually since expand might not work
+    const questionIds = [...new Set(answers.items.map((a: any) => a.question_id))];
+    const questions = questionIds.length > 0
+      ? await pb.collection('qa_questions').getList(1, 100, {
+          filter: questionIds.map((id) => `id = "${id}"`).join(' || '),
+        })
+      : { items: [] };
+
+    // Create a map for quick lookup
+    const questionMap = new Map(questions.items.map((q: any) => [q.id, q]));
+
+    // Attach questions to answers
+    const answersWithQuestions = answers.items.map((answer: any) => ({
+      ...answer,
+      expand: { question_id: questionMap.get(answer.question_id) },
+    }));
+
+    return { lead, answers: answersWithQuestions };
   } catch (error) {
     notFound();
   }
@@ -47,11 +63,52 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
   const { lead, answers } = await getLeadData(params.id);
 
   // Prepare score breakdown for display
-  const scoreBreakdown = answers.map((answer: any) => {
+  const scoreBreakdown = answers.map((answer: any, idx: number) => {
     const question = answer.expand?.question_id;
+    const selectedOption = (answer.selected_answer || '').toLowerCase(); // e.g., "a"
+
+    // Debug log
+    console.log(`[Breakdown ${idx}]`, {
+      question,
+      question_text: question?.question_text,
+      options: question?.options,
+      selectedOption,
+      points: answer.points_earned
+    });
+
+    // Build full option text: "a) [option text]"
+    let optionText = `${selectedOption})`; // default fallback
+
+    if (question?.options && Array.isArray(question.options)) {
+      // Try to find option that starts with "a)" or "a) "
+      const foundOption = question.options.find((opt: string) => {
+        const normalized = opt.toLowerCase().trim();
+        return normalized.startsWith(selectedOption + ')') ||
+               normalized.startsWith(selectedOption + ') ');
+      });
+
+      if (foundOption) {
+        optionText = foundOption;
+      } else {
+        // Try to find by index (a=0, b=1, c=2...)
+        const optionIndex = selectedOption.charCodeAt(0) - 97; // 'a' = 97
+        if (optionIndex >= 0 && optionIndex < question.options.length) {
+          const optAtIdx = question.options[optionIndex];
+          // If it doesn't start with the letter, prefix it
+          if (optAtIdx.toLowerCase().startsWith(selectedOption + ')')) {
+            optionText = optAtIdx;
+          } else {
+            optionText = `${selectedOption}) ${optAtIdx}`;
+          }
+        }
+      }
+    }
+
     return {
-      question: question?.question_text || 'Soru',
-      answer: answer.selected_answer || '-',
+      questionNumber: question?.order || idx + 1,
+      questionText: question?.question_text || '',
+      selectedOption: selectedOption,
+      selectedOptionText: optionText,
       points: answer.points_earned || 0
     };
   });
@@ -72,7 +129,7 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
                 {lead.company || 'Müşteri Adayı Detayı'}
               </p>
               <LeadQualityBadge
-                quality={calculateQualityStatus(lead.total_score || lead.score || 0)}
+                quality={calculateQualityStatus(lead.total_score || lead.score || 0, lead.qa_completed)}
                 score={lead.total_score || lead.score || 0}
                 size="md"
               />
@@ -91,41 +148,16 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
 
           {/* QA Scoring Section */}
           {lead.qa_sent && (
-            <section className="space-y-4">
-              <h2 className="text-xl font-semibold">Qualification Sonucu</h2>
-              <div className="grid md:grid-cols-2 gap-4">
-                <ScoreDisplay
-                  totalScore={lead.total_score || lead.score || 0}
-                  quality={lead.quality || 'pending'}
-                  breakdown={scoreBreakdown}
-                />
-                <div className="bg-white rounded-lg p-4 border">
-                  <h3 className="font-semibold mb-2">Durum</h3>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Poll Gönderildi:</span>
-                      <span className="font-medium">
-                        {lead.qa_sent_at ? new Date(lead.qa_sent_at).toLocaleString('tr-TR') : '-'}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Cevaplandı:</span>
-                      <span className="font-medium">
-                        {lead.qa_completed_at ? new Date(lead.qa_completed_at).toLocaleString('tr-TR') : '-'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* QA Answers Section */}
-          {lead.qa_sent && (
-            <section className="space-y-4">
-              <h2 className="text-xl font-semibold">QA Cevapları</h2>
-              <QAAnswersTable leadId={lead.id} />
-            </section>
+            <QualificationSection
+              leadId={lead.id}
+              leadName={lead.name}
+              totalScore={lead.total_score || lead.score || 0}
+              quality={lead.quality || 'pending'}
+              scoreBreakdown={scoreBreakdown}
+              qaCompleted={lead.qa_completed}
+              qaSentAt={lead.qa_sent_at}
+              qaCompletedAt={lead.qa_completed_at}
+            />
           )}
 
           {/* Tabs for WhatsApp, Email, Appointments, Proposals, Campaigns, Notes */}

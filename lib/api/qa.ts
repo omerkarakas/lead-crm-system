@@ -104,7 +104,12 @@ export async function deleteQuestion(id: string): Promise<void> {
  * Toggle question active status
  */
 export async function toggleQuestionActive(id: string, isActive: boolean): Promise<QAQuestion> {
-  return await updateQuestion(id, { is_active: isActive });
+  // Directly update with explicit boolean value
+  const activeValue = isActive === true;
+  console.log('[toggleQuestionActive] Sending:', { id, isActive, activeValue });
+  return await pb.collection('qa_questions').update<QAQuestion>(id, {
+    is_active: activeValue
+  });
 }
 
 /**
@@ -162,6 +167,26 @@ export async function getLeadAnswers(leadId: string): Promise<QAAnswer[]> {
 export async function calculateLeadTotalScore(leadId: string): Promise<number> {
   const answers = await getLeadAnswers(leadId);
   return answers.reduce((total, answer) => total + (answer.points_earned || 0), 0);
+}
+
+/**
+ * Delete all QA answers for a lead
+ */
+export async function deleteLeadQAAnswers(leadId: string): Promise<void> {
+  try {
+    const answers = await pb.collection('qa_answers').getList(1, 100, {
+      filter: `lead_id = "${leadId}"`
+    });
+
+    for (const answer of answers.items) {
+      await pb.collection('qa_answers').delete(answer.id);
+    }
+
+    console.log(`[deleteLeadQAAnswers] Deleted ${answers.items.length} answers for lead: ${leadId}`);
+  } catch (error) {
+    console.error('[deleteLeadQAAnswers] Error:', error);
+    throw error;
+  }
 }
 
 /**

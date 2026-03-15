@@ -77,7 +77,9 @@ export default function AdminQAPage() {
         await updateQuestion(editingQuestion.id, data);
         toast.success('Soru güncellendi');
       } else {
-        await createQuestion(data);
+        // Set order to questions.length + 1 for new questions
+        const newOrder = questions.length + 1;
+        await createQuestion({ ...data, order: newOrder });
         toast.success('Soru oluşturuldu');
       }
       setBuilderOpen(false);
@@ -220,6 +222,7 @@ export default function AdminQAPage() {
         onClose={() => setWelcomeConfigOpen(false)}
         onSave={handleSaveWelcomeMessage}
         currentMessage={welcomeMessage}
+        activeQuestionCount={questions.filter(q => q.is_active).length}
       />
     </div>
   );
