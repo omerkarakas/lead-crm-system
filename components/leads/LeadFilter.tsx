@@ -60,7 +60,7 @@ export function LeadFilter({
           </SelectContent>
         </Select>
 
-        {availableTags.length > 0 && (
+        {availableTags.filter(tag => tag && tag.trim()).length > 0 && (
           <Select
             value={tagFilter || 'all'}
             onValueChange={(value) => onTagChange(value === 'all' ? undefined : value)}
@@ -70,7 +70,7 @@ export function LeadFilter({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tüm Etiketler</SelectItem>
-              {availableTags.map((tag) => (
+              {availableTags.filter(tag => tag && tag.trim()).map((tag) => (
                 <SelectItem key={tag} value={tag}>
                   {tag}
                 </SelectItem>
