@@ -344,8 +344,8 @@ export function AppointmentDetailModal({
           {/* Timestamps */}
           <div className="h-px bg-border my-4" />
           <div className="space-y-2 text-xs text-muted-foreground">
-            <div>Oluşturulma: {new Date(appointment.created).toLocaleString('tr-TR')}</div>
-            <div>Güncelleme: {new Date(appointment.updated).toLocaleString('tr-TR')}</div>
+            <div>Oluşturulma: {new Date(appointment.created).toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' })}</div>
+            <div>Güncelleme: {new Date(appointment.updated).toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' })}</div>
           </div>
 
           {/* Confirmation Status */}

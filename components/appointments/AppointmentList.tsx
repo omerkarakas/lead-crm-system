@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { Appointment, AppointmentStatus, AppointmentSource } from '@/types/appointment';
 import {
   Table,
@@ -13,7 +12,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Loader2, Eye, Pencil, Trash2, Table as TableIcon, LayoutGrid } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Loader2, Eye, Table as TableIcon, LayoutGrid } from 'lucide-react';
 import { formatAppointmentDate, formatAppointmentTime, formatAppointmentDateTime } from '@/lib/utils/appointment';
 
 interface AppointmentListProps {
@@ -26,6 +25,8 @@ interface AppointmentListProps {
   onDetail?: (appointment: Appointment) => void;
   onEdit?: (appointment: Appointment) => void;
   onDelete?: (id: string) => void;
+  viewMode?: 'table' | 'card';
+  onViewModeChange?: (mode: 'table' | 'card') => void;
 }
 
 const STATUS_LABELS: Record<AppointmentStatus, string> = {
@@ -47,29 +48,6 @@ const SOURCE_LABELS: Record<AppointmentSource, string> = {
   [AppointmentSource.MANUAL]: 'Manuel',
 };
 
-type ViewMode = 'table' | 'card';
-
-const STORAGE_KEY = 'appointment-view-mode';
-
-function getViewMode(): ViewMode {
-  if (typeof window === 'undefined') return 'table';
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return (stored === 'card' || stored === 'table') ? stored : 'table';
-  } catch {
-    return 'table';
-  }
-}
-
-function setViewMode(mode: ViewMode) {
-  if (typeof window === 'undefined') return;
-  try {
-    localStorage.setItem(STORAGE_KEY, mode);
-  } catch (error) {
-    console.error('Failed to save view mode:', error);
-  }
-}
-
 export function AppointmentList({
   appointments,
   loading,
@@ -80,21 +58,9 @@ export function AppointmentList({
   onDetail,
   onEdit,
   onDelete,
+  viewMode = 'table',
+  onViewModeChange,
 }: AppointmentListProps) {
-  const [viewMode, setViewModeState] = useState<ViewMode>('table');
-
-  // Load view mode from localStorage on mount
-  useEffect(() => {
-    const savedMode = getViewMode();
-    setViewModeState(savedMode);
-  }, []);
-
-  const handleViewToggle = () => {
-    const newMode = viewMode === 'table' ? 'card' : 'table';
-    setViewModeState(newMode);
-    setViewMode(newMode);
-  };
-
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
@@ -152,24 +118,6 @@ export function AppointmentList({
       <div className="text-sm text-muted-foreground">
         {totalItems} randevu gösteriliyor
       </div>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={handleViewToggle}
-        className="gap-2"
-      >
-        {viewMode === 'table' ? (
-          <>
-            <LayoutGrid className="h-4 w-4" />
-            Kart Görünümü
-          </>
-        ) : (
-          <>
-            <TableIcon className="h-4 w-4" />
-            Tablo Görünümü
-          </>
-        )}
-      </Button>
     </div>
   );
 

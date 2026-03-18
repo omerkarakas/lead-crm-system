@@ -27,6 +27,7 @@ export async function GET(req: NextRequest) {
     const startDate = searchParams.get('startDate') || undefined;
     const endDate = searchParams.get('endDate') || undefined;
     const sort = searchParams.get('sort') || '-scheduled_at';
+    const expand = searchParams.get('expand') || undefined;
 
     const filterParts: string[] = [];
 
@@ -54,14 +55,38 @@ export async function GET(req: NextRequest) {
       options.filter = filterParts.join(' && ');
     }
 
+    // Add expand if provided
+    if (expand) {
+      options.expand = expand;
+    }
+
     const response = await pb.collection<Appointment>('appointments').getList(page, perPage, options);
+
+    // Manually expand lead data since PocketBase expand might not work
+    let items = response.items;
+    if (expand?.includes('lead_id')) {
+      items = await Promise.all(
+        response.items.map(async (apt) => {
+          if (apt.lead_id) {
+            try {
+              const lead = await pb.collection('leads').getOne(apt.lead_id);
+              return { ...apt, expand: { lead_id: lead } };
+            } catch (e) {
+              // Lead might be deleted - silently skip expand for this appointment
+              return apt;
+            }
+          }
+          return apt;
+        })
+      );
+    }
 
     return NextResponse.json({
       page: response.page,
       perPage: response.perPage,
       totalItems: response.totalItems,
       totalPages: response.totalPages,
-      items: response.items,
+      items: items,
     });
   } catch (error) {
     console.error('[GET /api/appointments] Error:', error);
@@ -111,6 +136,77 @@ export async function POST(req: NextRequest) {
         { success: false, message: 'scheduled_at is required' },
         { status: 400 }
       );
+    }
+
+    // Validate working hours (09:00 - 18:00)
+    const scheduledAt = new Date(body.scheduled_at);
+    const scheduledHour = scheduledAt.getHours();
+    const scheduledMinutes = scheduledAt.getMinutes();
+
+    if (scheduledHour < 9 || (scheduledHour === 18 && scheduledMinutes > 0) || scheduledHour > 18) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Toplantılar 09:00 - 18:00 saatleri arasında planlanabilir',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Check for scheduling conflicts
+    const duration = body.duration || 60;
+    const scheduledEnd = new Date(scheduledAt.getTime() + duration * 60 * 1000);
+
+    // Fetch appointments on the same day (within a reasonable range)
+    const dayStart = new Date(scheduledAt);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(scheduledAt);
+    dayEnd.setHours(23, 59, 59, 999);
+
+    const conflictingAppointments = await pb.collection('appointments').getList(1, 100, {
+      filter: `scheduled_at >= "${dayStart.toISOString()}" && scheduled_at <= "${dayEnd.toISOString()}" && status != "cancelled"`,
+    });
+
+    // Check for overlaps
+    for (const apt of conflictingAppointments.items) {
+      const aptStart = new Date(apt.scheduled_at);
+      const aptEnd = new Date(aptStart.getTime() + (apt.duration || 60) * 60 * 1000);
+
+      // Check if time ranges overlap
+      const hasOverlap = scheduledAt < aptEnd && scheduledEnd > aptStart;
+
+      if (hasOverlap) {
+        // Fetch lead name for better error message
+        let leadName = 'İsimsiz';
+        if (apt.lead_id) {
+          try {
+            const lead = await pb.collection('leads').getOne(apt.lead_id);
+            leadName = lead.name;
+          } catch (e) {
+            // Ignore lead fetch errors
+          }
+        }
+
+        const aptTime = aptStart.toLocaleString('tr-TR', {
+          day: 'numeric',
+          month: 'long',
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+
+        return NextResponse.json(
+          {
+            success: false,
+            message: `Bu saatte başka bir randevu var: ${leadName} (${aptTime})`,
+            conflict: {
+              appointmentId: apt.id,
+              leadName,
+              scheduledAt: apt.scheduled_at,
+            },
+          },
+          { status: 409 } // Conflict status code
+        );
+      }
     }
 
     // Create appointment

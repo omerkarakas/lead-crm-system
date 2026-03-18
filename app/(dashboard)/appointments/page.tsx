@@ -5,15 +5,18 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/lib/stores/auth';
 import { Appointment, AppointmentStatus } from '@/types/appointment';
 import { Button } from '@/components/ui/button';
-import { Loader2, CalendarPlus } from 'lucide-react';
+import { Loader2, CalendarPlus, List, LayoutGrid, Calendar as CalendarIcon } from 'lucide-react';
 import type { AppointmentFilters } from '@/components/appointments/AppointmentFilters';
 import { AppointmentFilters as AppointmentFiltersComponent } from '@/components/appointments/AppointmentFilters';
 import { AppointmentList } from '@/components/appointments/AppointmentList';
 import { AppointmentDetailModal } from '@/components/appointments/AppointmentDetailModal';
 import { AppointmentModal } from '@/components/appointments/AppointmentModal';
+import { AppointmentCalendar } from '@/components/appointments/AppointmentCalendar';
 import { fetchAppointments, updateAppointmentStatus, sendAppointmentConfirmation } from '@/lib/api/appointments';
 import { Badge } from '@/components/ui/badge';
 import { X } from 'lucide-react';
+
+type ViewMode = 'table' | 'card' | 'calendar';
 
 export default function AppointmentsPage() {
   const router = useRouter();
@@ -25,6 +28,9 @@ export default function AppointmentsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
+
+  // View mode state
+  const [viewMode, setViewMode] = useState<ViewMode>('table');
 
   // Filter state
   const [filters, setFilters] = useState<AppointmentFilters>({});
@@ -42,6 +48,9 @@ export default function AppointmentsPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
 
+  // Initial datetime for creating appointment from calendar slot
+  const [initialDateTime, setInitialDateTime] = useState<string | undefined>(undefined);
+
   // Initialize filters from URL params on mount
   useEffect(() => {
     const startParam = searchParams.get('start');
@@ -49,6 +58,7 @@ export default function AppointmentsPage() {
     const statusParam = searchParams.get('status') as AppointmentStatus | null;
     const searchParam = searchParams.get('search');
     const pageParam = searchParams.get('page');
+    const viewParam = searchParams.get('view') as ViewMode | null;
 
     const newFilters: AppointmentFilters = {};
 
@@ -62,6 +72,10 @@ export default function AppointmentsPage() {
 
     if (pageParam) {
       setCurrentPage(parseInt(pageParam, 10));
+    }
+
+    if (viewParam && ['table', 'card', 'calendar'].includes(viewParam)) {
+      setViewMode(viewParam);
     }
   }, [searchParams]);
 
@@ -83,26 +97,10 @@ export default function AppointmentsPage() {
         status: filters.status,
         search: filters.search,
         sort: '-scheduled_at',
+        expand: 'lead_id', // Automatically fetch lead data
       });
 
-      // Expand lead data for each appointment
-      const appointmentsWithLeads = await Promise.all(
-        response.items.map(async (apt) => {
-          if (apt.lead_id) {
-            try {
-              // Fetch lead data
-              const leadResponse = await fetch(`/api/leads/${apt.lead_id}`).then(r => r.json());
-              return { ...apt, expand: { lead_id: leadResponse } };
-            } catch (error) {
-              console.error('Error fetching lead for appointment:', error);
-              return apt;
-            }
-          }
-          return apt;
-        })
-      );
-
-      setAppointments(appointmentsWithLeads);
+      setAppointments(response.items);
       setTotalPages(response.totalPages);
       setTotalItems(response.totalItems);
     } catch (error) {
@@ -127,6 +125,7 @@ export default function AppointmentsPage() {
     if (filters.status) params.set('status', filters.status);
     if (filters.search) params.set('search', filters.search);
     if (currentPage > 1) params.set('page', currentPage.toString());
+    if (viewMode !== 'table') params.set('view', viewMode);
 
     const queryString = params.toString();
     const newUrl = `/appointments${queryString ? '?' + queryString : ''}`;
@@ -135,7 +134,7 @@ export default function AppointmentsPage() {
     if (window.location.search !== (queryString ? `?${queryString}` : '')) {
       router.replace(newUrl);
     }
-  }, [filters, currentPage, isFilterInitialized, router]);
+  }, [filters, currentPage, viewMode, isFilterInitialized, router]);
 
   const handleFilterChange = useCallback((newFilters: AppointmentFilters) => {
     setFilters(newFilters);
@@ -182,17 +181,27 @@ export default function AppointmentsPage() {
     setActionLoading(true);
     try {
       await sendAppointmentConfirmation(id);
-      // Refresh appointments - use fetchAppointmentsData to preserve lead data
+      // Refresh appointments list
       await fetchAppointmentsData();
+      // Update selected appointment state to show confirmation_sent = true
+      if (selectedAppointment && selectedAppointment.id === id) {
+        setSelectedAppointment(prev => prev ? { ...prev, confirmation_sent: true } : null);
+      }
     } catch (error) {
       console.error('Error sending confirmation:', error);
       throw error;
     } finally {
       setActionLoading(false);
     }
-  }, [fetchAppointmentsData]);
+  }, [fetchAppointmentsData, selectedAppointment]);
 
   const handleOpenCreateModal = useCallback(() => {
+    setInitialDateTime(undefined); // Clear any previous slot selection
+    setIsCreateModalOpen(true);
+  }, []);
+
+  const handleCreateFromSlot = useCallback((dateTime: string) => {
+    setInitialDateTime(dateTime);
     setIsCreateModalOpen(true);
   }, []);
 
@@ -205,6 +214,15 @@ export default function AppointmentsPage() {
   const handleCloseEditModal = useCallback(() => {
     setIsEditModalOpen(false);
     setEditingAppointment(null);
+  }, []);
+
+  const handleCloseCreateModal = useCallback(() => {
+    setIsCreateModalOpen(false);
+    setInitialDateTime(undefined); // Clear slot selection when modal closes
+  }, []);
+
+  const handleViewModeChange = useCallback((mode: ViewMode) => {
+    setViewMode(mode);
   }, []);
 
   // Active filter badges
@@ -232,64 +250,115 @@ export default function AppointmentsPage() {
     return null;
   }
 
+  const isCalendarView = viewMode === 'calendar';
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Randevular</h1>
           <p className="text-muted-foreground">
-            Randevularınızı görüntüleyin, arayın ve filtreleyin.
+            {isCalendarView
+              ? 'Randevularınızı takvim üzerinde görüntüleyin.'
+              : 'Randevularınızı görüntüleyin, arayın ve filtreleyin.'}
           </p>
         </div>
-        <Button onClick={handleOpenCreateModal}>
-          <CalendarPlus className="mr-2 h-4 w-4" />
-          Yeni Randevu
-        </Button>
-      </div>
-
-      {/* Filters */}
-      <AppointmentFiltersComponent
-        onFilterChange={handleFilterChange}
-        loading={loading}
-        initialFilters={filters}
-      />
-
-      {/* Active Filter Badges */}
-      {hasActiveFilters && (
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm text-muted-foreground">Aktif filtreler:</span>
-          {activeFilters.map((filter) => (
-            <Badge key={filter.key} variant="secondary" className="gap-1">
-              {filter.label}: {filter.value}
-              <button
-                onClick={() => {
-                  const newFilters = { ...filters };
-                  delete newFilters[filter.key as keyof AppointmentFilters];
-                  handleFilterChange(newFilters);
-                }}
-                className="ml-1 hover:text-destructive"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </Badge>
-          ))}
-          <Button variant="ghost" size="sm" onClick={handleClearFilters}>
-            <X className="h-4 w-4 mr-1" />
-            Tümünü Temizle
+        <div className="flex items-center gap-2">
+          {/* View Mode Toggle */}
+          <div className="flex rounded-lg border p-1">
+            <Button
+              variant={viewMode === 'table' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => handleViewModeChange('table')}
+              className="h-8 px-3"
+              title="Tablo görünümü"
+            >
+              <List className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'card' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => handleViewModeChange('card')}
+              className="h-8 px-3"
+              title="Kart görünümü"
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'calendar' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => handleViewModeChange('calendar')}
+              className="h-8 px-3"
+              title="Takvim görünümü"
+            >
+              <CalendarIcon className="h-4 w-4" />
+            </Button>
+          </div>
+          <Button onClick={handleOpenCreateModal}>
+            <CalendarPlus className="mr-2 h-4 w-4" />
+            Yeni Randevu
           </Button>
         </div>
+      </div>
+
+      {/* Filters - Hide in calendar view */}
+      {!isCalendarView && (
+        <>
+          <AppointmentFiltersComponent
+            onFilterChange={handleFilterChange}
+            loading={loading}
+            initialFilters={filters}
+          />
+
+          {/* Active Filter Badges */}
+          {hasActiveFilters && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm text-muted-foreground">Aktif filtreler:</span>
+              {activeFilters.map((filter) => (
+                <Badge key={filter.key} variant="secondary" className="gap-1">
+                  {filter.label}: {filter.value}
+                  <button
+                    onClick={() => {
+                      const newFilters = { ...filters };
+                      delete newFilters[filter.key as keyof AppointmentFilters];
+                      handleFilterChange(newFilters);
+                    }}
+                    className="ml-1 hover:text-destructive"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
+              <Button variant="ghost" size="sm" onClick={handleClearFilters}>
+                <X className="h-4 w-4 mr-1" />
+                Tümünü Temizle
+              </Button>
+            </div>
+          )}
+        </>
       )}
 
-      {/* Appointment List */}
-      <AppointmentList
-        appointments={appointments}
-        loading={loading}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        totalItems={totalItems}
-        onPageChange={handlePageChange}
-        onDetail={handleDetail}
-      />
+      {/* Calendar View */}
+      {isCalendarView ? (
+        <AppointmentCalendar
+          appointments={appointments}
+          onDetail={handleDetail}
+          onCreateAppointment={handleCreateFromSlot}
+        />
+      ) : (
+        /* Appointment List (Table/Card View) */
+        <AppointmentList
+          appointments={appointments}
+          loading={loading}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          onPageChange={handlePageChange}
+          onDetail={handleDetail}
+          viewMode={viewMode}
+          onViewModeChange={handleViewModeChange}
+        />
+      )}
 
       {/* Detail Modal */}
       <AppointmentDetailModal
@@ -305,8 +374,18 @@ export default function AppointmentsPage() {
       {/* Create Modal */}
       <AppointmentModal
         open={isCreateModalOpen}
-        onOpenChange={setIsCreateModalOpen}
+        onOpenChange={handleCloseCreateModal}
         onSuccess={fetchAppointmentsData}
+        initialDateTime={initialDateTime}
+        existingAppointments={appointments.filter(apt => {
+          // Only include appointments from today onwards within 1 month
+          const aptDate = new Date(apt.scheduled_at);
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const oneMonthLater = new Date(today);
+          oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
+          return aptDate >= today && aptDate <= oneMonthLater;
+        })}
       />
 
       {/* Edit Modal */}

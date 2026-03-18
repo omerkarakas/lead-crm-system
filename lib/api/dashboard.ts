@@ -1,6 +1,6 @@
-import PocketBase from 'pocketbase';
+import PocketBase from "pocketbase";
 
-const PB_URL = process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090';
+const PB_URL = process.env.NEXT_PUBLIC_POCKETBASE_URL || "http://127.0.0.1:8090";
 
 /**
  * Fetch dashboard statistics
@@ -9,14 +9,14 @@ export async function fetchDashboardStats() {
   const pb = new PocketBase(PB_URL);
 
   // Load auth from cookie if available
-  if (typeof window !== 'undefined') {
-    const cookies = document.cookie.split(';');
-    const pbCookie = cookies.find(c => c.trim().startsWith('pb_auth='));
+  if (typeof window !== "undefined") {
+    const cookies = document.cookie.split(";");
+    const pbCookie = cookies.find((c) => c.trim().startsWith("pb_auth="));
     if (pbCookie) {
       try {
         pb.authStore.loadFromCookie(pbCookie.trim());
       } catch (e) {
-        console.warn('Failed to load auth from cookie:', e);
+        console.warn("Failed to load auth from cookie:", e);
       }
     }
   }
@@ -40,8 +40,8 @@ export async function fetchDashboardStats() {
     let hasMore = true;
 
     while (hasMore) {
-      const response = await pb.collection('leads').getList(page, 100, {
-        sort: '-created'
+      const response = await pb.collection("leads").getList(page, 100, {
+        sort: "-created",
       });
 
       allLeads = [...allLeads, ...response.items];
@@ -53,72 +53,71 @@ export async function fetchDashboardStats() {
     const totalLeads = allLeads.length;
 
     // New leads today
-    const newLeadsToday = allLeads.filter(lead => {
+    const newLeadsToday = allLeads.filter((lead) => {
       const createdAt = new Date(lead.created);
       return createdAt >= new Date(startOfDay) && createdAt < new Date(endOfDay);
     }).length;
 
     // New leads this week
-    const newLeadsWeek = allLeads.filter(lead => {
+    const newLeadsWeek = allLeads.filter((lead) => {
       const createdAt = new Date(lead.created);
       return createdAt >= startOfWeek;
     }).length;
 
     // New leads this month
-    const newLeadsMonth = allLeads.filter(lead => {
+    const newLeadsMonth = allLeads.filter((lead) => {
       const createdAt = new Date(lead.created);
       return createdAt >= new Date(startOfMonth);
     }).length;
 
     // Leads by status
     const statusBreakdown = allLeads.reduce((acc, lead) => {
-      const status = lead.status || 'new';
+      const status = lead.status || "new";
       acc[status] = (acc[status] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
     // Leads by quality
     const qualityBreakdown = allLeads.reduce((acc, lead) => {
-      const quality = lead.quality || 'pending';
+      const quality = lead.quality || "pending";
       acc[quality] = (acc[quality] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
     // Qualified leads (quality = 'qualified')
-    const qualifiedLeads = allLeads.filter(lead => lead.quality === 'qualified').length;
+    const qualifiedLeads = allLeads.filter((lead) => lead.quality === "qualified").length;
 
     // Completed QA
-    const completedQA = allLeads.filter(lead => lead.qa_completed).length;
+    const completedQA = allLeads.filter((lead) => lead.qa_completed).length;
 
     // Sent QA polls
-    const sentQAPolls = allLeads.filter(lead => lead.qa_sent).length;
+    const sentQAPolls = allLeads.filter((lead) => lead.qa_sent).length;
 
     // Pending QA responses
     const pendingQA = sentQAPolls - completedQA;
 
     // Conversion rate (new -> qualified -> booked -> customer)
-    const newLeads = statusBreakdown['new'] || 0;
-    const bookedLeads = statusBreakdown['booked'] || 0;
-    const customerLeads = statusBreakdown['customer'] || 0;
+    const bookedLeads = statusBreakdown["booked"] || 0;
+    const customerLeads = statusBreakdown["customer"] || 0;
 
-    const toQualifiedRate = totalLeads > 0 ? ((qualifiedLeads / totalLeads) * 100).toFixed(1) : '0';
-    const toBookedRate = totalLeads > 0 ? ((bookedLeads / totalLeads) * 100).toFixed(1) : '0';
-    const toCustomerRate = totalLeads > 0 ? ((customerLeads / totalLeads) * 100).toFixed(1) : '0';
+    const toQualifiedRate = totalLeads > 0 ? ((qualifiedLeads / totalLeads) * 100).toFixed(1) : "0";
+    const toBookedRate = totalLeads > 0 ? ((bookedLeads / totalLeads) * 100).toFixed(1) : "0";
+    const toCustomerRate = totalLeads > 0 ? ((customerLeads / totalLeads) * 100).toFixed(1) : "0";
 
     // Recent activity (last 10 leads)
-    const recentLeads = allLeads.slice(0, 10).map(lead => ({
+    const recentLeads = allLeads.slice(0, 10).map((lead) => ({
       id: lead.id,
       name: lead.name,
       company: lead.company,
       status: lead.status,
       quality: lead.quality,
       score: lead.total_score || lead.score || 0,
-      created: lead.created
+      created: lead.created,
     }));
 
     // Leads by source
     const sourceBreakdown = allLeads.reduce((acc, lead) => {
-      const source = lead.source || 'manual';
+      const source = lead.source || "manual";
       acc[source] = (acc[source] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
@@ -138,14 +137,14 @@ export async function fetchDashboardStats() {
       conversionRates: {
         toQualified: toQualifiedRate,
         toBooked: toBookedRate,
-        toCustomer: toCustomerRate
+        toCustomer: toCustomerRate,
       },
       recentLeads,
       bookedLeads,
-      customerLeads
+      customerLeads,
     };
   } catch (error) {
-    console.error('Dashboard stats error:', error);
+    console.error("Dashboard stats error:", error);
     throw error;
   }
 }
@@ -181,83 +180,93 @@ export async function fetchDashboardStatsServer(pb: any) {
     const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 
     // Count total leads
-    const totalLeads = await pb.collection('leads').getList(1, 1, { skipTotal: true });
+    const totalLeads = await pb.collection("leads").getList(1, 1);
     const totalCount = totalLeads.totalItems;
 
     // Count new leads today
-    const newLeadsToday = await pb.collection('leads').getList(1, 1, {
+    const newLeadsToday = await pb.collection("leads").getList(1, 1, {
       filter: `created >= "${startOfDay}" && created < "${endOfDay}"`,
-      skipTotal: true
     });
 
     // Count new leads yesterday
-    const newLeadsYesterday = await pb.collection('leads').getList(1, 1, {
+    const newLeadsYesterday = await pb.collection("leads").getList(1, 1, {
       filter: `created >= "${startOfYesterday}" && created < "${endOfYesterday}"`,
-      skipTotal: true
     });
 
     // Calculate today's change percentage (vs yesterday)
-    const todayChange = newLeadsYesterday.totalItems > 0
-      ? ((newLeadsToday.totalItems - newLeadsYesterday.totalItems) / newLeadsYesterday.totalItems) * 100
-      : (newLeadsToday.totalItems > 0 ? 100 : 0);
+    const todayChange =
+      newLeadsYesterday.totalItems > 0
+        ? ((newLeadsToday.totalItems - newLeadsYesterday.totalItems) / newLeadsYesterday.totalItems) * 100
+        : newLeadsToday.totalItems > 0
+        ? 100
+        : 0;
 
     // Count new leads this week
-    const newLeadsWeek = await pb.collection('leads').getList(1, 1, {
+    const newLeadsWeek = await pb.collection("leads").getList(1, 1, {
       filter: `created >= "${startOfWeek.toISOString()}"`,
-      skipTotal: true
     });
 
     // Count new leads last week
-    const newLeadsLastWeek = await pb.collection('leads').getList(1, 1, {
+    const newLeadsLastWeek = await pb.collection("leads").getList(1, 1, {
       filter: `created >= "${startOfLastWeek.toISOString()}" && created < "${endOfLastWeek.toISOString()}"`,
-      skipTotal: true
     });
 
     // Calculate week change percentage
-    const weekChange = newLeadsLastWeek.totalItems > 0
-      ? ((newLeadsWeek.totalItems - newLeadsLastWeek.totalItems) / newLeadsLastWeek.totalItems) * 100
-      : (newLeadsWeek.totalItems > 0 ? 100 : 0);
+    const weekChange =
+      newLeadsLastWeek.totalItems > 0
+        ? ((newLeadsWeek.totalItems - newLeadsLastWeek.totalItems) / newLeadsLastWeek.totalItems) * 100
+        : newLeadsWeek.totalItems > 0
+        ? 100
+        : 0;
 
     // Count new leads this month
-    const newLeadsMonth = await pb.collection('leads').getList(1, 1, {
+    const newLeadsMonth = await pb.collection("leads").getList(1, 1, {
       filter: `created >= "${startOfMonth}"`,
-      skipTotal: true
     });
 
     // Count new leads last month
-    const newLeadsLastMonth = await pb.collection('leads').getList(1, 1, {
+    const newLeadsLastMonth = await pb.collection("leads").getList(1, 1, {
       filter: `created >= "${startOfLastMonth}" && created < "${endOfLastMonth}"`,
-      skipTotal: true
     });
 
     // Calculate month change percentage
-    const monthChange = newLeadsLastMonth.totalItems > 0
-      ? ((newLeadsMonth.totalItems - newLeadsLastMonth.totalItems) / newLeadsLastMonth.totalItems) * 100
-      : (newLeadsMonth.totalItems > 0 ? 100 : 0);
+    const monthChange =
+      newLeadsLastMonth.totalItems > 0
+        ? ((newLeadsMonth.totalItems - newLeadsLastMonth.totalItems) / newLeadsLastMonth.totalItems) * 100
+        : newLeadsMonth.totalItems > 0
+        ? 100
+        : 0;
 
     // Status breakdown
     const statusCounts = {
-      new: (await pb.collection('leads').getList(1, 1, { filter: 'status = "new"', skipTotal: true })).totalItems,
-      qualified: (await pb.collection('leads').getList(1, 1, { filter: 'status = "qualified"', skipTotal: true })).totalItems,
-      booked: (await pb.collection('leads').getList(1, 1, { filter: 'status = "booked"', skipTotal: true })).totalItems,
-      customer: (await pb.collection('leads').getList(1, 1, { filter: 'status = "customer"', skipTotal: true })).totalItems,
-      lost: (await pb.collection('leads').getList(1, 1, { filter: 'status = "lost"', skipTotal: true })).totalItems,
+      new: (await pb.collection("leads").getList(1, 1, { filter: 'status = "new"' })).totalItems,
+      qualified: (await pb.collection("leads").getList(1, 1, { filter: 'status = "qualified"' }))
+        .totalItems,
+      booked: (await pb.collection("leads").getList(1, 1, { filter: 'status = "booked"' })).totalItems,
+      customer: (await pb.collection("leads").getList(1, 1, { filter: 'status = "customer"' }))
+        .totalItems,
+      lost: (await pb.collection("leads").getList(1, 1, { filter: 'status = "lost"' })).totalItems,
     };
 
     // Quality breakdown
     const qualityCounts = {
-      pending: (await pb.collection('leads').getList(1, 1, { filter: 'quality = "pending"', skipTotal: true })).totalItems,
-      qualified: (await pb.collection('leads').getList(1, 1, { filter: 'quality = "qualified"', skipTotal: true })).totalItems,
-      followup: (await pb.collection('leads').getList(1, 1, { filter: 'quality = "followup"', skipTotal: true })).totalItems,
+      pending: (await pb.collection("leads").getList(1, 1, { filter: 'quality = "pending"' }))
+        .totalItems,
+      qualified: (await pb.collection("leads").getList(1, 1, { filter: 'quality = "qualified"' }))
+        .totalItems,
+      followup: (await pb.collection("leads").getList(1, 1, { filter: 'quality = "followup"' }))
+        .totalItems,
     };
 
     // QA stats
-    const completedQA = (await pb.collection('leads').getList(1, 1, { filter: 'qa_completed = true', skipTotal: true })).totalItems;
-    const sentQAPolls = (await pb.collection('leads').getList(1, 1, { filter: 'qa_sent = true', skipTotal: true })).totalItems;
+    const completedQA = (await pb.collection("leads").getList(1, 1, { filter: "qa_completed = true" }))
+      .totalItems;
+    const sentQAPolls = (await pb.collection("leads").getList(1, 1, { filter: "qa_sent = true" }))
+      .totalItems;
 
     // Recent leads
-    const recentLeadsData = await pb.collection('leads').getList(1, 10, {
-      sort: '-created'
+    const recentLeadsData = await pb.collection("leads").getList(1, 10, {
+      sort: "-created",
     });
 
     const recentLeads = recentLeadsData.items.map((lead: any) => ({
@@ -267,37 +276,42 @@ export async function fetchDashboardStatsServer(pb: any) {
       status: lead.status,
       quality: lead.quality,
       score: lead.total_score || lead.score || 0,
-      created: lead.created
+      created: lead.created,
     }));
 
     // Source breakdown
     const sourceCounts = {
-      web_form: (await pb.collection('leads').getList(1, 1, { filter: 'source = "web_form"', skipTotal: true })).totalItems,
-      api: (await pb.collection('leads').getList(1, 1, { filter: 'source = "api"', skipTotal: true })).totalItems,
-      manual: (await pb.collection('leads').getList(1, 1, { filter: 'source = "manual"', skipTotal: true })).totalItems,
-      whatsapp: (await pb.collection('leads').getList(1, 1, { filter: 'source = "whatsapp"', skipTotal: true })).totalItems,
+      web_form: (await pb.collection("leads").getList(1, 1, { filter: 'source = "web_form"' }))
+        .totalItems,
+      api: (await pb.collection("leads").getList(1, 1, { filter: 'source = "api"' })).totalItems,
+      manual: (await pb.collection("leads").getList(1, 1, { filter: 'source = "manual"' })).totalItems,
+      whatsapp: (await pb.collection("leads").getList(1, 1, { filter: 'source = "whatsapp"' }))
+        .totalItems,
     };
 
-    const toQualifiedRate = totalCount > 0 ? ((qualityCounts.qualified / totalCount) * 100).toFixed(1) : '0';
-    const toBookedRate = totalCount > 0 ? ((statusCounts.booked / totalCount) * 100).toFixed(1) : '0';
-    const toCustomerRate = totalCount > 0 ? ((statusCounts.customer / totalCount) * 100).toFixed(1) : '0';
+    const toQualifiedRate = totalCount > 0 ? ((qualityCounts.qualified / totalCount) * 100).toFixed(1) : "0";
+    const toBookedRate = totalCount > 0 ? ((statusCounts.booked / totalCount) * 100).toFixed(1) : "0";
+    const toCustomerRate = totalCount > 0 ? ((statusCounts.customer / totalCount) * 100).toFixed(1) : "0";
 
     // Calculate total leads change (this month vs last month)
     const totalLeadsChange = monthChange;
 
     // Calculate qualified leads change (using quality = 'qualified')
     // Get last month's qualified leads
-    const qualifiedLeadsLastMonth = await pb.collection('leads').getList(1, 1, {
+    const qualifiedLeadsLastMonth = await pb.collection("leads").getList(1, 1, {
       filter: `quality = "qualified" && created >= "${startOfLastMonth}" && created < "${endOfLastMonth}"`,
-      skipTotal: true
     });
-    const qualifiedLeadsThisMonth = await pb.collection('leads').getList(1, 1, {
+    const qualifiedLeadsThisMonth = await pb.collection("leads").getList(1, 1, {
       filter: `quality = "qualified" && created >= "${startOfMonth}"`,
-      skipTotal: true
     });
-    const qualifiedChange = qualifiedLeadsLastMonth.totalItems > 0
-      ? ((qualifiedLeadsThisMonth.totalItems - qualifiedLeadsLastMonth.totalItems) / qualifiedLeadsLastMonth.totalItems) * 100
-      : (qualifiedLeadsThisMonth.totalItems > 0 ? 100 : 0);
+    const qualifiedChange =
+      qualifiedLeadsLastMonth.totalItems > 0
+        ? ((qualifiedLeadsThisMonth.totalItems - qualifiedLeadsLastMonth.totalItems) /
+            qualifiedLeadsLastMonth.totalItems) *
+          100
+        : qualifiedLeadsThisMonth.totalItems > 0
+        ? 100
+        : 0;
 
     // Calculate pending QA trend (response rate)
     const responseRate = sentQAPolls > 0 ? (completedQA / sentQAPolls) * 100 : 0;
@@ -318,7 +332,7 @@ export async function fetchDashboardStatsServer(pb: any) {
       conversionRates: {
         toQualified: toQualifiedRate,
         toBooked: toBookedRate,
-        toCustomer: toCustomerRate
+        toCustomer: toCustomerRate,
       },
       recentLeads,
       bookedLeads: statusCounts.booked,
@@ -328,11 +342,11 @@ export async function fetchDashboardStatsServer(pb: any) {
         totalLeads: totalLeadsChange,
         newLeadsToday: todayChange,
         qualifiedLeads: qualifiedChange,
-        pendingQA: pendingChange
-      }
+        pendingQA: pendingChange,
+      },
     };
   } catch (error) {
-    console.error('Dashboard stats server error:', error);
+    console.error("Dashboard stats server error:", error);
     throw error;
   }
 }

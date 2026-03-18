@@ -219,6 +219,7 @@ export async function deleteAppointment(id: string): Promise<void> {
 
 /**
  * Get all appointments with pagination and filtering
+ * Uses server-side API endpoint for proper auth and expand support
  */
 export async function fetchAppointments(params: {
   page?: number;
@@ -229,6 +230,7 @@ export async function fetchAppointments(params: {
   endDate?: string;
   search?: string;
   sort?: string;
+  expand?: string | string[];
 } = {}): Promise<{
   page: number;
   perPage: number;
@@ -244,52 +246,41 @@ export async function fetchAppointments(params: {
     startDate,
     endDate,
     search,
-    sort = '-scheduled_at'
+    sort = '-scheduled_at',
+    expand
   } = params;
 
-  const filterParts: string[] = [];
-
-  // Lead filter
-  if (leadId) {
-    filterParts.push(`lead_id = "${leadId}"`);
+  // Build query parameters
+  const queryParams = new URLSearchParams();
+  queryParams.append('page', page.toString());
+  queryParams.append('perPage', perPage.toString());
+  if (sort) queryParams.append('sort', sort);
+  if (leadId) queryParams.append('leadId', leadId);
+  if (status) queryParams.append('status', status);
+  if (startDate) queryParams.append('startDate', startDate);
+  if (endDate) queryParams.append('endDate', endDate);
+  if (search) queryParams.append('search', search);
+  if (expand) {
+    // Convert array to comma-separated string if needed
+    const expandStr = Array.isArray(expand) ? expand.join(',') : expand;
+    queryParams.append('expand', expandStr);
   }
 
-  // Status filter
-  if (status) {
-    filterParts.push(`status = "${status}"`);
+  const url = `/api/appointments?${queryParams.toString()}`;
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch appointments: ${response.status}`);
   }
 
-  // Date range filter
-  if (startDate) {
-    filterParts.push(`scheduled_at >= "${startDate}"`);
-  }
-  if (endDate) {
-    filterParts.push(`scheduled_at <= "${endDate}"`);
-  }
-
-  // Search filter (by lead name via relation)
-  if (search) {
-    filterParts.push(`lead_id.name ~ "${search}" || lead_id.phone ~ "${search}"`);
-  }
-
-  const options: any = { sort };
-
-  if (filterParts.length > 0) {
-    options.filter = filterParts.join(' && ');
-  }
-
-  const response = await pb.collection('appointments').getList<Appointment>(
-    page,
-    perPage,
-    options
-  );
+  const data = await response.json();
 
   return {
-    page: response.page,
-    perPage: response.perPage,
-    totalItems: response.totalItems,
-    totalPages: response.totalPages,
-    items: response.items
+    page: data.page,
+    perPage: data.perPage,
+    totalItems: data.totalItems,
+    totalPages: data.totalPages,
+    items: data.items
   };
 }
 
@@ -319,57 +310,17 @@ function formatPhoneForWhatsApp(phone: string): string {
 
 /**
  * Send appointment confirmation message via WhatsApp
+ * Uses server-side API endpoint for proper auth
  * Updates confirmation_sent flag after sending
  */
 export async function sendAppointmentConfirmation(appointmentId: string): Promise<void> {
-  try {
-    // Fetch appointment with lead relation
-    const appointment = await pb.collection('appointments').getOne<Appointment>(appointmentId, {
-      expand: 'lead_id'
-    });
+  const response = await fetch(`/api/appointments/${appointmentId}/send-confirmation`, {
+    method: 'POST',
+  });
 
-    if (!appointment.lead_id) {
-      console.warn(`[sendAppointmentConfirmation] No lead associated with appointment ${appointmentId}`);
-      return;
-    }
-
-    const lead = appointment.expand?.lead_id as Lead;
-    if (!lead) {
-      console.warn(`[sendAppointmentConfirmation] Lead not found for appointment ${appointmentId}`);
-      return;
-    }
-
-    // Format confirmation message
-    const messageText = formatConfirmationMessage(lead.name, appointment);
-
-    // Format phone number for WhatsApp
-    const chatId = formatPhoneForWhatsApp(lead.phone) + '@c.us';
-
-    // Send WhatsApp message
-    const result = await sendWhatsAppMessage(chatId, messageText);
-
-    if (result) {
-      // Log message to whatsapp_messages collection
-      await logWhatsAppMessage({
-        lead_id: lead.id,
-        direction: 'outgoing',
-        message_text: messageText,
-        message_type: 'info',
-        status: 'sent',
-        sent_at: new Date().toISOString(),
-        green_api_id: result.idMessage
-      });
-
-      // Update confirmation_sent flag
-      await pb.collection('appointments').update(appointmentId, {
-        confirmation_sent: true
-      });
-
-      console.log(`[sendAppointmentConfirmation] Confirmation sent for appointment ${appointmentId}`);
-    }
-  } catch (error) {
-    console.error('[sendAppointmentConfirmation] Error:', error);
-    // Don't throw - handle errors gracefully
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || error.details || 'Failed to send confirmation');
   }
 }
 

@@ -20,6 +20,8 @@ interface AppointmentModalProps {
   appointment?: Appointment;
   preSelectedLeadId?: string;
   preSelectedLeadName?: string;
+  initialDateTime?: string; // Format: "YYYY-MM-DDTHH:mm"
+  existingAppointments?: Appointment[]; // For conflict detection
 }
 
 export function AppointmentModal({
@@ -29,6 +31,8 @@ export function AppointmentModal({
   appointment,
   preSelectedLeadId,
   preSelectedLeadName,
+  initialDateTime,
+  existingAppointments,
 }: AppointmentModalProps) {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [leadsLoading, setLeadsLoading] = useState(false);
@@ -96,6 +100,8 @@ export function AppointmentModal({
             onCancel={handleCancel}
             preSelectedLeadId={preSelectedLeadId}
             preSelectedLeadName={preSelectedLeadName}
+            initialDateTime={initialDateTime}
+            existingAppointments={existingAppointments}
           />
         )}
       </DialogContent>

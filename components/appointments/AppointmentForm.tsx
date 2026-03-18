@@ -26,6 +26,7 @@ import {
 import { Loader2 } from 'lucide-react';
 import { AppointmentStatus, AppointmentSource, type Appointment } from '@/types/appointment';
 import { toast } from 'sonner';
+import { toLocalDateTimeString } from '@/lib/utils/appointment';
 
 // Form validation schema
 const appointmentFormSchema = z.object({
@@ -54,6 +55,8 @@ interface AppointmentFormProps {
   onCancel: () => void;
   preSelectedLeadId?: string;
   preSelectedLeadName?: string;
+  initialDateTime?: string; // Format: "YYYY-MM-DDTHH:mm"
+  existingAppointments?: Appointment[];
 }
 
 // Duration options in minutes
@@ -73,9 +76,12 @@ export function AppointmentForm({
   onCancel,
   preSelectedLeadId,
   preSelectedLeadName,
+  initialDateTime,
+  existingAppointments = [],
 }: AppointmentFormProps) {
   const [loading, setLoading] = useState(false);
   const [leadsLoading, setLeadsLoading] = useState(false);
+  const [conflictError, setConflictError] = useState<string | null>(null);
 
   // Initialize form with default values or appointment data for edit
   const form = useForm<AppointmentFormValues>({
@@ -83,10 +89,8 @@ export function AppointmentForm({
     defaultValues: {
       lead_id: appointment?.lead_id || preSelectedLeadId || '',
       scheduled_at: appointment
-        ? new Date(appointment.scheduled_at)
-            .toISOString()
-            .slice(0, 16) // Format for datetime-local input
-        : '',
+        ? toLocalDateTimeString(appointment.scheduled_at)
+        : initialDateTime || '',
       duration: appointment?.duration?.toString() || '60',
       location: appointment?.location || '',
       meeting_url: appointment?.meeting_url || '',
@@ -115,7 +119,73 @@ export function AppointmentForm({
     }
   }, [preSelectedLeadId, leads]);
 
+  // Watch for conflicts when scheduled_at or duration changes
+  const scheduledAt = form.watch('scheduled_at');
+  const duration = form.watch('duration');
+
+  useEffect(() => {
+    // Only check for new appointments (not editing)
+    if (!appointment && scheduledAt && duration) {
+      const conflict = checkForConflict(scheduledAt, parseInt(duration, 10));
+      if (conflict) {
+        setConflictError(conflict);
+        form.setError('scheduled_at', { type: 'manual', message: conflict });
+      } else {
+        setConflictError(null);
+        form.clearErrors('scheduled_at');
+      }
+    }
+  }, [scheduledAt, duration, appointment, form]);
+
+  // Check if the new appointment conflicts with existing ones
+  const checkForConflict = (scheduledAt: string, durationMinutes: number): string | null => {
+    try {
+      const newStart = new Date(scheduledAt + ':00');
+      const newEnd = new Date(newStart.getTime() + durationMinutes * 60 * 1000);
+
+      for (const apt of existingAppointments) {
+        // Skip checking against self when editing
+        if (appointment && apt.id === appointment.id) continue;
+
+        // Skip cancelled appointments
+        if (apt.status === 'cancelled') continue;
+
+        const aptStart = new Date(apt.scheduled_at);
+        const aptEnd = new Date(aptStart.getTime() + (apt.duration || 60) * 60 * 1000);
+
+        // Check for overlap
+        const hasOverlap = newStart < aptEnd && newEnd > aptStart;
+
+        if (hasOverlap) {
+          const aptTime = new Date(apt.scheduled_at).toLocaleString('tr-TR', {
+            day: 'numeric',
+            month: 'long',
+            hour: '2-digit',
+            minute: '2-digit',
+          });
+          const aptName = apt.expand?.lead_id?.name || 'İsimsiz';
+          return `Bu saatte başka bir randevu var: ${aptName} (${aptTime})`;
+        }
+      }
+
+      return null;
+    } catch (e) {
+      console.error('Error checking for conflicts:', e);
+      return null;
+    }
+  };
+
   const onSubmit = async (values: AppointmentFormValues) => {
+    // Check for conflicts before submitting
+    if (!appointment) {
+      const conflict = checkForConflict(values.scheduled_at, parseInt(values.duration, 10));
+      if (conflict) {
+        setConflictError(conflict);
+        form.setError('root', { type: 'manual', message: conflict });
+        return;
+      }
+    }
+
     setLoading(true);
 
     try {
@@ -130,6 +200,9 @@ export function AppointmentForm({
         const updateData: Record<string, unknown> = {
           scheduled_at: scheduledAtISO,
           duration: parseInt(values.duration, 10),
+          confirmation_sent: false, // Reset confirmation when appointment is modified
+          reminder_24h_sent: false, // Reset reminders
+          reminder_2h_sent: false,
         };
 
         if (values.location) updateData.location = values.location;
@@ -171,6 +244,10 @@ export function AppointmentForm({
 
         if (!response.ok) {
           const error = await response.json();
+          // Handle 409 Conflict (scheduling conflict)
+          if (response.status === 409) {
+            throw new Error(error.message || 'Bu saatte çakışan bir randevu var');
+          }
           throw new Error(error.message || 'Randevu oluşturulurken hata oluştu');
         }
 
@@ -192,6 +269,12 @@ export function AppointmentForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        {/* Root error (for conflict validation) */}
+        {form.formState.errors.root && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            <p className="text-sm font-medium">⚠️ {form.formState.errors.root.message}</p>
+          </div>
+        )}
         {/* Lead Selection - hidden if pre-selected */}
         {!preSelectedLeadId && (
           <FormField
@@ -246,6 +329,13 @@ export function AppointmentForm({
           </div>
         )}
 
+        {/* Conflict Warning */}
+        {conflictError && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            <p className="text-sm font-medium">⚠️ {conflictError}</p>
+          </div>
+        )}
+
         {/* Date and Time */}
         <FormField
           control={form.control}
@@ -260,6 +350,9 @@ export function AppointmentForm({
                   min={minDateTime}
                 />
               </FormControl>
+              <p className="text-xs text-muted-foreground">
+                Toplantılar 09:00 - 18:00 saatleri arasında planlanabilir
+              </p>
               <FormMessage />
             </FormItem>
           )}
