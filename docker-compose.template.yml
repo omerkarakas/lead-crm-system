@@ -1,0 +1,111 @@
+# =============================================================================
+# Moka CRM - Docker Compose Template
+#
+# Kullanım:
+# Bu dosyayı docker-compose.yml olarak kopyalayın ve INSTANCE_NAME, DOMAIN gibi
+# değişkenleri düzenleyin.
+#
+# Örnek:
+# cp docker-compose.template.yml docker-compose.yml
+# # docker-compose.yml içindeki değişkenleri düzenleyin
+# docker-compose up -d
+# =============================================================================
+
+version: "3.8"
+
+services:
+  # ---------------------------------------------------------------------------
+  # Next.js Application
+  # ---------------------------------------------------------------------------
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: nextjs
+    image: moka-crm-nextjs:${INSTANCE_NAME:-latest}
+    container_name: moka-crm-app-${INSTANCE_NAME:-default}
+    restart: unless-stopped
+
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_POCKETBASE_URL=http://pocketbase:8090
+      - RESEND_API_KEY=${RESEND_API_KEY:-}
+      - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL:-noreply@yourdomain.com}
+      - RESEND_FROM_NAME=${RESEND_FROM_NAME:-Moka CRM}
+      - GREEN_API_INSTANCE_ID=${GREEN_API_INSTANCE_ID:-}
+      - GREEN_API_TOKEN=${GREEN_API_TOKEN:-}
+
+    # Traefik labels - reverse proxy configuration
+    labels:
+      - "traefik.enable=true"
+      # Router
+      - "traefik.http.routers.${INSTANCE_NAME:-mokacrm}-app.rule=Host(`${DOMAIN:-localhost}`)"
+      - "traefik.http.routers.${INSTANCE_NAME:-mokacrm}-app.entrypoints=websecure"
+      - "traefik.http.routers.${INSTANCE_NAME:-mokacrm}-app.tls=true"
+      - "traefik.http.routers.${INSTANCE_NAME:-mokacrm}-app.tls.certresolver=letsencrypt"
+      # Service
+      - "traefik.http.services.${INSTANCE_NAME:-mokacrm}-app.loadbalancer.server.port=3000"
+      # Middlewares
+      - "traefik.http.routers.${INSTANCE_NAME:-mokacrm}-app.middlewares=${INSTANCE_NAME:-mokacrm}-compress"
+      - "traefik.http.middlewares.${INSTANCE_NAME:-mokacrm}-compress.compress=true"
+
+    networks:
+      - moka-crm-network-${INSTANCE_NAME:-default}
+
+    depends_on:
+      pocketbase:
+        condition: service_healthy
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ---------------------------------------------------------------------------
+  # PocketBase Database
+  # ---------------------------------------------------------------------------
+  pocketbase:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: pocketbase
+    image: moka-crm-pocketbase:${INSTANCE_NAME:-latest}
+    container_name: moka-crm-pb-${INSTANCE_NAME:-default}
+    restart: unless-stopped
+
+    volumes:
+      # Persist PocketBase data
+      - ${PB_DATA_PATH:-./pb_data}:/pb_data
+      # Optional: Custom public files
+      - ${PB_PUBLIC_PATH:-./pb_public}:/pb_public
+
+    # Traefik labels - optional: expose PocketBase admin UI
+    labels:
+      - "traefik.enable=true"
+      # Admin UI router (optional - disable in production if not needed)
+      - "traefik.http.routers.${INSTANCE_NAME:-mokacrm}-pb.rule=Host(`pb.${DOMAIN:-localhost}`)"
+      - "traefik.http.routers.${INSTANCE_NAME:-mokacrm}-pb.entrypoints=websecure"
+      - "traefik.http.routers.${INSTANCE_NAME:-mokacrm}-pb.tls=true"
+      - "traefik.http.routers.${INSTANCE_NAME:-mokacrm}-pb.tls.certresolver=letsencrypt"
+      # Service
+      - "traefik.http.services.${INSTANCE_NAME:-mokacrm}-pb.loadbalancer.server.port=8090"
+
+    networks:
+      - moka-crm-network-${INSTANCE_NAME:-default}
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8090/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+networks:
+  moka-crm-network-${INSTANCE_NAME:-default}:
+    name: moka-crm-network-${INSTANCE_NAME:-default}
+    driver: bridge
+    external: false

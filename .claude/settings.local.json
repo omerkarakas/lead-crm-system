@@ -32,7 +32,9 @@
       "Bash(\"/c/Users/Omer/AppData/Local/Microsoft/WinGet/Packages/SQLite.SQLite_Microsoft.Winget.Source_8wekyb3d8bbwe/sqlite3.exe\":*)",
       "Bash(\"C:/Users/Omer/AppData/Local/Microsoft/WinGet/Packages/SQLite.SQLite_Microsoft.Winget.Source_8wekyb3d8bbwe/sqlite3.exe\":*)",
       "Bash(pocketbase:*)",
-      "Bash(npx next:*)"
+      "Bash(npx next:*)",
+      "Bash(npm install:*)",
+      "Bash(npm search:*)"
     ]
   }
 }

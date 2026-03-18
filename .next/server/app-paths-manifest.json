@@ -1,3 +1,11 @@
 {
-  "/login/page": "app/login/page.js"
+  "/api/leads/route": "app/api/leads/route.js",
+  "/api/appointments/[id]/route": "app/api/appointments/[id]/route.js",
+  "/api/appointments/route": "app/api/appointments/route.js",
+  "/api/appointments/[id]/send-confirmation/route": "app/api/appointments/[id]/send-confirmation/route.js",
+  "/(dashboard)/admin/email-templates/page": "app/(dashboard)/admin/email-templates/page.js",
+  "/(dashboard)/appointments/page": "app/(dashboard)/appointments/page.js",
+  "/(dashboard)/users/page": "app/(dashboard)/users/page.js",
+  "/(dashboard)/leads/page": "app/(dashboard)/leads/page.js",
+  "/(dashboard)/leads/[id]/page": "app/(dashboard)/leads/[id]/page.js"
 }
