@@ -6,12 +6,14 @@
 # Bu script, aynı sunucuda birden fazla Moka CRM instance'ı ayağa kaldırır.
 #
 # Kullanım:
-#   ./deploy.sh init                   # İlk instance için kurulum
-#   ./deploy.sh add <instance-name>    # Yeni instance ekle
-#   ./deploy.sh list                   # Tüm instance'ları listele
-#   ./deploy.sh restart <instance>     # Belirli instance'ı restart et
-#   ./deploy.sh stop <instance>        # Instance'ı durdur
-#   ./deploy logs <instance>           # Instance loglarını görüntüle
+#   ./deploy.sh init                           # İlk instance için kurulum
+#   ./deploy.sh add <instance-name>            # Yeni instance ekle
+#   ./deploy.sh add <instance-name> --existing-traefik  # Mevcut traefik ile
+#   ./deploy.sh check-existing                 # Mevcut traefik sistemini kontrol et
+#   ./deploy.sh list                           # Tüm instance'ları listele
+#   ./deploy.sh restart <instance>             # Belirli instance'ı restart et
+#   ./deploy.sh stop <instance>                # Instance'ı durdur
+#   ./deploy logs <instance>                   # Instance loglarını görüntüle
 ###############################################################################
 
 set -e
@@ -26,7 +28,44 @@ NC='\033[0m' # No Color
 # Konfigürasyon
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 INSTANCES_DIR="${SCRIPT_DIR}/instances"
-TRAFFIK_NETWORK="${TRAFFIK_NETWORK:-traefik-public}"
+CURRENT_SYSTEM_COMPOSE="${SCRIPT_DIR}/docker-compose-current-system.yml"
+TRAFIK_NETWORK="${TRAFFIK_NETWORK:-traefik-public}"
+
+# Mevcut sistem kontrolü
+check_existing_system() {
+    if [ -f "$CURRENT_SYSTEM_COMPOSE" ]; then
+        # Mevcut traefik container'ını kontrol et
+        if docker ps --format '{{.Names}}' | grep -q "traefik"; then
+            return 0
+        fi
+    fi
+    return 1
+}
+
+# Mevcut sistemin traefik ayarlarını al
+get_existing_traefik_config() {
+    local certresolver="letsencrypt"
+    local network="traefik-public"
+
+    # docker-compose-current-system.yml'den certresolver'ı bul
+    if [ -f "$CURRENT_SYSTEM_COMPOSE" ]; then
+        if grep -q "mytlschallenge" "$CURRENT_SYSTEM_COMPOSE"; then
+            certresolver="mytlschallenge"
+        fi
+    fi
+
+    # Mevcut network'ü bul
+    local traefik_container=$(docker ps --format '{{.Names}}' | grep traefik | head -1)
+    if [ -n "$traefik_container" ]; then
+        # Container'ın network'lerini al
+        network=$(docker inspect "$traefik_container" --format '{{range $k, $v := .NetworkSettings.Networks}}{{$k}}{{end}}' | head -1)
+        if [ -z "$network" ]; then
+            network="traefik-public"
+        fi
+    fi
+
+    echo "$certresolver|$network"
+}
 
 # Yardım mesajı
 show_help() {
@@ -34,8 +73,10 @@ show_help() {
 Moka CRM Multi-Instance Deployment
 
 Kullanım:
-    $0 init                         İlk kurulum
+    $0 init                         İlk kurulum (yeni traefik ile)
     $0 add <instance-name>          Yeni instance ekle
+    $0 add <instance-name> --existing-traefik    Mevcut traefik ile ekle
+    $0 check-existing               Mevcut traefik sistemini kontrol et
     $0 list                         Tüm instance'ları listele
     $0 restart <instance-name>      Instance'ı restart et
     $0 stop <instance-name>         Instance'ı durdur
@@ -47,11 +88,16 @@ Kullanım:
 Örnek:
     $0 init
     $0 add customer1
-    $0 add customer2
+    $0 add customer2 --existing-traefik
     $0 list
+    $0 check-existing
 
 Ortam Değişkenleri:
     TRAFIK_NETWORK              Traefik network adı (default: traefik-public)
+    TRAFIK_CERTRESOLVER          CertResolver adı (default: letsencrypt veya mytlschallenge)
+
+Mevcut Sistem (docker-compose-current-system.yml):
+    Eğer mevcut sistem varsa, certresolver otomatik olarak "mytlschallenge" olur.
 EOF
 }
 
@@ -70,6 +116,42 @@ log_warning() {
 
 log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
+}
+
+# Mevcut sistem bilgisini göster
+show_existing_system_info() {
+    log_info "Mevcut sistem kontrol ediliyor..."
+
+    if [ -f "$CURRENT_SYSTEM_COMPOSE" ]; then
+        log_success "docker-compose-current-system.yml bulundu"
+        echo ""
+        echo "Mevcut servisler:"
+        grep -E "^\s+[a-z]+:" "$CURRENT_SYSTEM_COMPOSE" | sed 's/:.*//' | sed 's/^/  - /'
+        echo ""
+
+        # Traefik container'ını kontrol et
+        local traefik_container=$(docker ps --format '{{.Names}}' | grep traefik | head -1)
+        if [ -n "$traefik_container" ]; then
+            log_success "Traefik container çalışıyor: $traefik_container"
+            echo ""
+            echo "Network bilgileri:"
+            docker inspect "$traefik_container" --format='  Network: {{range $k, $v := .NetworkSettings.Networks}}{{$k}} {{end}}'
+            echo ""
+            echo "Port bilgileri:"
+            docker port "$traefik_container" | sed 's/^/  /'
+            echo ""
+        fi
+
+        # .env.current dosyasını oku
+        if [ -f "${SCRIPT_DIR}/.env.current" ]; then
+            echo "Environment değişkenleri (.env.current):"
+            grep -E "^(DOMAIN_NAME|SUBDOMAIN|SSL_EMAIL|GENERIC_TIMEZONE)=" "${SCRIPT_DIR}/.env.current" | sed 's/^/  /'
+            echo ""
+        fi
+    else
+        log_warning "docker-compose-current-system.yml bulunamadı"
+        log_info "Yeni bir sistem kurulacak veya mevcut traefik manuel olarak belirtilmeli"
+    fi
 }
 
 # Instance dizinini oluştur
@@ -92,13 +174,25 @@ create_instance_dir() {
 do_init() {
     log_info "İlk kurulum başlatılıyor..."
 
+    # Mevcut sistem kontrolü
+    if check_existing_system; then
+        log_warning "Mevcut sistemde traefik çalışıyor!"
+        show_existing_system_info
+        echo ""
+        read -p "Yeni bir traefik network oluşturmak istediğinizden emin misiniz? (e/h): " confirm
+        if [[ ! $confirm =~ ^[Ee]$ ]]; then
+            log_info "Mevcut traefik'i kullanmak için: $0 add <instance-name> --existing-traefik"
+            exit 0
+        fi
+    fi
+
     # Traefik network kontrolü
-    if ! docker network ls | grep -q "${TRAFFIK_NETWORK}"; then
-        log_warning "Traefik network bulunamadı: ${TRAFFIK_NETWORK}"
+    if ! docker network ls | grep -q "${TRAFIK_NETWORK}"; then
+        log_warning "Traefik network bulunamadı: ${TRAFIK_NETWORK}"
         read -p "Traefik network oluşturulsun mu? (e/h): " create_network
         if [[ $create_network =~ ^[Ee]$ ]]; then
-            docker network create "${TRAFFIK_NETWORK}"
-            log_success "Network oluşturuldu: ${TRAFFIK_NETWORK}"
+            docker network create "${TRAFIK_NETWORK}"
+            log_success "Network oluşturuldu: ${TRAFIK_NETWORK}"
         else
             log_error "Traefik network olmadan devam edilemez."
             exit 1
@@ -117,10 +211,16 @@ do_init() {
 # Instance ekle
 do_add() {
     local instance_name=$1
+    local use_existing_traefik=false
+
+    # Parametre kontrolü
+    if [ "${2:-}" == "--existing-traefik" ]; then
+        use_existing_traefik=true
+    fi
 
     if [ -z "${instance_name}" ]; then
         log_error "Instance adı belirtilmedi!"
-        echo "Kullanım: $0 add <instance-name>"
+        echo "Kullanım: $0 add <instance-name> [--existing-traefik]"
         exit 1
     fi
 
@@ -134,6 +234,20 @@ do_add() {
 
     local instance_dir=$(create_instance_dir "${instance_name}")
 
+    # CertResolver ve Network belirle
+    local certresolver="${TRAFIK_CERTRESOLVER:-letsencrypt}"
+    local traefik_network="$TRAFIK_NETWORK"
+
+    if $use_existing_traefik || check_existing_system; then
+        local config=$(get_existing_traefik_config)
+        certresolver=$(echo "$config" | cut -d'|' -f1)
+        traefik_network=$(echo "$config" | cut -d'|' -f2)
+        log_info "Mevcut traefik kullanılacak:"
+        echo "  CertResolver: $certresolver"
+        echo "  Network: $traefik_network"
+        echo ""
+    fi
+
     # Domain sor
     read -p "Domain adı (örn: crm.example.com): " domain
     if [ -z "${domain}" ]; then
@@ -146,6 +260,8 @@ do_add() {
 # Moka CRM Instance: ${instance_name}
 INSTANCE_NAME=${instance_name}
 DOMAIN=${domain}
+CERTRESOLVER=${certresolver}
+TRAFIK_NETWORK=${traefik_network}
 
 # PocketBase Data Paths
 PB_DATA_PATH=./pb_data
@@ -187,9 +303,9 @@ services:
       - "traefik.http.routers.${instance_name}-app.rule=Host(\`${domain}\`)"
       - "traefik.http.routers.${instance_name}-app.entrypoints=websecure"
       - "traefik.http.routers.${instance_name}-app.tls=true"
-      - "traefik.http.routers.${instance_name}-app.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.${instance_name}-app.tls.certresolver=${certresolver}"
       - "traefik.http.services.${instance_name}-app.loadbalancer.server.port=3000"
-      - "traefik.docker.network=${TRAFFIK_NETWORK}"
+      - "traefik.docker.network=${traefik_network}"
     networks:
       - moka-network
     depends_on:
@@ -212,9 +328,9 @@ services:
       - "traefik.http.routers.${instance_name}-pb.rule=Host(\`pb.${domain}\`)"
       - "traefik.http.routers.${instance_name}-pb.entrypoints=websecure"
       - "traefik.http.routers.${instance_name}-pb.tls=true"
-      - "traefik.http.routers.${instance_name}-pb.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.${instance_name}-pb.tls.certresolver=${certresolver}"
       - "traefik.http.services.${instance_name}-pb.loadbalancer.server.port=8090"
-      - "traefik.docker.network=${TRAFFIK_NETWORK}"
+      - "traefik.docker.network=${traefik_network}"
     networks:
       - moka-network
     healthcheck:
@@ -239,14 +355,21 @@ YAML
     docker compose up -d
 
     # Traefik network'e ekle
-    docker network connect "${TRAFFIK_NETWORK}" "moka-crm-app-${instance_name}" 2>/dev/null || true
-    docker network connect "${TRAFFIK_NETWORK}" "moka-crm-pb-${instance_name}" 2>/dev/null || true
+    if docker network ls | grep -q "${traefik_network}"; then
+        docker network connect "${traefik_network}" "moka-crm-app-${instance_name}" 2>/dev/null || log_warning "App container traefik network'e bağlanamadı"
+        docker network connect "${traefik_network}" "moka-crm-pb-${instance_name}" 2>/dev/null || log_warning "PB container traefik network'e bağlanamadı"
+        log_success "Container'lar traefik network'üne bağlandı: ${traefik_network}"
+    fi
 
     log_success "Instance '${instance_name}' başarıyla oluşturuldu!"
     echo ""
     log_info "Erişim adresleri:"
     echo "  - Uygulama: https://${domain}"
     echo "  - PocketBase Admin: https://pb.${domain}"
+    echo ""
+    log_info "Yapılandırma:"
+    echo "  - CertResolver: ${certresolver}"
+    echo "  - Network: ${traefik_network}"
 }
 
 # Instance listele
@@ -457,7 +580,10 @@ main() {
             do_init
             ;;
         add)
-            do_add "${2:-}"
+            do_add "${2:-}" "${3:-}"
+            ;;
+        check-existing)
+            show_existing_system_info
             ;;
         list)
             do_list

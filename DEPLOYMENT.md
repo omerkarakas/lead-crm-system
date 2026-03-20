@@ -6,13 +6,14 @@ Bu doküman, Moka CRM'in VPS sunucusuna deploy edilmesi için gereken adımları
 
 1. [Genel Bakış](#genel-bakış)
 2. [Gereksinimler](#gereksinimler)
-3. [Teknik Mimari](#teknik-mimari)
-4. [Kurulum](#kurulum)
-5. [İlk Deploy](#ilk-deploy)
-6. [Yeni Instance Ekleme](#yeni-instance-ekleme)
-7. [Yönetim Komutları](#yönetim-komutları)
-8. [Yedekleme](#yedekleme)
-9. [Sorun Giderme](#sorun-giderme)
+3. [Kurulum Senaryoları](#kurulum-senaryoları)
+4. [Teknik Mimari](#teknik-mimari)
+5. [Kurulum](#kurulum)
+6. [İlk Deploy](#ilk-deploy)
+7. [Yeni Instance Ekleme](#yeni-instance-ekleme)
+8. [Yönetim Komutları](#yönetim-komutları)
+9. [Yedekleme](#yedekleme)
+10. [Sorun Giderme](#sorun-giderme)
 
 ---
 
@@ -36,12 +37,76 @@ Moka CRM, Docker kullanarak aynı sunucuda birden fazla instance çalıştırabi
 
 ### Yazılım Gereksinimleri
 - Docker ve Docker Compose kurulu olmalı
-- Traefik reverse proxy kurulu olmalı
-- SSL sertifikası için Let's Encrypt (Traefik ile otomatik)
+- **SSL sertifikası**: Traefik ile otomatik (Let's Encrypt)
+
+---
+
+## Kurulum Senaryoları
+
+### Senaryo A: Mevcut Sisteme Ekleme (Traefik Var)
+
+Sunucunuzda zaten çalışan bir Traefik instance'ı varsa (örneğin `docker-compose-current-system.yml` ile):
+
+```bash
+# Mevcut traefik'i kullanarak deploy
+./deploy.sh add <instance-name> --use-existing-traefik
+
+# Veya Docker Compose ile manuel deploy
+cp docker-compose.template.yml docker-compose.yml
+# docker-compose.yml içinde certresolver'ı "mytlschallenge" olarak ayarlayın
+docker compose up -d
+```
+
+**Mevcut Traefik Ayarları:**
+- CertResolver: `mytlschallenge`
+- EntryPoints: `web` (80), `websecure` (443)
+- Network: Traefik container'ı ile aynı network'te çalışmalı
+- SSL Email: `.env.current` dosyasında `SSL_EMAIL`
+- Mevcut Domain: `mokadijital.com`
+
+### Senaryo B: Yeni Sunucuya Kurulum (Traefik Yok)
+
+Temiz bir sunucuya Traefik ile birlikte kurulum için:
+
+```bash
+./deploy.sh init
+./deploy.sh add <instance-name>
+```
+
+**Yeni Traefik Ayarları:**
+- CertResolver: `letsencrypt`
+- Network: `traefik-public` (otomatik oluşturulur)
 
 ---
 
 ## Teknik Mimari
+
+### Mevcut Sistem Entegrasyonu
+
+Eğer sunucunuzda `docker-compose-current-system.yml` ile çalışan bir sistem varsa:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Mevcut Sistem                            │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  Traefik v2.11 (docker-compose-current-system.yml)  │   │
+│  │  - CertResolver: mytlschallenge                      │   │
+│  │  - Services: n8n, postgres, redis                    │   │
+│  │  - Volume: traefik_data (external)                   │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                          │                                   │
+│          ┌───────────────┼───────────────┐                  │
+│          ▼               ▼               ▼                  │
+│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐        │
+│  │ Moka CRM 1   │ │ Moka CRM 2   │ │  Moka CRM N  │        │
+│  │              │ │              │ │              │        │
+│  │ Next.js      │ │ Next.js      │ │ Next.js      │        │
+│  │ PocketBase   │ │ PocketBase   │ │ PocketBase   │        │
+│  └──────────────┘ └──────────────┘ └──────────────┘        │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Standalone Mimari
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -94,6 +159,18 @@ scp -r ./moka-crm user@server:/opt/moka-crm
 
 ### 2. İlk Kurulum
 
+**Senaryo A: Mevcut Traefik Varsa**
+
+```bash
+# Mevcut traefik sistemini kontrol et
+./deploy.sh check-existing
+
+# instances/ dizinini oluştur
+mkdir -p instances
+```
+
+**Senaryo B: Yeni Sunucuya Traefik ile Kurulum**
+
 ```bash
 # Linux/Mac
 chmod +x deploy.sh
@@ -109,9 +186,53 @@ Bu komut:
 
 ---
 
+### 3. Mevcut Sistem Kontrolü
+
+Mevcut traefik sistemini doğrulamak için:
+
+```bash
+# Traefik container'ını kontrol et
+docker ps | grep traefik
+
+# Mevcut volume'ları kontrol et
+docker volume ls | grep traefik
+
+# Mevcut network'leri kontrol et
+docker network ls
+```
+
+Beklenen çıktı:
+```
+traefik_data (external volume)
+n8n, postgres, redis (container'lar)
+```
+
+---
+
 ## İlk Deploy
 
 ### 1. Instance Ekleyin
+
+**Senaryo A: Mevcut Traefik Kullanarak**
+
+```bash
+# Linux/Mac
+./deploy.sh add customer1 --existing-traefik
+
+# Windows PowerShell
+.\deploy.ps1 add customer1 -ExistingTraefik
+```
+
+Sizden domain girmeniz istenecektir:
+```
+Domain adı (örn: crm.example.com): crm.musteri1.com
+```
+
+Otomatik olarak:
+- CertResolver: `mytlschallenge` kullanılacak
+- Mevcut traefik_data volume bağlanacak
+
+**Senaryo B: Yeni Traefik ile**
 
 ```bash
 # Linux/Mac
@@ -119,11 +240,6 @@ Bu komut:
 
 # Windows PowerShell
 .\deploy.ps1 add customer1
-```
-
-Sizden domain girmeniz istenecektir:
-```
-Domain adı (örn: crm.example.com): crm.musteri1.com
 ```
 
 ### 2. Ortam Değişkenlerini Ayarlayın
@@ -146,13 +262,30 @@ GREEN_API_INSTANCE_ID=123456789
 GREEN_API_TOKEN=abc123def456xyz789
 ```
 
-### 3. Container'ları Restart Edin
+### 3. Mevcut Sistem ile Entegrasyon
 
-```bash
-docker compose restart
+Oluşan `instances/customer1/docker-compose.yml` dosyasında **certresolver** ayarını kontrol edin:
+
+```yaml
+# Mevcut traefik kullanılıyorsa:
+traefik.http.routers.customer1-app.tls.certresolver=mytlschallenge
+
+# Yeni traefik kullanılıyorsa:
+traefik.http.routers.customer1-app.tls.certresolver=letsencrypt
 ```
 
-### 4. Erişim Testi
+### 4. Container'ları Traefik Network'üne Bağla
+
+```bash
+# Traefik network adını öğren
+docker network ls
+
+# Container'ları bağla (otomatik yapılmalı ama kontrol edin)
+docker network connect <traefik-network> moka-crm-app-customer1
+docker network connect <traefik-network> moka-crm-pb-customer1
+```
+
+### 5. Erişim Testi
 
 - Uygulama: `https://crm.musteri1.com`
 - PocketBase Admin: `https://pb.crm.musteri1.com/_/`
@@ -163,6 +296,16 @@ docker compose restart
 
 Aynı sunucuda yeni bir müşteri için instance eklemek:
 
+**Mevcut Traefik ile:**
+```bash
+# Linux/Mac
+./deploy.sh add musteri2 --existing-traefik
+
+# Windows PowerShell
+.\deploy.ps1 add musteri2 -ExistingTraefik
+```
+
+**Yeni Traefik ile:**
 ```bash
 # Linux/Mac
 ./deploy.sh add musteri2
@@ -212,6 +355,12 @@ Domain girin (örn: `crm.musteri2.com`) ve ortam değişkenlerini düzenleyin.
 .\deploy.ps1 logs customer1      # Windows
 ```
 
+### Mevcut Sistem Kontrolü
+
+```bash
+./deploy.sh check-existing       # Mevcut traefik sistemini kontrol et
+```
+
 ---
 
 ## Yedekleme
@@ -257,6 +406,22 @@ cp -r /tmp/customer1/pb_data instances/customer1/
 
 ## Sorun Giderme
 
+### Mevcut Traefik ile SSL Sorunu
+
+Eğer mevcut traefik kullanıyorsanız ve SSL sertifika hatası alırsanız:
+
+```bash
+# 1. CertResolver adını kontrol edin
+docker logs traefik | grep certresolver
+
+# 2. docker-compose.yml'de doğru certresolver'ı kullandığınızdan emin olun
+# Mevcut sistemde: mytlschallenge
+# Yeni sistemde: letsencrypt
+
+# 3. Container'ları mevcut traefik network'üne bağlayın
+docker network connect <traefik-network> moka-crm-app-customer1
+```
+
 ### Container Başlamıyor
 
 ```bash
@@ -266,6 +431,9 @@ docker logs moka-crm-pb-customer1
 
 # Container durumunu kontrol et
 docker ps -a | grep customer1
+
+# Network bağlantısını kontrol et
+docker network inspect moka-network-customer1
 ```
 
 ### SSL Sertifika Hatası
@@ -273,13 +441,12 @@ docker ps -a | grep customer1
 Traefik loglarını kontrol edin:
 
 ```bash
-docker logs traefik
-```
+# Mevcut traefik logları
+docker logs $(docker ps -q -f name=traefik)
 
-Let's Encrypt rate limit'ine takılmış olabilirsiniz. Staging environment kullanın:
-
-```yaml
-# Traefik config'de certresolver'ı "letsencrypt-staging" olarak değiştirin
+# Let's Encrypt rate limit kontrol
+# Eğer rate limit'e takıldıysanız staging kullanın:
+# .env dosyasında CERTRESOLVER=letsencrypt-staging ayarlayın
 ```
 
 ### PocketBase Bağlantı Hatası
@@ -357,3 +524,19 @@ labels:
   - "prometheus.enable=true"
   - "prometheus.port=3000"
 ```
+
+---
+
+## Mevcut Sistem Referansı
+
+Mevcut `docker-compose-current-system.yml` konfigürasyonu:
+
+| Ayar | Değer |
+|------|-------|
+| Traefik Sürüm | v2.11 |
+| CertResolver | mytlschallenge |
+| EntryPoints | web (80), websecure (443) |
+| SSL Email | `.env.current` → `SSL_EMAIL` |
+| Volume | traefik_data (external) |
+| Mevcut Domain | mokadijital.com |
+| Mevcut Subdomain | ai (ai.mokadijital.com) |

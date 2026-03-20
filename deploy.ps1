@@ -4,24 +4,69 @@
 # Bu script, aynı sunucuda birden fazla Moka CRM instance'ı ayağa kaldırır.
 #
 # Kullanım:
-#   .\deploy.ps1 init                 # İlk kurulum
-#   .\deploy.ps1 add <instance-name>  # Yeni instance ekle
-#   .\deploy.ps1 list                 # Tüm instance'ları listele
+#   .\deploy.ps1 init                           # İlk kurulum
+#   .\deploy.ps1 add <instance-name>            # Yeni instance ekle
+#   .\deploy.ps1 add <instance-name> -ExistingTraefik  # Mevcut traefik ile
+#   .\deploy.ps1 check-existing                 # Mevcut traefik kontrol et
+#   .\deploy.ps1 list                           # Tüm instance'ları listele
 ###############################################################################
 
 param(
     [Parameter(Position=0)]
-    [ValidateSet("init", "add", "list", "restart", "stop", "start", "logs", "backup", "remove", "help")]
+    [ValidateSet("init", "add", "list", "restart", "stop", "start", "logs", "backup", "remove", "help", "check-existing")]
     [string]$Command,
 
     [Parameter(Position=1)]
-    [string]$InstanceName
+    [string]$InstanceName,
+
+    [Parameter(Position=2)]
+    [switch]$ExistingTraefik
 )
 
 # Konfigürasyon
 $ScriptDir = $PSScriptRoot
 $InstancesDir = Join-Path $ScriptDir "instances"
+$CurrentSystemCompose = Join-Path $ScriptDir "docker-compose-current-system.yml"
 $TraefikNetwork = $env:TRAFIK_NETWORK ?? "traefik-public"
+
+# Mevcut sistem kontrolü
+function Test-ExistingSystem {
+    if (Test-Path $CurrentSystemCompose) {
+        $traefikContainer = docker ps --format "{{.Names}}" | Select-String "traefik"
+        if ($traefikContainer) {
+            return $true
+        }
+    }
+    return $false
+}
+
+# Mevcut traefik konfigürasyonunu al
+function Get-ExistingTraefikConfig {
+    $certresolver = "letsencrypt"
+    $network = "traefik-public"
+
+    if (Test-Path $CurrentSystemCompose) {
+        $content = Get-Content $CurrentSystemCompose -Raw
+        if ($content -match "mytlschallenge") {
+            $certresolver = "mytlschallenge"
+        }
+    }
+
+    $traefikContainer = docker ps --format "{{.Names}}" | Select-String "traefik" | Select-Object -First 1
+    if ($traefikContainer) {
+        $containerName = $traefikContainer.ToString().Trim()
+        try {
+            $inspect = docker inspect $containerName --format '{{json .NetworkSettings.Networks}}' | ConvertFrom-Json
+            if ($inspect) {
+                $network = ($inspect | Get-Member -MemberType NoteProperty | Select-Object -First 1).Name
+            }
+        } catch {
+            $network = "traefik-public"
+        }
+    }
+
+    return "$certresolver|$network"
+}
 
 # Renkli output için helper fonksiyonlar
 function Write-ColorOutput {
@@ -42,8 +87,10 @@ function Show-Help {
 Moka CRM Multi-Instance Deployment
 
 Kullanım:
-    .\deploy.ps1 init                         İlk kurulum
+    .\deploy.ps1 init                         İlk kurulum (yeni traefik ile)
     .\deploy.ps1 add <instance-name>          Yeni instance ekle
+    .\deploy.ps1 add <instance-name> -ExistingTraefik    Mevcut traefik ile ekle
+    .\deploy.ps1 check-existing               Mevcut traefik sistemini kontrol et
     .\deploy.ps1 list                         Tüm instance'ları listele
     .\deploy.ps1 restart <instance-name>      Instance'ı restart et
     .\deploy.ps1 stop <instance-name>         Instance'ı durdur
@@ -54,11 +101,77 @@ Kullanım:
 
 Ortam Değişkenleri:
     TRAFIK_NETWORK              Traefik network adı (default: traefik-public)
+    TRAFIK_CERTRESOLVER          CertResolver adı (default: letsencrypt veya mytlschallenge)
+
+Mevcut Sistem (docker-compose-current-system.yml):
+    Eğer mevcut sistem varsa, certresolver otomatik olarak "mytlschallenge" olur.
 "@
+}
+
+function Show-ExistingSystemInfo {
+    Write-Info "Mevcut sistem kontrol ediliyor..."
+
+    if (Test-Path $CurrentSystemCompose) {
+        Write-Success "docker-compose-current-system.yml bulundu"
+        Write-Host ""
+        Write-Host "Mevcut servisler:"
+
+        $content = Get-Content $CurrentSystemCompose
+        foreach ($line in $content) {
+            if ($line -match '^\s+([a-z]+):') {
+                Write-Host "  - $($matches[1])"
+            }
+        }
+        Write-Host ""
+
+        $traefikContainer = docker ps --format "{{.Names}}" | Select-String "traefik" | Select-Object -First 1
+        if ($traefikContainer) {
+            $containerName = $traefikContainer.ToString().Trim()
+            Write-Success "Traefik container çalışıyor: $containerName"
+            Write-Host ""
+            Write-Host "Network bilgileri:"
+
+            try {
+                $networks = docker inspect $containerName --format 'Network: {{range $k, $v := .NetworkSettings.Networks}}{{$k}} {{end}}'
+                Write-Host "  $networks"
+            } catch {
+                Write-Host "  Network bilgisi alınamadı"
+            }
+
+            Write-Host ""
+            Write-Host "Port bilgileri:"
+            docker port $containerName | ForEach-Object { Write-Host "  $_" }
+            Write-Host ""
+        }
+
+        $envCurrent = Join-Path $ScriptDir ".env.current"
+        if (Test-Path $envCurrent) {
+            Write-Host "Environment değişkenleri (.env.current):"
+            Get-Content $envCurrent | Where-Object { $_ -match '^(DOMAIN_NAME|SUBDOMAIN|SSL_EMAIL|GENERIC_TIMEZONE)=' } | ForEach-Object {
+                Write-Host "  $_"
+            }
+            Write-Host ""
+        }
+    } else {
+        Write-Warning "docker-compose-current-system.yml bulunamadı"
+        Write-Info "Yeni bir sistem kurulacak veya mevcut traefik manuel olarak belirtilmeli"
+    }
 }
 
 function Initialize-Setup {
     Write-Info "İlk kurulum başlatılıyor..."
+
+    # Mevcut sistem kontrolü
+    if (Test-ExistingSystem) {
+        Write-Warning "Mevcut sistemde traefik çalışıyor!"
+        Show-ExistingSystemInfo
+        Write-Host ""
+        $confirm = Read-Host "Yeni bir traefik network oluşturmak istediğinizden emin misiniz? (e/h)"
+        if ($confirm -ne "e") {
+            Write-Info "Mevcut traefik'i kullanmak için: .\deploy.ps1 add <instance-name> -ExistingTraefik"
+            exit 0
+        }
+    }
 
     # Traefik network kontrolü
     $networkExists = docker network ls --format "{{.Name}}" | Select-String -Pattern $TraefikNetwork
@@ -90,7 +203,7 @@ function Add-Instance {
 
     if ([string]::IsNullOrEmpty($Name)) {
         Write-Error "Instance adı belirtilmedi!"
-        Write-Host "Kullanım: .\deploy.ps1 add <instance-name>"
+        Write-Host "Kullanım: .\deploy.ps1 add <instance-name> [-ExistingTraefik]"
         exit 1
     }
 
@@ -107,6 +220,21 @@ function Add-Instance {
     if (Test-Path $instanceDir) {
         Write-Error "Instance '$Name' zaten mevcut!"
         exit 1
+    }
+
+    # CertResolver ve Network belirle
+    $certresolver = $env:TRAFIK_CERTRESOLVER ?? "letsencrypt"
+    $traefikNetwork = $TraefikNetwork
+
+    if ($ExistingTraefik -or (Test-ExistingSystem)) {
+        $config = Get-ExistingTraefikConfig
+        $parts = $config -split '\|'
+        $certresolver = $parts[0]
+        $traefikNetwork = $parts[1]
+        Write-Info "Mevcut traefik kullanılacak:"
+        Write-Host "  CertResolver: $certresolver"
+        Write-Host "  Network: $traefikNetwork"
+        Write-Host ""
     }
 
     # Instance dizini oluştur
@@ -126,6 +254,8 @@ function Add-Instance {
 # Moka CRM Instance: $Name
 INSTANCE_NAME=$Name
 DOMAIN=$domain
+CERTRESOLVER=$certresolver
+TRAFIK_NETWORK=$traefikNetwork
 
 # PocketBase Data Paths
 PB_DATA_PATH=./pb_data
@@ -167,9 +297,9 @@ services:
       - "traefik.http.routers.$Name-app.rule=Host(``$domain``)"
       - "traefik.http.routers.$Name-app.entrypoints=websecure"
       - "traefik.http.routers.$Name-app.tls=true"
-      - "traefik.http.routers.$Name-app.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.$Name-app.tls.certresolver=$certresolver"
       - "traefik.http.services.$Name-app.loadbalancer.server.port=3000"
-      - "traefik.docker.network=$TraefikNetwork"
+      - "traefik.docker.network=$traefikNetwork"
     networks:
       - moka-network
     depends_on:
@@ -192,9 +322,9 @@ services:
       - "traefik.http.routers.$Name-pb.rule=Host(``pb.$domain``)"
       - "traefik.http.routers.$Name-pb.entrypoints=websecure"
       - "traefik.http.routers.$Name-pb.tls=true"
-      - "traefik.http.routers.$Name-pb.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.$Name-pb.tls.certresolver=$certresolver"
       - "traefik.http.services.$Name-pb.loadbalancer.server.port=8090"
-      - "traefik.docker.network=$TraefikNetwork"
+      - "traefik.docker.network=$traefikNetwork"
     networks:
       - moka-network
     healthcheck:
@@ -221,8 +351,12 @@ networks:
     docker compose up -d
 
     # Traefik network'e ekle
-    docker network connect $TraefikNetwork "moka-crm-app-$Name" 2>$null
-    docker network connect $TraefikNetwork "moka-crm-pb-$Name" 2>$null
+    $networkList = docker network ls --format "{{.Name}}"
+    if ($networkList -match $traefikNetwork) {
+        docker network connect $traefikNetwork "moka-crm-app-$Name" 2>$null
+        docker network connect $traefikNetwork "moka-crm-pb-$Name" 2>$null
+        Write-Success "Container'lar traefik network'üne bağlandı: $traefikNetwork"
+    }
 
     Pop-Location
 
@@ -231,6 +365,10 @@ networks:
     Write-Info "Erişim adresleri:"
     Write-Host "  - Uygulama: https://$domain"
     Write-Host "  - PocketBase Admin: https://pb.$domain"
+    Write-Host ""
+    Write-Info "Yapılandırma:"
+    Write-Host "  - CertResolver: $certresolver"
+    Write-Host "  - Network: $traefikNetwork"
 }
 
 function Show-Instances {
@@ -371,6 +509,9 @@ switch ($Command) {
     }
     "add" {
         Add-Instance -Name $InstanceName
+    }
+    "check-existing" {
+        Show-ExistingSystemInfo
     }
     "list" {
         Show-Instances
