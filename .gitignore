@@ -19,6 +19,8 @@ settings.local.json
 .env
 .env.local
 .env.*.local
+.env.current
+
 
 # Editor directories and files
 .vscode/*
