@@ -281,8 +281,8 @@ services:
     container_name: moka-crm-app-$Name
     restart: unless-stopped
     build:
-      context: ../
-      dockerfile: Dockerfile
+      context: $ScriptDir
+      dockerfile: $ScriptDir/Dockerfile
       target: nextjs
     environment:
       - NODE_ENV=production
@@ -311,8 +311,8 @@ services:
     container_name: moka-crm-pb-$Name
     restart: unless-stopped
     build:
-      context: ../
-      dockerfile: Dockerfile
+      context: $ScriptDir
+      dockerfile: $ScriptDir/Dockerfile
       target: pocketbase
     volumes:
       - ./pb_data:/pb_data
