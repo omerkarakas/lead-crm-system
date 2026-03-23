@@ -349,6 +349,12 @@ YAML
     # Build ve start
     log_info "Docker images build ediliyor..."
     cd "${instance_dir}"
+
+    # PocketBase volume klasörlerini oluştur (permission sorununu önlemek için)
+    log_info "PocketBase volume klasörleri oluşturuluyor..."
+    mkdir -p pb_data pb_public
+    chmod 777 pb_data pb_public 2>/dev/null || true
+
     docker compose build
 
     log_info "Container'lar başlatılıyor..."
