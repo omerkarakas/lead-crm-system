@@ -1,26 +1,26 @@
-import { getServerPb } from '@/lib/pocketbase/server';
-import { Lead } from '@/types/lead';
-import { notFound } from 'next/navigation';
-import { LeadInfo } from '@/components/leads/LeadInfo';
-import { NotesSection } from '@/components/leads/NotesSection';
-import { TagsManager } from '@/components/leads/TagsManager';
-import { WhatsAppConversation } from '@/components/leads/WhatsAppConversation';
-import { LeadDetailActions } from '@/components/leads/LeadDetailActions';
-import { QualificationSection } from '@/components/leads/QualificationSection';
-import { EmailHistory } from '@/components/leads/EmailHistory';
-import { LeadDetailProposalsTab } from '@/components/leads/LeadDetailProposalsTab';
-import { LeadEnrollments } from '@/components/leads/LeadEnrollments';
-import { EnrollmentBadge } from '@/components/leads/EnrollmentBadge';
-import { LeadQualityBadge } from '@/components/leads/LeadQualityBadge';
-import { ActivityTimeline } from '@/components/leads/ActivityTimeline';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
-import { calculateQualityStatus } from '@/lib/utils/lead-scoring';
+import { getServerPb } from "@/lib/pocketbase/server";
+import { Lead } from "@/types/lead";
+import { notFound } from "next/navigation";
+import { LeadInfo } from "@/components/leads/LeadInfo";
+import { NotesSection } from "@/components/leads/NotesSection";
+import { TagsManager } from "@/components/leads/TagsManager";
+import { WhatsAppConversation } from "@/components/leads/WhatsAppConversation";
+import { LeadDetailActions } from "@/components/leads/LeadDetailActions";
+import { QualificationSection } from "@/components/leads/QualificationSection";
+import { EmailHistory } from "@/components/leads/EmailHistory";
+import { LeadDetailProposalsTab } from "@/components/leads/LeadDetailProposalsTab";
+import { LeadEnrollments } from "@/components/leads/LeadEnrollments";
+import { EnrollmentBadge } from "@/components/leads/EnrollmentBadge";
+import { LeadQualityBadge } from "@/components/leads/LeadQualityBadge";
+import { ActivityTimeline } from "@/components/leads/ActivityTimeline";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { calculateQualityStatus } from "@/lib/utils/lead-scoring";
 
 // Client component for appointments tab to handle state
-import { ClientAppointmentTab } from '@/components/leads/ClientAppointmentTab';
+import { ClientAppointmentTab } from "@/components/leads/ClientAppointmentTab";
 
 interface LeadDetailPageProps {
   params: {
@@ -31,18 +31,19 @@ interface LeadDetailPageProps {
 async function getLeadData(id: string) {
   const pb = await getServerPb();
   try {
-    const lead = await pb.collection('leads').getOne<Lead>(id);
-    const answers = await pb.collection('qa_answers').getList(1, 50, {
+    const lead = await pb.collection("leads").getOne<Lead>(id);
+    const answers = await pb.collection("qa_answers").getList(1, 50, {
       filter: `lead_id = "${id}"`,
     });
 
     // Fetch questions manually since expand might not work
-    const questionIds = [...new Set(answers.items.map((a: any) => a.question_id))];
-    const questions = questionIds.length > 0
-      ? await pb.collection('qa_questions').getList(1, 100, {
-          filter: questionIds.map((id) => `id = "${id}"`).join(' || '),
-        })
-      : { items: [] };
+    const questionIds = Array.from(new Set(answers.items.map((a: any) => a.question_id)));
+    const questions =
+      questionIds.length > 0
+        ? await pb.collection("qa_questions").getList(1, 100, {
+            filter: questionIds.map((id) => `id = "${id}"`).join(" || "),
+          })
+        : { items: [] };
 
     // Create a map for quick lookup
     const questionMap = new Map(questions.items.map((q: any) => [q.id, q]));
@@ -65,7 +66,7 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
   // Prepare score breakdown for display
   const scoreBreakdown = answers.map((answer: any, idx: number) => {
     const question = answer.expand?.question_id;
-    const selectedOption = (answer.selected_answer || '').toLowerCase(); // e.g., "a"
+    const selectedOption = (answer.selected_answer || "").toLowerCase(); // e.g., "a"
 
     // Debug log
     console.log(`[Breakdown ${idx}]`, {
@@ -73,7 +74,7 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
       question_text: question?.question_text,
       options: question?.options,
       selectedOption,
-      points: answer.points_earned
+      points: answer.points_earned,
     });
 
     // Build full option text: "a) [option text]"
@@ -83,8 +84,7 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
       // Try to find option that starts with "a)" or "a) "
       const foundOption = question.options.find((opt: string) => {
         const normalized = opt.toLowerCase().trim();
-        return normalized.startsWith(selectedOption + ')') ||
-               normalized.startsWith(selectedOption + ') ');
+        return normalized.startsWith(selectedOption + ")") || normalized.startsWith(selectedOption + ") ");
       });
 
       if (foundOption) {
@@ -95,7 +95,7 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
         if (optionIndex >= 0 && optionIndex < question.options.length) {
           const optAtIdx = question.options[optionIndex];
           // If it doesn't start with the letter, prefix it
-          if (optAtIdx.toLowerCase().startsWith(selectedOption + ')')) {
+          if (optAtIdx.toLowerCase().startsWith(selectedOption + ")")) {
             optionText = optAtIdx;
           } else {
             optionText = `${selectedOption}) ${optAtIdx}`;
@@ -106,10 +106,10 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
 
     return {
       questionNumber: question?.order || idx + 1,
-      questionText: question?.question_text || '',
+      questionText: question?.question_text || "",
       selectedOption: selectedOption,
       selectedOptionText: optionText,
-      points: answer.points_earned || 0
+      points: answer.points_earned || 0,
     };
   });
 
@@ -125,9 +125,7 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">{lead.name}</h1>
             <div className="flex items-center gap-2">
-              <p className="text-muted-foreground">
-                {lead.company || 'Müşteri Adayı Detayı'}
-              </p>
+              <p className="text-muted-foreground">{lead.company || "Müşteri Adayı Detayı"}</p>
               <LeadQualityBadge
                 quality={calculateQualityStatus(lead.total_score || lead.score || 0, lead.qa_completed)}
                 score={lead.total_score || lead.score || 0}
@@ -152,11 +150,11 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
               leadId={lead.id}
               leadName={lead.name}
               totalScore={lead.total_score || lead.score || 0}
-              quality={lead.quality || 'pending'}
+              quality={lead.quality || "pending"}
               scoreBreakdown={scoreBreakdown}
               qaCompleted={lead.qa_completed}
-              qaSentAt={lead.qa_sent_at}
-              qaCompletedAt={lead.qa_completed_at}
+              qaSentAt={lead.qa_sent_at ?? null}
+              qaCompletedAt={lead.qa_completed_at ?? null}
             />
           )}
 

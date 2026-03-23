@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { LeadQuality } from '@/types/lead';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -104,7 +105,7 @@ export function QualificationSection({
       <div className="grid md:grid-cols-2 gap-4">
         <ScoreDisplay
           totalScore={totalScore}
-          quality={quality}
+          quality={quality as LeadQuality}
           breakdown={scoreBreakdown}
           qaCompleted={qaCompleted}
         />

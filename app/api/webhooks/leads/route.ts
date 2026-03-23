@@ -7,7 +7,7 @@ import {
   WebhookErrorType
 } from '@/types/webhook';
 import { validateWebhookRequest, getWebhookAuthConfig } from '@/lib/utils/webhook-auth';
-import { LeadSource } from '@/types/lead';
+import { LeadSource, LeadStatus } from '@/types/lead';
 
 export async function POST(request: NextRequest) {
   try {
@@ -57,7 +57,8 @@ export async function POST(request: NextRequest) {
         // Create new lead with 're-apply' status instead of updating existing
         const updated = await createLead({
           ...data,
-          status: 're-apply' as const
+          status: LeadStatus.RE_APPLY,
+          source: data.source || LeadSource.API
         });
 
         const response: WebhookResponse = {

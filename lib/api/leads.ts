@@ -273,7 +273,7 @@ export async function sendPollAfterDelay(leadId: string): Promise<void> {
     const pollMessage = formatWhatsAppPollMessage(lead, questions);
 
     // Send WhatsApp
-    const chatId = lead.phone.replace(/\D/g, '') + '@c.us';
+    const chatId = (lead.phone || '').replace(/\D/g, '') + '@c.us';
     const result = await sendWhatsAppMessage(chatId, pollMessage);
 
     if (!result) {

@@ -27,17 +27,19 @@ interface SlotAppointment {
 }
 
 const statusConfig: Record<AppointmentStatus, { bg: string; text: string; border: string }> = {
-  scheduled: { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
-  completed: { bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' },
-  cancelled: { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200' },
-  'no-show': { bg: 'bg-gray-50', text: 'text-gray-700', border: 'border-gray-200' },
+  [AppointmentStatus.SCHEDULED]: { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
+  [AppointmentStatus.COMPLETED]: { bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' },
+  [AppointmentStatus.CANCELLED]: { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200' },
+  [AppointmentStatus.NO_SHOW]: { bg: 'bg-gray-50', text: 'text-gray-700', border: 'border-gray-200' },
+  [AppointmentStatus.RESCHEDULED]: { bg: 'bg-yellow-50', text: 'text-yellow-700', border: 'border-yellow-200' },
 };
 
 const statusLabels: Record<AppointmentStatus, string> = {
-  scheduled: 'Planlandı',
-  completed: 'Tamamlandı',
-  cancelled: 'İptal',
-  'no-show': 'Gelmedi',
+  [AppointmentStatus.SCHEDULED]: 'Planlandı',
+  [AppointmentStatus.COMPLETED]: 'Tamamlandı',
+  [AppointmentStatus.CANCELLED]: 'İptal',
+  [AppointmentStatus.NO_SHOW]: 'Gelmedi',
+  [AppointmentStatus.RESCHEDULED]: 'Yeniden Planlandı',
 };
 
 // Working hours: 09:00 - 18:00 with 30-minute slots
@@ -80,10 +82,11 @@ export function AppointmentCalendar({ appointments, onDetail, onCreateAppointmen
   const appointmentsByDateTime = useMemo(() => {
     // Priority order for overlapping appointments
     const statusPriority: Record<AppointmentStatus, number> = {
-      scheduled: 4,      // Highest priority - show first
-      completed: 3,
-      'no-show': 2,
-      cancelled: 1,      // Lowest priority - only show if alone in slot
+      [AppointmentStatus.SCHEDULED]: 4,      // Highest priority - show first
+      [AppointmentStatus.COMPLETED]: 3,
+      [AppointmentStatus.NO_SHOW]: 2,
+      [AppointmentStatus.RESCHEDULED]: 1.5,
+      [AppointmentStatus.CANCELLED]: 1,      // Lowest priority - only show if alone in slot
     };
 
     const grouped: Record<string, SlotAppointment> = {};

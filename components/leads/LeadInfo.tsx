@@ -46,6 +46,7 @@ export function LeadInfo({ lead }: LeadInfoProps) {
   };
 
   const handleWhatsApp = () => {
+    if (!lead.phone) return;
     const phone = lead.phone.replace(/\D/g, '');
     window.open(`https://wa.me/${phone}`, '_blank');
   };

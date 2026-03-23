@@ -420,7 +420,7 @@ export function getAllSchemaDefinitions(): Record<string, JSONSchema7> {
   const definitions: Record<string, JSONSchema7> = {};
 
   // Collect all schemas
-  const types: (keyof typeof schemas)[] = [
+  const types: string[] = [
     'Lead',
     'CreateLeadDto',
     'UpdateLeadDto',

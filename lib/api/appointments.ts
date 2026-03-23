@@ -350,7 +350,7 @@ export async function send24hReminder(appointmentId: string): Promise<void> {
     const messageText = format24hReminderMessage(lead.name, appointment);
 
     // Format phone number for WhatsApp
-    const chatId = formatPhoneForWhatsApp(lead.phone) + '@c.us';
+    const chatId = formatPhoneForWhatsApp(lead.phone || '') + '@c.us';
 
     // Send WhatsApp message
     const result = await sendWhatsAppMessage(chatId, messageText);
@@ -406,7 +406,7 @@ export async function send2hReminder(appointmentId: string): Promise<void> {
     const messageText = format2hReminderMessage(lead.name, appointment);
 
     // Format phone number for WhatsApp
-    const chatId = formatPhoneForWhatsApp(lead.phone) + '@c.us';
+    const chatId = formatPhoneForWhatsApp(lead.phone || '') + '@c.us';
 
     // Send WhatsApp message
     const result = await sendWhatsAppMessage(chatId, messageText);
@@ -462,7 +462,7 @@ export async function sendCancellationNotice(appointmentId: string): Promise<voi
     const messageText = formatCancellationMessage(lead.name, appointment);
 
     // Format phone number for WhatsApp
-    const chatId = formatPhoneForWhatsApp(lead.phone) + '@c.us';
+    const chatId = formatPhoneForWhatsApp(lead.phone || '') + '@c.us';
 
     // Send WhatsApp message
     const result = await sendWhatsAppMessage(chatId, messageText);
@@ -513,7 +513,7 @@ export async function sendRescheduledNotice(appointmentId: string): Promise<void
     const messageText = formatRescheduledMessage(lead.name, appointment);
 
     // Format phone number for WhatsApp
-    const chatId = formatPhoneForWhatsApp(lead.phone) + '@c.us';
+    const chatId = formatPhoneForWhatsApp(lead.phone || '') + '@c.us';
 
     // Send WhatsApp message
     const result = await sendWhatsAppMessage(chatId, messageText);

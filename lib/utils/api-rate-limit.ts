@@ -132,7 +132,7 @@ export function withRateLimitAndAuth<T extends (
 
     // Call the original handler with pb instance
     return handler(request, pb);
-  }) as T;
+  }) as unknown as T;
 }
 
 /**

@@ -88,7 +88,7 @@ export async function POST(
       );
     }
 
-    const chatId = lead.phone.replace(/\D/g, '') + '@c.us';
+    const chatId = (lead.phone || '').replace(/\D/g, '') + '@c.us';
     const response = await fetch(
       `https://api.green-api.com/waInstance${GREEN_API_INSTANCE_ID}/sendMessage/${GREEN_API_TOKEN}`,
       {

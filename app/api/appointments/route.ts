@@ -63,7 +63,7 @@ export async function GET(req: NextRequest) {
     const response = await pb.collection<Appointment>('appointments').getList(page, perPage, options);
 
     // Manually expand lead data since PocketBase expand might not work
-    let items = response.items;
+    let items: any[] = response.items;
     if (expand?.includes('lead_id')) {
       items = await Promise.all(
         response.items.map(async (apt) => {

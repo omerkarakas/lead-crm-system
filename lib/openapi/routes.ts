@@ -5,7 +5,101 @@
  * request bodies, and response schemas.
  */
 
-import type { OpenAPIPaths, OpenAPITag } from 'openapi-types';
+// OpenAPI Types
+export interface OpenAPITag {
+  name: string;
+  description?: string;
+  externalDocs?: { url: string; description?: string };
+}
+
+export interface OpenAPIPaths {
+  [path: string]: PathItem;
+}
+
+export interface PathItem {
+  get?: Operation;
+  post?: Operation;
+  put?: Operation;
+  patch?: Operation;
+  delete?: Operation;
+}
+
+export interface Operation {
+  tags?: string[];
+  summary?: string;
+  description?: string;
+  parameters?: Parameter[];
+  requestBody?: RequestBody;
+  responses?: Responses;
+  security?: SecurityRequirement[];
+}
+
+export interface Parameter {
+  name: string;
+  in: 'path' | 'query' | 'header' | 'cookie';
+  required?: boolean;
+  description?: string;
+  schema?: any;
+}
+
+export interface RequestBody {
+  required?: boolean;
+  content: { [mediaType: string]: MediaType };
+}
+
+export interface MediaType {
+  schema?: any;
+}
+
+export interface Responses {
+  [statusCode: string]: Response;
+}
+
+export interface Response {
+  description: string;
+  content?: { [mediaType: string]: MediaType };
+}
+
+export interface SecurityRequirement {
+  [schemeName: string]: string[];
+}
+
+// OpenAPI Document
+export interface OpenAPIDocument {
+  openapi: string;
+  info: {
+    title: string;
+    version: string;
+    description?: string;
+    contact?: {
+      name: string;
+      url?: string;
+    };
+    license?: {
+      name: string;
+    };
+  };
+  servers?: Array<{
+    url: string;
+    description: string;
+  }>;
+  tags?: OpenAPITag[];
+  security?: SecurityRequirement[];
+  paths: OpenAPIPaths;
+  components?: {
+    securitySchemes?: { [name: string]: SecurityScheme };
+    schemas?: { [name: string]: any };
+  };
+}
+
+export interface SecurityScheme {
+  type: string;
+  description?: string;
+  scheme?: string;
+  bearerFormat?: string;
+  in?: string;
+  name?: string;
+}
 
 /** API Tags - groups endpoints by category */
 export const tags: OpenAPITag[] = [
@@ -115,19 +209,19 @@ const errorResponses = {
 const paginationParams = {
   page: {
     name: 'page',
-    in: 'query',
+    in: 'query' as const,
     description: 'Page number for pagination',
     schema: { type: 'integer', default: 1, minimum: 1 },
   },
   perPage: {
     name: 'perPage',
-    in: 'query',
+    in: 'query' as const,
     description: 'Items per page',
     schema: { type: 'integer', default: 50, minimum: 1, maximum: 100 },
   },
   sort: {
     name: 'sort',
-    in: 'query',
+    in: 'query' as const,
     description: 'Sort order (e.g., "-created" for newest first)',
     schema: { type: 'string', example: '-created' },
   },
@@ -149,13 +243,13 @@ export const paths: OpenAPIPaths = {
         paginationParams.sort,
         {
           name: 'search',
-          in: 'query',
+          in: 'query' as const,
           description: 'Search in name, email, phone, company',
           schema: { type: 'string' },
         },
         {
           name: 'status',
-          in: 'query',
+          in: 'query' as const,
           description: 'Filter by lead status',
           schema: {
             type: 'string',
@@ -164,19 +258,19 @@ export const paths: OpenAPIPaths = {
         },
         {
           name: 'tags',
-          in: 'query',
+          in: 'query' as const,
           description: 'Filter by tags (comma-separated)',
           schema: { type: 'string' },
         },
         {
           name: 'startDate',
-          in: 'query',
+          in: 'query' as const,
           description: 'Filter by created date (start)',
           schema: { type: 'string', format: 'date' },
         },
         {
           name: 'endDate',
-          in: 'query',
+          in: 'query' as const,
           description: 'Filter by created date (end)',
           schema: { type: 'string', format: 'date' },
         },

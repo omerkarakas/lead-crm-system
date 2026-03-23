@@ -57,7 +57,7 @@ export async function POST(
     console.log('[send-confirmation] Formatted chatId:', chatId);
 
     // Format confirmation message
-    const messageText = formatConfirmationMessage(lead.name, appointment);
+    const messageText = formatConfirmationMessage(lead.name, appointment as any);
     console.log('[send-confirmation] Message:', messageText);
 
     // Send WhatsApp message

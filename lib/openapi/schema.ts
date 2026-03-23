@@ -5,7 +5,7 @@
  * schemas, and security schemes.
  */
 
-import type { OpenAPIDocument } from 'openapi-types';
+import type { OpenAPIDocument } from './routes';
 import { paths, tags, securitySchemes } from './routes';
 import { getAllSchemaDefinitions } from './types-to-schema';
 

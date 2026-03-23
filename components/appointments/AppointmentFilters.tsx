@@ -32,6 +32,7 @@ const STATUS_LABELS: Record<AppointmentStatus, string> = {
   [AppointmentStatus.COMPLETED]: 'Tamamlandı',
   [AppointmentStatus.CANCELLED]: 'İptal',
   [AppointmentStatus.RESCHEDULED]: 'Yeniden Planlandı',
+  [AppointmentStatus.NO_SHOW]: 'Gelmedi',
 };
 
 // Default to next 30 days

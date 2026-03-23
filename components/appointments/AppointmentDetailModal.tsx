@@ -66,6 +66,7 @@ const STATUS_LABELS: Record<AppointmentStatus, string> = {
   [AppointmentStatus.COMPLETED]: 'Tamamlandı',
   [AppointmentStatus.CANCELLED]: 'İptal',
   [AppointmentStatus.RESCHEDULED]: 'Yeniden Planlandı',
+  [AppointmentStatus.NO_SHOW]: 'Gelmedi',
 };
 
 const STATUS_VARIANTS: Record<AppointmentStatus, 'default' | 'secondary' | 'outline' | 'destructive'> = {
@@ -73,6 +74,7 @@ const STATUS_VARIANTS: Record<AppointmentStatus, 'default' | 'secondary' | 'outl
   [AppointmentStatus.COMPLETED]: 'secondary',
   [AppointmentStatus.CANCELLED]: 'destructive',
   [AppointmentStatus.RESCHEDULED]: 'outline',
+  [AppointmentStatus.NO_SHOW]: 'secondary',
 };
 
 const LEAD_STATUS_LABELS: Record<LeadStatus, string> = {

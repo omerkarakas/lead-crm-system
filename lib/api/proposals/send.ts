@@ -75,7 +75,7 @@ export async function sendProposalViaWhatsApp(
     });
 
     // Format phone number for Green API (needs @c.us suffix)
-    const chatId = lead.phone.replace(/\D/g, '') + '@c.us';
+    const chatId = (lead.phone || '').replace(/\D/g, '') + '@c.us';
 
     // Send WhatsApp message
     // Make the URL clickable by surrounding with spaces

@@ -94,6 +94,12 @@ export interface TagEvent extends BaseActivityEvent {
   tag: string;
 }
 
+// Lead Created Event
+export interface LeadCreatedEvent extends BaseActivityEvent {
+  type: ActivityType.LeadCreated;
+  source: string;
+}
+
 // Union Type
 export type ActivityEvent =
   | NoteEvent
@@ -104,7 +110,8 @@ export type ActivityEvent =
   | AppointmentEvent
   | ProposalEvent
   | CampaignEnrollmentEvent
-  | TagEvent;
+  | TagEvent
+  | LeadCreatedEvent;
 
 // Timeline Filters
 export interface TimelineFilters {
