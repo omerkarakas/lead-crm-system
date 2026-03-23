@@ -63,7 +63,7 @@ CMD ["node", "server.js"]
 FROM alpine:3.19 AS pocketbase
 
 # Install PocketBase
-ARG PB_VERSION=0.21.5
+ARG PB_VERSION=0.23.8
 RUN apk add --no-cache ca-certificates wget
 
 RUN wget https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_linux_amd64.zip \
