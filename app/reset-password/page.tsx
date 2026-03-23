@@ -1,11 +1,15 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { Suspense } from 'react';
+
+// Force dynamic rendering for this page
+export const dynamic = 'force-dynamic';
 import { ResetPasswordForm } from '@/components/auth/ResetPasswordForm';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const router = useRouter();
 
   return (
@@ -32,5 +36,17 @@ export default function ResetPasswordPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center px-4">
+        <div className="text-center">Yükleniyor...</div>
+      </div>
+    }>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }

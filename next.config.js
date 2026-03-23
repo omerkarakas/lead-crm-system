@@ -12,6 +12,12 @@ const nextConfig = {
     workerThreads: false,
     cpus: 1,
   },
+
+  // Prerender hatalarını toleranslı yap
+  typescript: {
+    // Build sırasında TypeScript hatalarını yoksay (zaten kontrol edildi)
+    ignoreBuildErrors: false,
+  },
 }
 
 module.exports = nextConfig
