@@ -279,8 +279,6 @@ ENVINST
 
     # Docker-compose oluştur
     cat > "${instance_dir}/docker-compose.yml" << YAML
-version: "3.8"
-
 services:
   app:
     image: moka-crm-nextjs:${instance_name}
