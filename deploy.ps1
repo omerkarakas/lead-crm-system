@@ -28,7 +28,7 @@ $ScriptDir = $PSScriptRoot
 $InstancesDir = Join-Path $ScriptDir "instances"
 $TraefikCompose = Join-Path $ScriptDir "docker-compose-traefik.yml"
 $CurrentSystemCompose = Join-Path $ScriptDir "docker-compose-current-system.yml"
-$TraefikNetwork = $env:TRAFIK_NETWORK ?? "moka_default"
+$TraefikNetwork = $env:TRAFIK_NETWORK ?? "base_default"
 $TraefikCertResolver = $env:TRAFIK_CERTRESOLVER ?? "letsencrypt"
 
 # Mevcut sistem kontrolü
@@ -45,11 +45,11 @@ function Test-ExistingSystem {
 # Mevcut traefik konfigürasyonunu al
 function Get-ExistingTraefikConfig {
     $certresolver = "letsencrypt"
-    $network = "moka_default"
+    $network = "base_default"
 
     if (Test-Path $TraefikCompose) {
-        if (Select-String -Path $TraefikCompose -Pattern "moka_default" -Quiet) {
-            $network = "moka_default"
+        if (Select-String -Path $TraefikCompose -Pattern "base_default" -Quiet) {
+            $network = "base_default"
         }
     }
 

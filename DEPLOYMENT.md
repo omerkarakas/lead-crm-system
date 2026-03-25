@@ -56,7 +56,7 @@ Sunucunuzda zaten çalışan bir Traefik instance'ı varsa:
 - **Config Dosyası**: `docker-compose-traefik.yml`
 - **CertResolver**: `letsencrypt`
 - **EntryPoints**: `web` (80), `websecure` (443)
-- **Network**: `moka_default` (external)
+- **Network**: `base_default` (external)
 - **ACME Email**: `.env` dosyasında `ACME_EMAIL`
 - **Mevcut Domain**: `mokadijital.com`
 
@@ -74,7 +74,7 @@ docker compose -f docker-compose-traefik.yml up -d
 
 **Yeni Traefik Ayarları:**
 - CertResolver: `letsencrypt`
-- Network: `moka_default` (manuel oluşturulmalı: `docker network create moka_default`)
+- Network: `base_default` (manuel oluşturulmalı: `docker network create base_default`)
 
 ---
 
@@ -543,7 +543,7 @@ labels:
 | CertResolver | letsencrypt |
 | EntryPoints | web (80), websecure (443) |
 | ACME Email | `.env` → `ACME_EMAIL` |
-| Network | moka_default (external) |
+| Network | base_default (external) |
 | Volume | traefik-letsencrypt |
 | Mevcut Domain | mokadijital.com |
 | Traefik Dashboard | traefik.mokadijital.com (IP kısıtlı) |

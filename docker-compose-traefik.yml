@@ -11,7 +11,7 @@ services:
       - --log.level=INFO
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
-      - --providers.docker.network=moka_default
+      - --providers.docker.network=base_default
       - --entrypoints.web.address=:80
       - --entrypoints.websecure.address=:443
       - --certificatesresolvers.letsencrypt.acme.tlschallenge=true
@@ -34,11 +34,11 @@ services:
       - traefik-letsencrypt:/letsencrypt
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
-      - moka_default
+      - base_default
 
 volumes:
   traefik-letsencrypt:
 
 networks:
-  moka_default:
+  base_default:
     external: true

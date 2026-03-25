@@ -30,7 +30,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 INSTANCES_DIR="${SCRIPT_DIR}/instances"
 TRAFIK_COMPOSE="${SCRIPT_DIR}/docker-compose-traefik.yml"
 CURRENT_SYSTEM_COMPOSE="${SCRIPT_DIR}/docker-compose-current-system.yml"
-TRAFIK_NETWORK="${TRAFIK_NETWORK:-moka_default}"
+TRAFIK_NETWORK="${TRAFIK_NETWORK:-base_default}"
 TRAFIK_CERTRESOLVER="${TRAFIK_CERTRESOLVER:-letsencrypt}"
 
 # Mevcut sistem kontrolü
@@ -47,13 +47,13 @@ check_existing_system() {
 # Mevcut sistemin traefik ayarlarını al
 get_existing_traefik_config() {
     local certresolver="letsencrypt"
-    local network="moka_default"
+    local network="base_default"
 
     # docker-compose-traefik.yml'den ayarları al
     if [ -f "$TRAFIK_COMPOSE" ]; then
         # Network'ü al
-        if grep -q "moka_default" "$TRAFIK_COMPOSE"; then
-            network="moka_default"
+        if grep -q "base_default" "$TRAFIK_COMPOSE"; then
+            network="base_default"
         fi
         # CertResolver zaten letsencrypt
     fi
@@ -97,13 +97,13 @@ Kullanım:
     $0 check-existing
 
 Ortam Değişkenleri:
-    TRAFIK_NETWORK              Traefik network adı (default: moka_default)
+    TRAFIK_NETWORK              Traefik network adı (default: base_default)
     TRAFIK_CERTRESOLVER          CertResolver adı (default: letsencrypt)
 
 Yeni Yapı:
     - docker-compose-traefik.yml       Traefik reverse proxy
     - docker-compose-current-system.yml Diğer servisler (n8n, calcom, postgres)
-    - Network: moka_default (external)
+    - Network: base_default (external)
     - CertResolver: letsencrypt
 EOF
 }
@@ -134,7 +134,8 @@ show_existing_system_info() {
         log_success "docker-compose-traefik.yml bulundu"
         echo ""
         echo "Traefik konfigürasyonu:"
-        grep -E "certificatesresolvers|network" "$TRAFIK_COMPOSE" | head -5 | sed 's/^/  /'
+        echo "  Network: base_default"
+        echo "  CertResolver: letsencrypt"
         echo ""
     fi
 
@@ -319,7 +320,7 @@ services:
       - "traefik.http.services.${instance_name}-app.loadbalancer.server.port=3000"
     networks:
       - moka-network
-      - moka_default
+      - base_default
     depends_on:
       pocketbase:
         condition: service_healthy
@@ -344,7 +345,7 @@ services:
       - "traefik.http.services.${instance_name}-pb.loadbalancer.server.port=8090"
     networks:
       - moka-network
-      - moka_default
+      - base_default
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:8090/api/health"]
       interval: 30s
@@ -355,7 +356,7 @@ services:
 networks:
   moka-network:
     name: moka-network-${instance_name}
-  moka_default:
+  base_default:
     external: true
 YAML
 
@@ -395,11 +396,11 @@ YAML
     log_info "Container'lar başlatılıyor..."
     docker compose up -d
 
-    # moka_default network'e bağlanmasını doğrula
-    if docker network ls | grep -q "moka_default"; then
-        log_success "Container'lar moka_default network'ünde çalışıyor"
+    # base_default network'e bağlanmasını doğrula
+    if docker network ls | grep -q "base_default"; then
+        log_success "Container'lar base_default network'ünde çalışıyor"
     else
-        log_warning "moka_default network bulunamadı!"
+        log_warning "base_default network bulunamadı!"
     fi
 
     log_success "Instance '${instance_name}' başarıyla oluşturuldu!"
@@ -410,7 +411,7 @@ YAML
     echo ""
     log_info "Yapılandırma:"
     echo "  - CertResolver: letsencrypt"
-    echo "  - Network: moka_default"
+    echo "  - Network: base_default"
 }
 
 # Instance listele

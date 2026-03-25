@@ -181,8 +181,9 @@ volumes:
     name: root_calcom_prisma
 
 # ================================================
-# Networks - Shared with Traefik
+# Networks - Shared with Traefik (external)
 # ================================================
 networks:
   default:
-    name: moka_default
+    name: base_default
+    external: true
