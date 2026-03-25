@@ -368,6 +368,20 @@ YAML
     mkdir -p pb_data pb_public
     chmod 777 pb_data pb_public 2>/dev/null || true
 
+    # Varsayılan pb_data dosyalarını kopyala (template varsa)
+    if [ -d "${SCRIPT_DIR}/pb_data_template" ]; then
+        log_info "Varsayılan veritabanı şablonu kopyalanıyor..."
+        cp -r "${SCRIPT_DIR}/pb_data_template/"* pb_data/ 2>/dev/null || true
+        log_success "Veritabanı şablonu kopyalandı"
+    elif [ -d "${SCRIPT_DIR}/pb_data" ]; then
+        log_info "Yerel pb_data dosyaları kopyalanıyor..."
+        # Sadece config ve schema dosyalarını kopyala, gerçek verileri değil
+        cp "${SCRIPT_DIR}/pb_data"/pb_data.json pb_data/ 2>/dev/null || true
+        # Diğer dosyaları da kopyala ama kullanıcı verilerini korumak için dikkatli ol
+        find "${SCRIPT_DIR}/pb_data" -type f -name "*.json" -exec cp {} pb_data/ \; 2>/dev/null || true
+        log_success "pb_data şablon dosyaları kopyalandı"
+    fi
+
     docker compose build
 
     log_info "Container'lar başlatılıyor..."
