@@ -20,6 +20,10 @@ RUN npm ci
 FROM node:20-alpine AS builder
 WORKDIR /app
 
+# Build arguments for PocketBase URL
+ARG NEXT_PUBLIC_POCKETBASE_URL=http://127.0.0.1:8090
+ENV NEXT_PUBLIC_POCKETBASE_URL=${NEXT_PUBLIC_POCKETBASE_URL}
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 

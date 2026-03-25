@@ -281,7 +281,7 @@ PB_PUBLIC_PATH=./pb_public
 
 # Email Service (Resend)
 RESEND_API_KEY=\${RESEND_API_KEY:-}
-RESEND_FROM_EMAIL=\${RESEND_FROM_EMAIL:-noreply@\${domain}}
+RESEND_FROM_EMAIL=\${RESEND_FROM_EMAIL:-noreply@${domain}}
 RESEND_FROM_NAME=Moka CRM
 
 # WhatsApp API (Green API)
@@ -300,9 +300,11 @@ services:
       context: ${SCRIPT_DIR}
       dockerfile: ${SCRIPT_DIR}/Dockerfile
       target: nextjs
+      args:
+        NEXT_PUBLIC_POCKETBASE_URL: https://pb.${domain}
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_POCKETBASE_URL=http://pocketbase:8090
+      - NEXT_PUBLIC_POCKETBASE_URL=https://pb.${domain}
       - RESEND_API_KEY=\${RESEND_API_KEY}
       - RESEND_FROM_EMAIL=\${RESEND_FROM_EMAIL}
       - RESEND_FROM_NAME=\${RESEND_FROM_NAME}
