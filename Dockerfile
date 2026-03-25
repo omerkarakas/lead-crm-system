@@ -91,4 +91,4 @@ USER pocketbase
 EXPOSE 8090
 
 # PocketBase will serve its admin UI on :8090
-CMD ["pocketbase", "serve", "--http", "0.0.0.0:8090"]
+CMD ["pocketbase", "serve", "--http", "0.0.0.0:8090", "--dir", "/pb_data"]

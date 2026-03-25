@@ -371,15 +371,23 @@ YAML
     # Varsayılan pb_data dosyalarını kopyala (template varsa)
     if [ -d "${SCRIPT_DIR}/pb_data_template" ]; then
         log_info "Varsayılan veritabanı şablonu kopyalanıyor..."
-        cp -r "${SCRIPT_DIR}/pb_data_template/"* pb_data/ 2>/dev/null || true
-        log_success "Veritabanı şablonu kopyalandı"
+
+        # Tüm dosyaları kopyala (recursive)
+        cp -r "${SCRIPT_DIR}/pb_data_template"/. pb_data/ 2>/dev/null || true
+
+        # Kopyalanan dosyaları listele
+        local copied_count=$(find pb_data -type f | wc -l)
+        log_success "Veritabanı şablonu kopyalandı: ${copied_count} dosya"
+
+        # En önemli dosyaların varlığını kontrol et
+        if [ -f "pb_data/data.db" ]; then
+            log_success "✓ data.db kopyalandı"
+        else
+            log_warning "✗ data.db bulunamadı!"
+        fi
     elif [ -d "${SCRIPT_DIR}/pb_data" ]; then
-        log_info "Yerel pb_data dosyaları kopyalanıyor..."
-        # Sadece config ve schema dosyalarını kopyala, gerçek verileri değil
-        cp "${SCRIPT_DIR}/pb_data"/pb_data.json pb_data/ 2>/dev/null || true
-        # Diğer dosyaları da kopyala ama kullanıcı verilerini korumak için dikkatli ol
-        find "${SCRIPT_DIR}/pb_data" -type f -name "*.json" -exec cp {} pb_data/ \; 2>/dev/null || true
-        log_success "pb_data şablon dosyaları kopyalandı"
+        log_info "Yerel pb_data referans olarak kullanılıyor..."
+        log_warning "Üretim için pb_data_template kullanın"
     fi
 
     docker compose build
