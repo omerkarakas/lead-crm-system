@@ -45,37 +45,36 @@ Moka CRM, Docker kullanarak aynı sunucuda birden fazla instance çalıştırabi
 
 ### Senaryo A: Mevcut Sisteme Ekleme (Traefik Var)
 
-Sunucunuzda zaten çalışan bir Traefik instance'ı varsa (örneğin `docker-compose-current-system.yml` ile):
+Sunucunuzda zaten çalışan bir Traefik instance'ı varsa:
 
 ```bash
 # Mevcut traefik'i kullanarak deploy
-./deploy.sh add <instance-name> --use-existing-traefik
-
-# Veya Docker Compose ile manuel deploy
-cp docker-compose.template.yml docker-compose.yml
-# docker-compose.yml içinde certresolver'ı "mytlschallenge" olarak ayarlayın
-docker compose up -d
+./deploy.sh add <instance-name> --existing-traefik
 ```
 
 **Mevcut Traefik Ayarları:**
-- CertResolver: `mytlschallenge`
-- EntryPoints: `web` (80), `websecure` (443)
-- Network: Traefik container'ı ile aynı network'te çalışmalı
-- SSL Email: `.env.current` dosyasında `SSL_EMAIL`
-- Mevcut Domain: `mokadijital.com`
+- **Config Dosyası**: `docker-compose-traefik.yml`
+- **CertResolver**: `letsencrypt`
+- **EntryPoints**: `web` (80), `websecure` (443)
+- **Network**: `moka_default` (external)
+- **ACME Email**: `.env` dosyasında `ACME_EMAIL`
+- **Mevcut Domain**: `mokadijital.com`
 
 ### Senaryo B: Yeni Sunucuya Kurulum (Traefik Yok)
 
 Temiz bir sunucuya Traefik ile birlikte kurulum için:
 
 ```bash
-./deploy.sh init
+# Traefik'i başlat
+docker compose -f docker-compose-traefik.yml up -d
+
+# Instance ekleyin
 ./deploy.sh add <instance-name>
 ```
 
 **Yeni Traefik Ayarları:**
 - CertResolver: `letsencrypt`
-- Network: `traefik-public` (otomatik oluşturulur)
+- Network: `moka_default` (manuel oluşturulmalı: `docker network create moka_default`)
 
 ---
 
@@ -529,14 +528,22 @@ labels:
 
 ## Mevcut Sistem Referansı
 
-Mevcut `docker-compose-current-system.yml` konfigürasyonu:
+**Yeni Docker Yapısı:**
+
+| Dosya | Amaç |
+|-------|------|
+| `docker-compose-traefik.yml` | Traefik reverse proxy |
+| `docker-compose-current-system.yml` | Diğer servisler (n8n, calcom, postgres) |
+
+**Konfigürasyon:**
 
 | Ayar | Değer |
 |------|-------|
-| Traefik Sürüm | v2.11 |
-| CertResolver | mytlschallenge |
+| Traefik Sürüm | latest |
+| CertResolver | letsencrypt |
 | EntryPoints | web (80), websecure (443) |
-| SSL Email | `.env.current` → `SSL_EMAIL` |
-| Volume | traefik_data (external) |
+| ACME Email | `.env` → `ACME_EMAIL` |
+| Network | moka_default (external) |
+| Volume | traefik-letsencrypt |
 | Mevcut Domain | mokadijital.com |
-| Mevcut Subdomain | ai (ai.mokadijital.com) |
+| Traefik Dashboard | traefik.mokadijital.com (IP kısıtlı) |

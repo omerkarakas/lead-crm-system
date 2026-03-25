@@ -1,106 +1,188 @@
-services:
-  traefik:
-    image: traefik:v2.11
-    command:
-      - --api=true
-      - --api.insecure=true
-      - --providers.docker=true
-      - --providers.docker.exposedbydefault=false
-      - --entrypoints.web.address=:80
-      - --entrypoints.web.http.redirections.entryPoint.to=websecure
-      - --entrypoints.web.http.redirections.entryPoint.scheme=https
-      - --entrypoints.websecure.address=:443
-      - --certificatesresolvers.mytlschallenge.acme.tlschallenge=true
-      - --certificatesresolvers.mytlschallenge.acme.email=${SSL_EMAIL}
-      - --certificatesresolvers.mytlschallenge.acme.storage=/letsencrypt/acme.json
-    restart: always
-    ports:
-      - 80:80
-      - 443:443
-    volumes:
-      - traefik_data:/letsencrypt
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+# ================================================
+# Moka Services Docker Compose
+# n8n + PostgreSQL + Cal.com
+# ================================================
 
+services:
+  # ================================================
+  # n8n Workflow Automation
+  # ================================================
   n8n:
     image: docker.n8n.io/n8nio/n8n
-    env_file:
-      - .env.current
+    container_name: n8n
+    restart: unless-stopped
+    env_file: .env
     labels:
+      # Traefik routing configuration
       - traefik.enable=true
-      - traefik.http.routers.n8n.rule=Host(`${SUBDOMAIN}.${DOMAIN_NAME}`)
+      - traefik.http.routers.n8n.rule=Host(`ai.mokadijital.com`)
       - traefik.http.routers.n8n.tls=true
-      - traefik.http.routers.n8n.entrypoints=web,websecure
-      - traefik.http.routers.n8n.tls.certresolver=mytlschallenge
+      - traefik.http.routers.n8n.tls.certresolver=letsencrypt
+      - traefik.http.routers.n8n.entrypoints=websecure
+      - traefik.http.services.n8n.loadbalancer.server.port=5678
+
+      # Security headers
       - traefik.http.middlewares.n8n.headers.SSLRedirect=true
       - traefik.http.middlewares.n8n.headers.STSSeconds=315360000
       - traefik.http.middlewares.n8n.headers.browserXSSFilter=true
       - traefik.http.middlewares.n8n.headers.contentTypeNosniff=true
       - traefik.http.middlewares.n8n.headers.forceSTSHeader=true
-      - traefik.http.middlewares.n8n.headers.SSLHost=${DOMAIN_NAME}
+      - traefik.http.middlewares.n8n.headers.SSLHost=mokadijital.com
       - traefik.http.middlewares.n8n.headers.STSIncludeSubdomains=true
       - traefik.http.middlewares.n8n.headers.STSPreload=true
       - traefik.http.routers.n8n.middlewares=n8n@docker
     environment:
-      - N8N_HOST=${SUBDOMAIN}.${DOMAIN_NAME}
+      # N8n basic configuration
+      - N8N_HOST=${N8N_HOST}
       - N8N_PORT=5678
       - N8N_PROTOCOL=https
+      - WEBHOOK_URL=${N8N_WEBHOOK_URL}
+      - GENERIC_TIMEZONE=${GENERIC_TIMEZONE}
+      - TZ=${TZ}
+      - N8N_PROXY_HOPS=1
+
+      # Binary data configuration
       - N8N_BINARY_DATA_MODE=filesystem
       - N8N_BINARY_DATA_FOLDER=/home/node/.n8n/binary_data
       - N8N_BINARY_DATA_DATABASE_MAX_FILE_SIZE=1024
+      - N8N_DEFAULT_BINARY_DATA_PATH=/files
+      - N8N_RESTRICT_FILE_ACCESS_TO=/home/node/.n8n;/files
+      - N8N_ALLOWED_BINARY_DATA_MODES=filesystem
+
+      # Node.js configuration
       - NODE_FUNCTION_ALLOW_EXTERNAL=axios,googleapis,stream
       - NODE_FUNCTION_ALLOW_BUILTIN=fs,path,https,url,child_process
       - N8N_RUNNERS_MAX_OLD_SPACE_SIZE=4096
       - NODE_OPTIONS=--max-old-space-size=4096
+
+      # Security settings
       - N8N_BLOCK_FS_WRITE_ACCESS_TO_WHITELIST=true
-      - N8N_ALLOWED_BINARY_DATA_MODES=filesystem
       - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
 
-      # Sadece bu klasöre okuma/yazma izni ver:
-      - N8N_DEFAULT_BINARY_DATA_PATH=/files
-      - N8N_RESTRICT_FILE_ACCESS_TO=/home/node/.n8n;/files
-
-      # DB (Queue mode DEĞIL - normal standalone mod)
+      # Database configuration (Standalone mode - NOT queue mode)
       - DB_TYPE=postgresdb
       - DB_POSTGRESDB_HOST=postgres
       - DB_POSTGRESDB_PORT=5432
-      - DB_POSTGRESDB_DATABASE=n8ndb
-      - DB_POSTGRESDB_USER=n8n
-      - DB_POSTGRESDB_PASSWORD=7hMdwFPxoJNgOBy9HCc5
-
-      - WEBHOOK_URL=https://${SUBDOMAIN}.${DOMAIN_NAME}/
-      - GENERIC_TIMEZONE=${GENERIC_TIMEZONE}
-      - N8N_PROXY_HOPS=1
-    restart: always
+      - DB_POSTGRESDB_DATABASE=${POSTGRES_DB}
+      - DB_POSTGRESDB_USER=${POSTGRES_USER}
+      - DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - n8n_data:/home/node/.n8n
       - /local-files:/files
     depends_on:
       - postgres
-    ports:
-      - 127.0.0.1:5678:5678
 
-  redis:
-    image: redis:6
-    container_name: redis
-    restart: always
-    volumes:
-      - redis_data:/data
-
+  # ================================================
+  # PostgreSQL Database
+  # ================================================
   postgres:
     image: postgres:15
     container_name: n8n-postgres
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: n8n
-      POSTGRES_PASSWORD: 7hMdwFPxoJNgOBy9HCc5
-      POSTGRES_DB: n8ndb
-    restart: always
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
+  # ================================================
+  # Cal.com Appointment Scheduling
+  # ================================================
+  calcom:
+    image: calcom/cal.com:latest
+    container_name: calcom
+    restart: unless-stopped
+    env_file: .env
+    labels:
+      # Traefik routing configuration
+      - traefik.enable=true
+      - traefik.http.routers.calcom.rule=Host(`cal.mokadijital.com`)
+      - traefik.http.routers.calcom.tls=true
+      - traefik.http.routers.calcom.tls.certresolver=letsencrypt
+      - traefik.http.routers.calcom.entrypoints=websecure
+      - traefik.http.services.calcom.loadbalancer.server.port=3000
+    environment:
+      # Database configuration (using same PostgreSQL instance)
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${CALCOM_DB}
+      - DATABASE_DIRECT_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${CALCOM_DB}
+
+      # Cal.com core configuration
+      - NEXT_PUBLIC_WEBAPP_URL=${CALCOM_URL}
+      - NEXTAUTH_URL=${CALCOM_URL}
+      - NEXTAUTH_SECRET=${CALCOM_NEXTAUTH_SECRET}
+      - CALENDSO_ENCRYPTION_KEY=${CALCOM_ENCRYPTION_KEY}
+      - ALLOWED_HOSTNAMES=["cal.mokadijital.com"]
+
+      # Email configuration
+      - EMAIL_FROM=${EMAIL_FROM}
+      - EMAIL_SERVER_HOST=${EMAIL_SERVER_HOST}
+      - EMAIL_SERVER_PORT=${EMAIL_SERVER_PORT}
+      - EMAIL_SERVER_USER=${EMAIL_SERVER_USER}
+      - EMAIL_SERVER_PASSWORD=${EMAIL_SERVER_PASSWORD}
+
+      # Timezone
+      - NEXT_PUBLIC_TIMEZONE=${GENERIC_TIMEZONE}
+      - TZ=${TZ}
+
+      # Features
+      - NEXT_PUBLIC_DISABLE_SIGNUP=false
+      - CRON_ENABLE_SCHEDULE=true
+
+      # Google API integration
+      - GOOGLE_API_CREDENTIALS=${GOOGLE_API_CREDENTIALS}
+    # Override image entrypoint to avoid broken seed script
+    # and to call wait-for-it with proper host:port
+    command:
+      - sh
+      - -lc
+      - |
+        set -eu
+        cd /calcom
+        scripts/replace-placeholder.sh http://localhost:3000 ${CALCOM_URL}
+        scripts/wait-for-it.sh postgres:5432 -t 60 -- echo "database is up"
+        npx prisma migrate deploy --schema /calcom/packages/prisma/schema.prisma
+        yarn start
+    volumes:
+      - calcom_data:/calcom/apps/web/.next
+      - calcom_prisma:/calcom/node_modules/.prisma
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      # Some Cal.com image versions return 404 for /api/health
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+# ================================================
+# Volumes - External to preserve existing data
+# Volume names match existing legacy volumes
+# ================================================
 volumes:
-  traefik_data:
-    external: true
   n8n_data:
     external: true
+    name: n8n_data
   pgdata:
-  redis_data:
+    external: true
+    name: root_pgdata
+  calcom_data:
+    external: true
+    name: root_calcom_data
+  calcom_prisma:
+    external: true
+    name: root_calcom_prisma
+
+# ================================================
+# Networks - Shared with Traefik
+# ================================================
+networks:
+  default:
+    name: moka_default

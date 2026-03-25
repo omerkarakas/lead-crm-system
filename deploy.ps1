@@ -26,12 +26,14 @@ param(
 # Konfigürasyon
 $ScriptDir = $PSScriptRoot
 $InstancesDir = Join-Path $ScriptDir "instances"
+$TraefikCompose = Join-Path $ScriptDir "docker-compose-traefik.yml"
 $CurrentSystemCompose = Join-Path $ScriptDir "docker-compose-current-system.yml"
-$TraefikNetwork = $env:TRAFIK_NETWORK ?? "traefik-public"
+$TraefikNetwork = $env:TRAFIK_NETWORK ?? "moka_default"
+$TraefikCertResolver = $env:TRAFIK_CERTRESOLVER ?? "letsencrypt"
 
 # Mevcut sistem kontrolü
 function Test-ExistingSystem {
-    if (Test-Path $CurrentSystemCompose) {
+    if (Test-Path $TraefikCompose) {
         $traefikContainer = docker ps --format "{{.Names}}" | Select-String "traefik"
         if ($traefikContainer) {
             return $true
@@ -43,12 +45,11 @@ function Test-ExistingSystem {
 # Mevcut traefik konfigürasyonunu al
 function Get-ExistingTraefikConfig {
     $certresolver = "letsencrypt"
-    $network = "traefik-public"
+    $network = "moka_default"
 
-    if (Test-Path $CurrentSystemCompose) {
-        $content = Get-Content $CurrentSystemCompose -Raw
-        if ($content -match "mytlschallenge") {
-            $certresolver = "mytlschallenge"
+    if (Test-Path $TraefikCompose) {
+        if (Select-String -Path $TraefikCompose -Pattern "moka_default" -Quiet) {
+            $network = "moka_default"
         }
     }
 
@@ -58,10 +59,13 @@ function Get-ExistingTraefikConfig {
         try {
             $inspect = docker inspect $containerName --format '{{json .NetworkSettings.Networks}}' | ConvertFrom-Json
             if ($inspect) {
-                $network = ($inspect | Get-Member -MemberType NoteProperty | Select-Object -First 1).Name
+                $actualNetwork = ($inspect | Get-Member -MemberType NoteProperty | Select-Object -First 1).Name
+                if ($actualNetwork) {
+                    $network = $actualNetwork
+                }
             }
         } catch {
-            $network = "traefik-public"
+            # Keep default network
         }
     }
 
