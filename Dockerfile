@@ -86,7 +86,9 @@ WORKDIR /pb_data
 
 RUN chown -R pocketbase:pocketbase /pb_data
 
-USER pocketbase
+# NOTE: Running as root to avoid permission issues with Docker volumes
+# In production, consider using a proper volume driver or user namespace
+# USER pocketbase
 
 EXPOSE 8090
 
