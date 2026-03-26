@@ -334,7 +334,8 @@ services:
       context: ${SCRIPT_DIR}
       dockerfile: ${SCRIPT_DIR}/Dockerfile
       target: pocketbase
-    command: ["pocketbase", "serve", "--http", "0.0.0.0:8090", "--dir", "/pb_data", "--origin", "https://${domain}", "--origin", "https://pb.${domain}"]
+    environment:
+      - POCKETBASE_URL=https://pb.${domain}
     volumes:
       - ./pb_data:/pb_data
       - ./pb_public:/pb_public
@@ -345,6 +346,12 @@ services:
       - "traefik.http.routers.${instance_name}-pb.tls=true"
       - "traefik.http.routers.${instance_name}-pb.tls.certresolver=letsencrypt"
       - "traefik.http.services.${instance_name}-pb.loadbalancer.server.port=8090"
+      # CORS headers
+      - "traefik.http.middlewares.${instance_name}-pb-cors.headers.accesscontrolallowmethods=GET,POST,PUT,PATCH,DELETE,OPTIONS"
+      - "traefik.http.middlewares.${instance_name}-pb-cors.headers.accesscontrolallowheaders=Authorization,Content-Type"
+      - "traefik.http.middlewares.${instance_name}-pb-cors.headers.accesscontrolalloworiginlist=https://${domain},https://pb.${domain}"
+      - "traefik.http.middlewares.${instance_name}-pb-cors.headers.addvaryheader=true"
+      - "traefik.http.routers.${instance_name}-pb.middlewares=${instance_name}-pb-cors"
     networks:
       - moka-network
       - base_default
@@ -369,7 +376,7 @@ YAML
     # PocketBase volume klasörlerini oluştur (permission sorununu önlemek için)
     log_info "PocketBase volume klasörleri oluşturuluyor..."
     mkdir -p pb_data pb_public
-    chmod 777 pb_data pb_public 2>/dev/null || true
+    chmod -R 777 pb_data pb_public 2>/dev/null || true
 
     # Varsayılan pb_data dosyalarını kopyala (init data varsa)
     if [ -d "${SCRIPT_DIR}/pb_init_data/pb_data" ]; then
