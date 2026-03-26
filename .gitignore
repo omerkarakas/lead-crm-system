@@ -22,6 +22,9 @@ dist-ssr
 .env.*.local
 .env.current
 
+# PocketBase data directories (keep template structure, ignore DB files)
+pb_data/
+
 
 # Editor directories and files
 .vscode/*

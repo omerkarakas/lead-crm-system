@@ -369,12 +369,12 @@ YAML
     mkdir -p pb_data pb_public
     chmod 777 pb_data pb_public 2>/dev/null || true
 
-    # Varsayılan pb_data dosyalarını kopyala (template varsa)
-    if [ -d "${SCRIPT_DIR}/pb_data_template" ]; then
+    # Varsayılan pb_data dosyalarını kopyala (init data varsa)
+    if [ -d "${SCRIPT_DIR}/pb_init_data/pb_data" ]; then
         log_info "Varsayılan veritabanı şablonu kopyalanıyor..."
 
         # Tüm dosyaları kopyala (recursive)
-        cp -r "${SCRIPT_DIR}/pb_data_template"/. pb_data/ 2>/dev/null || true
+        cp -r "${SCRIPT_DIR}/pb_init_data/pb_data"/. pb_data/ 2>/dev/null || true
 
         # Kopyalanan dosyaları listele
         local copied_count=$(find pb_data -type f | wc -l)
@@ -388,7 +388,7 @@ YAML
         fi
     elif [ -d "${SCRIPT_DIR}/pb_data" ]; then
         log_info "Yerel pb_data referans olarak kullanılıyor..."
-        log_warning "Üretim için pb_data_template kullanın"
+        log_warning "Üretim için pb_init_data/pb_data kullanın"
     fi
 
     docker compose build
