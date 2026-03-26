@@ -334,6 +334,7 @@ services:
       context: ${SCRIPT_DIR}
       dockerfile: ${SCRIPT_DIR}/Dockerfile
       target: pocketbase
+    command: ["pocketbase", "serve", "--http", "0.0.0.0:8090", "--dir", "/pb_data", "--origin", "https://${domain}", "--origin", "https://pb.${domain}"]
     volumes:
       - ./pb_data:/pb_data
       - ./pb_public:/pb_public
