@@ -306,6 +306,7 @@ services:
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_POCKETBASE_URL=https://pb.${domain}
+      - POCKETBASE_INTERNAL_URL=http://127.0.0.1:8090
       - RESEND_API_KEY=\${RESEND_API_KEY}
       - RESEND_FROM_EMAIL=\${RESEND_FROM_EMAIL}
       - RESEND_FROM_NAME=\${RESEND_FROM_NAME}

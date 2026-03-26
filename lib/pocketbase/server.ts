@@ -7,7 +7,9 @@ import { cookies } from 'next/headers';
  * Create a server-side PocketBase instance authenticated from cookies
  */
 export async function getServerPb() {
-  const pb = new PocketBase(process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090');
+  // Server-side kullan internal URL, client-side için NEXT_PUBLIC_POCKETBASE_URL kullanılır
+  const pbUrl = process.env.POCKETBASE_INTERNAL_URL || process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090';
+  const pb = new PocketBase(pbUrl);
 
   // Load auth from cookie
   const cookieStore = await cookies();

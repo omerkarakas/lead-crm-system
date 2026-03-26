@@ -2,10 +2,12 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import PocketBase from 'pocketbase';
 
-const pb = new PocketBase(process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090');
+// Middleware runs server-side, use internal URL if available
+const pbUrl = process.env.POCKETBASE_INTERNAL_URL || process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090';
+const pb = new PocketBase(pbUrl);
 
 // Debug: Log PocketBase URL
-console.log('[Middleware] PocketBase URL:', process.env.NEXT_PUBLIC_POCKETBASE_URL);
+console.log('[Middleware] PocketBase URL:', pbUrl);
 
 // Routes that don't require authentication
 const publicRoutes = ['/login', '/forgot-password', '/reset-password', '/register', '/proposals', '/docs'];
