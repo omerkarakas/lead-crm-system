@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation';
 import pb from '@/lib/pocketbase';
 import { AnalyticsPageClient } from './client';
 
+export const dynamic = 'force-dynamic';
+
 interface AnalyticsPageProps {
   params: {
     id: string;

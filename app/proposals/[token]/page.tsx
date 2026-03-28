@@ -3,6 +3,8 @@ import { getServerPb } from '@/lib/pocketbase/server';
 import { ProposalView } from '@/components/proposals/ProposalView';
 import type { Proposal } from '@/types/proposal';
 
+export const dynamic = 'force-dynamic';
+
 interface ProposalPageProps {
   params: {
     token: string;

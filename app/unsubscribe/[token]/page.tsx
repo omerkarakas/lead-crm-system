@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation';
 import { UnsubscribeForm } from './UnsubscribeForm';
 import type { CampaignEnrollment } from '@/types/campaign';
 
+export const dynamic = 'force-dynamic';
+
 interface UnsubscribePageProps {
   params: {
     token: string;

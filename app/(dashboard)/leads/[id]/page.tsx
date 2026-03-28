@@ -22,6 +22,9 @@ import { calculateQualityStatus } from "@/lib/utils/lead-scoring";
 // Client component for appointments tab to handle state
 import { ClientAppointmentTab } from "@/components/leads/ClientAppointmentTab";
 
+// Force dynamic rendering for this dynamic route
+export const dynamic = 'force-dynamic';
+
 interface LeadDetailPageProps {
   params: {
     id: string;

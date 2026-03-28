@@ -4,6 +4,8 @@ import { getServerPb } from '@/lib/pocketbase/server';
 import type { Campaign, Sequence } from '@/types/campaign';
 import { SequencesPageClient } from './client';
 
+export const dynamic = 'force-dynamic';
+
 interface SequencesPageProps {
   params: {
     id: string;

@@ -3,6 +3,8 @@ import pb from '@/lib/pocketbase';
 import type { Campaign, CampaignEnrollment, Sequence } from '@/types/campaign';
 import { ExecutionPageClient } from './client';
 
+export const dynamic = 'force-dynamic';
+
 interface ExecutionPageProps {
   params: {
     id: string;
