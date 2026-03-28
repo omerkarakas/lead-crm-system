@@ -24,6 +24,7 @@ import { ClientAppointmentTab } from "@/components/leads/ClientAppointmentTab";
 
 // Force dynamic rendering for this dynamic route
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 interface LeadDetailPageProps {
   params: {

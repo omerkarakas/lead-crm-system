@@ -22,6 +22,16 @@ export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const pbCookie = request.cookies.get('pb_auth');
 
+  // Disable caching for dynamic routes to prevent stale 404 responses
+  const response = NextResponse.next();
+
+  // Apply no-cache headers for all routes (except static assets which are excluded by matcher)
+  response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  response.headers.set('Pragma', 'no-cache');
+  response.headers.set('Expires', '0');
+
+  console.log('[Middleware] Path:', path, 'Has cookie:', !!pbCookie);
+
   console.log('[Middleware] Path:', path, 'Has cookie:', !!pbCookie);
 
   // Check if user is authenticated
@@ -57,22 +67,26 @@ export async function middleware(request: NextRequest) {
     // Redirect authenticated users away from auth pages
     if (isAuthenticated && authRoutes.some(route => path === route)) {
       console.log('[Middleware] Redirecting authenticated user from auth page');
-      return NextResponse.redirect(new URL('/dashboard', request.url));
+      const redirectResponse = NextResponse.redirect(new URL('/dashboard', request.url));
+      redirectResponse.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      return redirectResponse;
     }
-    return NextResponse.next();
+    return response;
   }
 
   // Allow authenticated users to access protected routes
   if (isAuthenticated) {
     console.log('[Middleware] Authenticated, allowing access');
-    return NextResponse.next();
+    return response;
   }
 
   // Unauthenticated users trying to access protected routes -> redirect to login
   console.log('[Middleware] Not authenticated, redirecting to login');
   const loginUrl = new URL('/login', request.url);
   loginUrl.searchParams.set('redirect', path);
-  return NextResponse.redirect(loginUrl);
+  const redirectResponse = NextResponse.redirect(loginUrl);
+  redirectResponse.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  return redirectResponse;
 }
 
 export const config = {

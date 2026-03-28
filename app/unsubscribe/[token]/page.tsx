@@ -5,6 +5,7 @@ import { UnsubscribeForm } from './UnsubscribeForm';
 import type { CampaignEnrollment } from '@/types/campaign';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 interface UnsubscribePageProps {
   params: {

@@ -3,6 +3,7 @@ import pb from '@/lib/pocketbase';
 import { AnalyticsPageClient } from './client';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 interface AnalyticsPageProps {
   params: {

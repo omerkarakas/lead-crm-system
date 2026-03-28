@@ -4,6 +4,7 @@ import type { Campaign, CampaignEnrollment, Sequence } from '@/types/campaign';
 import { ExecutionPageClient } from './client';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 interface ExecutionPageProps {
   params: {

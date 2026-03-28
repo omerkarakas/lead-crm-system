@@ -4,6 +4,7 @@ import { ProposalView } from '@/components/proposals/ProposalView';
 import type { Proposal } from '@/types/proposal';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 interface ProposalPageProps {
   params: {

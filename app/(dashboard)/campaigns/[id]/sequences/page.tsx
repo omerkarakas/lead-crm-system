@@ -5,6 +5,7 @@ import type { Campaign, Sequence } from '@/types/campaign';
 import { SequencesPageClient } from './client';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 interface SequencesPageProps {
   params: {
