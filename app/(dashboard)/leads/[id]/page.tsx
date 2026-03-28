@@ -18,13 +18,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { calculateQualityStatus } from "@/lib/utils/lead-scoring";
-
-// Client component for appointments tab to handle state
 import { ClientAppointmentTab } from "@/components/leads/ClientAppointmentTab";
 
-// Force dynamic rendering for this dynamic route
+// Route segment config - disable all caching for this dynamic route
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+export const fetchCache = 'force-no-store'; // Additional Next.js 14+ config
 
 interface LeadDetailPageProps {
   params: {
@@ -32,60 +31,89 @@ interface LeadDetailPageProps {
   };
 }
 
+/**
+ * Fetch lead and related data from PocketBase
+ */
 async function getLeadData(id: string) {
+  console.log('[LeadDetailPage] Fetching lead data for ID:', id);
+
   const pb = await getServerPb();
+  console.log('[LeadDetailPage] PocketBase URL:', pb.baseUrl);
+  console.log('[LeadDetailPage] Auth valid:', pb.authStore.isValid);
+
   try {
-    const lead = await pb.collection("leads").getOne<Lead>(id);
-    const answers = await pb.collection("qa_answers").getList(1, 50, {
-      filter: `lead_id = "${id}"`,
+    // Fetch lead
+    console.log('[LeadDetailPage] Attempting to fetch lead from collection...');
+    const lead = await pb.collection<Lead>("leads").getOne(id, {
+      requestKey: `lead-${id}-${Date.now()}`, // Unique request key to bypass cache
     });
+    console.log('[LeadDetailPage] Lead fetched successfully:', lead.id, lead.name);
 
-    // Fetch questions manually since expand might not work
-    const questionIds = Array.from(new Set(answers.items.map((a: any) => a.question_id)));
-    const questions =
-      questionIds.length > 0
-        ? await pb.collection("qa_questions").getList(1, 100, {
-            filter: questionIds.map((id) => `id = "${id}"`).join(" || "),
-          })
-        : { items: [] };
+    // Fetch QA answers (optional - don't fail if missing)
+    let answersWithQuestions: any[] = [];
+    try {
+      const answers = await pb.collection("qa_answers").getList(1, 50, {
+        filter: `lead_id = "${id}"`,
+        requestKey: `answers-${id}-${Date.now()}`,
+      });
+      console.log('[LeadDetailPage] QA answers fetched:', answers.items.length);
 
-    // Create a map for quick lookup
-    const questionMap = new Map(questions.items.map((q: any) => [q.id, q]));
+      // Fetch questions manually
+      const questionIds = Array.from(new Set(answers.items.map((a: any) => a.question_id)));
+      if (questionIds.length > 0) {
+        const questions = await pb.collection("qa_questions").getList(1, 100, {
+          filter: questionIds.map((id) => `id = "${id}"`).join(" || "),
+          requestKey: `questions-${id}-${Date.now()}`,
+        });
 
-    // Attach questions to answers
-    const answersWithQuestions = answers.items.map((answer: any) => ({
-      ...answer,
-      expand: { question_id: questionMap.get(answer.question_id) },
-    }));
+        const questionMap = new Map(questions.items.map((q: any) => [q.id, q]));
+        answersWithQuestions = answers.items.map((answer: any) => ({
+          ...answer,
+          expand: { question_id: questionMap.get(answer.question_id) },
+        }));
+      }
+    } catch (qaError) {
+      console.warn('[LeadDetailPage] QA data fetch failed (non-critical):', qaError);
+      // Don't fail the whole page if QA data is missing
+    }
 
     return { lead, answers: answersWithQuestions };
-  } catch (error) {
-    notFound();
+
+  } catch (error: any) {
+    console.error('[LeadDetailPage] Error fetching lead:', {
+      message: error.message,
+      status: error.status,
+      data: error.data,
+      id: id,
+    });
+
+    // Return null instead of calling notFound() immediately
+    // This allows us to handle the error more gracefully
+    return null;
   }
 }
 
 export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
-  const { lead, answers } = await getLeadData(params.id);
+  console.log('[LeadDetailPage] Page render for ID:', params.id);
+
+  const data = await getLeadData(params.id);
+
+  // Check if data fetching failed
+  if (!data) {
+    console.error('[LeadDetailPage] No data returned, showing 404');
+    notFound();
+  }
+
+  const { lead, answers } = data;
 
   // Prepare score breakdown for display
   const scoreBreakdown = answers.map((answer: any, idx: number) => {
     const question = answer.expand?.question_id;
-    const selectedOption = (answer.selected_answer || "").toLowerCase(); // e.g., "a"
+    const selectedOption = (answer.selected_answer || "").toLowerCase();
 
-    // Debug log
-    console.log(`[Breakdown ${idx}]`, {
-      question,
-      question_text: question?.question_text,
-      options: question?.options,
-      selectedOption,
-      points: answer.points_earned,
-    });
-
-    // Build full option text: "a) [option text]"
-    let optionText = `${selectedOption})`; // default fallback
+    let optionText = `${selectedOption})`;
 
     if (question?.options && Array.isArray(question.options)) {
-      // Try to find option that starts with "a)" or "a) "
       const foundOption = question.options.find((opt: string) => {
         const normalized = opt.toLowerCase().trim();
         return normalized.startsWith(selectedOption + ")") || normalized.startsWith(selectedOption + ") ");
@@ -94,11 +122,9 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
       if (foundOption) {
         optionText = foundOption;
       } else {
-        // Try to find by index (a=0, b=1, c=2...)
-        const optionIndex = selectedOption.charCodeAt(0) - 97; // 'a' = 97
+        const optionIndex = selectedOption.charCodeAt(0) - 97;
         if (optionIndex >= 0 && optionIndex < question.options.length) {
           const optAtIdx = question.options[optionIndex];
-          // If it doesn't start with the letter, prefix it
           if (optAtIdx.toLowerCase().startsWith(selectedOption + ")")) {
             optionText = optAtIdx;
           } else {
@@ -116,6 +142,8 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
       points: answer.points_earned || 0,
     };
   });
+
+  console.log('[LeadDetailPage] Rendering lead:', lead.id, lead.name);
 
   return (
     <div className="space-y-6">
@@ -148,7 +176,6 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
         <div className="lg:col-span-2 space-y-6">
           <LeadInfo lead={lead} />
 
-          {/* QA Scoring Section */}
           {lead.qa_sent && (
             <QualificationSection
               leadId={lead.id}
@@ -162,7 +189,6 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
             />
           )}
 
-          {/* Tabs for WhatsApp, Email, Appointments, Proposals, Campaigns, Notes */}
           <Tabs defaultValue="whatsapp" className="w-full">
             <TabsList className="w-full justify-start">
               <TabsTrigger value="whatsapp">WhatsApp</TabsTrigger>
