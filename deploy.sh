@@ -306,7 +306,7 @@ services:
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_POCKETBASE_URL=https://pb.${domain}
-      - POCKETBASE_INTERNAL_URL=http://moka-crm-pb-${instance_name}:8090
+      - POCKETBASE_INTERNAL_URL=http://pocketbase:8090
       - RESEND_API_KEY=\${RESEND_API_KEY}
       - RESEND_FROM_EMAIL=\${RESEND_FROM_EMAIL}
       - RESEND_FROM_NAME=\${RESEND_FROM_NAME}
@@ -329,6 +329,7 @@ services:
   pocketbase:
     image: moka-crm-pocketbase:${instance_name}
     container_name: moka-crm-pb-${instance_name}
+    hostname: moka-crm-pb-${instance_name}
     restart: unless-stopped
     build:
       context: ${SCRIPT_DIR}
