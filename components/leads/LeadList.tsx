@@ -22,6 +22,7 @@ import { ChevronLeft, ChevronRight, Loader2, Eye, Pencil } from 'lucide-react';
 import { LeadCard } from './LeadCard';
 import { LeadQualityBadge } from './LeadQualityBadge';
 import { calculateQualityStatus } from '@/lib/utils/lead-scoring';
+import Link from 'next/link';
 
 interface LeadListProps {
   leads: Lead[];
@@ -231,8 +232,10 @@ export function LeadList({
                     <div className="flex items-center justify-end gap-1">
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Button variant="ghost" size="icon" onClick={() => window.location.href = `/leads/${lead.id}`}>
-                            <Eye className="h-4 w-4" />
+                          <Button variant="ghost" size="icon" asChild>
+                            <Link href={`/leads/${lead.id}`}>
+                              <Eye className="h-4 w-4" />
+                            </Link>
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>Detay</TooltipContent>
