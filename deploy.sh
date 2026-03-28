@@ -7,8 +7,8 @@
 #
 # Kullanım:
 #   ./deploy.sh init                           # İlk instance için kurulum
-#   ./deploy.sh add <instance-name>            # Yeni instance ekle
-#   ./deploy.sh add <instance-name> --existing-traefik  # Mevcut traefik ile
+#   ./deploy.sh add <instance-name>            # Yeni instance ekle (varsayılan: mevcut traefik ile)
+#   ./deploy.sh add <instance-name> --new-traefik        # Yeni traefik ile
 #   ./deploy.sh check-existing                 # Mevcut traefik sistemini kontrol et
 #   ./deploy.sh list                           # Tüm instance'ları listele
 #   ./deploy.sh restart <instance>             # Belirli instance'ı restart et
@@ -78,8 +78,8 @@ Moka CRM Multi-Instance Deployment
 
 Kullanım:
     $0 init                         İlk kurulum (yeni traefik ile)
-    $0 add <instance-name>          Yeni instance ekle
-    $0 add <instance-name> --existing-traefik    Mevcut traefik ile ekle
+    $0 add <instance-name>          Yeni instance ekle (varsayılan: mevcut traefik ile)
+    $0 add <instance-name> --new-traefik        Yeni traefik ile ekle
     $0 check-existing               Mevcut traefik sistemini kontrol et
     $0 list                         Tüm instance'ları listele
     $0 restart <instance-name>      Instance'ı restart et
@@ -92,7 +92,7 @@ Kullanım:
 Örnek:
     $0 init
     $0 add customer1
-    $0 add customer2 --existing-traefik
+    $0 add customer2 --new-traefik
     $0 list
     $0 check-existing
 
@@ -199,7 +199,7 @@ do_init() {
         echo ""
         read -p "Yeni bir traefik network oluşturmak istediğinizden emin misiniz? (e/h): " confirm
         if [[ ! $confirm =~ ^[Ee]$ ]]; then
-            log_info "Mevcut traefik'i kullanmak için: $0 add <instance-name> --existing-traefik"
+            log_info "Mevcut traefik'i kullanmak için: $0 add <instance-name>"
             exit 0
         fi
     fi
@@ -229,16 +229,16 @@ do_init() {
 # Instance ekle
 do_add() {
     local instance_name=$1
-    local use_existing_traefik=false
+    local use_existing_traefik=true  # Varsayılan: mevcut traefik kullan
 
     # Parametre kontrolü
-    if [ "${2:-}" == "--existing-traefik" ]; then
-        use_existing_traefik=true
+    if [ "${2:-}" == "--new-traefik" ]; then
+        use_existing_traefik=false
     fi
 
     if [ -z "${instance_name}" ]; then
         log_error "Instance adı belirtilmedi!"
-        echo "Kullanım: $0 add <instance-name> [--existing-traefik]"
+        echo "Kullanım: $0 add <instance-name> [--new-traefik]"
         exit 1
     fi
 
