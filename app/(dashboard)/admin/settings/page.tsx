@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/stores/auth';
 import { canManageSettings } from '@/lib/utils/permissions';
@@ -13,22 +13,21 @@ import { toast } from 'sonner';
 import type { ServiceName } from '@/types/setting';
 
 export default function AdminSettingsPage() {
-  const { user, isLoading, checkAuth } = useAuthStore();
+  const { user, isLoading } = useAuthStore();
   const router = useRouter();
   const { settings, loading, error, fetchSettings, updateSetting, createSetting, testConnection, clearError } = useSettingsStore();
 
   const [activeTab, setActiveTab] = useState<ServiceName>('green_api');
   const [testingService, setTestingService] = useState<ServiceName | null>(null);
+  const hasFetched = useRef(false);
 
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
-
-  useEffect(() => {
-    if (user) {
+    if (user && !hasFetched.current) {
       fetchSettings();
+      hasFetched.current = true;
     }
-  }, [user, fetchSettings]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   // Redirect if not authenticated
   if (isLoading) {
@@ -46,7 +45,7 @@ export default function AdminSettingsPage() {
 
   // Check permissions
   if (!canManageSettings(user.role)) {
-    router.push('/leads');
+    router.push('/dashboard');
     return null;
   }
 

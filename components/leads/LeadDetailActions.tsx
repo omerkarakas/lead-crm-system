@@ -43,7 +43,7 @@ export function LeadDetailActions({ leadId, leadName, lead, onEmailSent }: LeadD
       setIsDeleting(true);
       await deleteLead(leadId);
       toast.success(`${leadName} silindi`);
-      router.push('/leads');
+      router.push('/dashboard');
     } catch (error: any) {
       toast.error(error.message || 'Lead silinirken hata oluştu');
       setShowDeleteDialog(false);

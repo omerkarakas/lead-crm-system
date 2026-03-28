@@ -43,7 +43,7 @@ export function LoginForm() {
     try {
       await login(data.email, data.password);
       toast.success('Giriş başarılı!');
-      router.push('/leads');
+      router.push('/dashboard');
     } catch (error: unknown) {
       const message = formatError(error);
       toast.error(message);

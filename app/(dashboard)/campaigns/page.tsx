@@ -8,20 +8,13 @@ import { CampaignsClient } from './client';
 
 export default function CampaignsPage() {
   const router = useRouter();
-  const { user, isLoading, checkAuth } = useAuthStore();
-
-  useEffect(() => {
-    const initAuth = async () => {
-      await checkAuth();
-    };
-    initAuth();
-  }, [checkAuth]);
+  const { user, isLoading } = useAuthStore();
 
   useEffect(() => {
     if (!isLoading && !user) {
       router.push('/login');
     } else if (!isLoading && user && !canManageCampaigns(user.role)) {
-      router.push('/leads');
+      router.push('/dashboard');
     }
   }, [user, isLoading, router]);
 

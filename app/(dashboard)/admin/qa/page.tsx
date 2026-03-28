@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/stores/auth';
 import { canManageQAQuestions } from '@/lib/utils/permissions';
@@ -15,7 +15,7 @@ import { toast } from 'sonner';
 import { QAQuestion } from '@/types/qa';
 
 export default function AdminQAPage() {
-  const { user, isLoading, checkAuth } = useAuthStore();
+  const { user, isLoading } = useAuthStore();
   const router = useRouter();
   const { questions, loading, error, fetchQuestions, createQuestion, updateQuestion, deleteQuestion, toggleQuestionActive, reorderQuestions, clearError } = useQAStore();
 
@@ -23,16 +23,15 @@ export default function AdminQAPage() {
   const [editingQuestion, setEditingQuestion] = useState<QAQuestion | null>(null);
   const [welcomeConfigOpen, setWelcomeConfigOpen] = useState(false);
   const [welcomeMessage, setWelcomeMessage] = useState<string>(QA_CONFIG.welcomeMessage);
+  const hasFetched = useRef(false);
 
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
-
-  useEffect(() => {
-    if (user) {
+    if (user && !hasFetched.current) {
       fetchQuestions();
+      hasFetched.current = true;
     }
-  }, [user, fetchQuestions]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   useEffect(() => {
     // Load welcome message from localStorage or use default
@@ -56,7 +55,7 @@ export default function AdminQAPage() {
 
   // Check permissions
   if (!canManageQAQuestions(user.role)) {
-    router.push('/leads');
+    router.push('/dashboard');
     return null;
   }
 

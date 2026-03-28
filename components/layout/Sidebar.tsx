@@ -9,16 +9,16 @@ import {
   LayoutDashboard,
   Users,
   LogOut,
-  Menu,
-  X,
   Calendar,
   Megaphone,
   MessageSquare,
   Mail,
   Settings,
   FileText,
+  Loader2,
 } from 'lucide-react';
-import { useState } from 'react';
+import { cn } from '@/lib/utils';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -93,10 +93,21 @@ interface SidebarProps {
 export function Sidebar({ onClose }: SidebarProps) {
   const { user, logout } = useAuthStore();
   const pathname = usePathname();
+  const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
+
+  // Reset navigation state when pathname changes (page loaded)
+  useEffect(() => {
+    setNavigatingTo(null);
+  }, [pathname]);
 
   const handleLogout = async () => {
     await logout();
     window.location.href = '/login';
+  };
+
+  const handleNavClick = (href: string) => {
+    if (navigatingTo) return; // Prevent double-click
+    setNavigatingTo(href);
   };
 
   const getInitials = (name: string) => {
@@ -115,8 +126,17 @@ export function Sidebar({ onClose }: SidebarProps) {
   return (
     <div className="flex flex-col h-full bg-card border-r">
       {/* Logo */}
-      <div className="p-6 border-b">
-        <Link href="/dashboard" className="flex items-center gap-2" onClick={onClose}>
+      <div className={cn('p-6 border-b', navigatingTo && 'opacity-70')}>
+        <Link
+          href="/dashboard"
+          className="flex items-center gap-2"
+          onClick={() => {
+            if (!navigatingTo) {
+              handleNavClick('/dashboard');
+              onClose?.();
+            }
+          }}
+        >
           <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
             <span className="text-primary-foreground font-bold text-sm">M</span>
           </div>
@@ -128,13 +148,33 @@ export function Sidebar({ onClose }: SidebarProps) {
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {filteredNavItems.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+          const isNavigating = navigatingTo === item.href;
+          const isDisabled = !!navigatingTo;
           return (
-            <Link key={item.href} href={item.href} onClick={onClose}>
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={() => {
+                if (!isDisabled) {
+                  handleNavClick(item.href);
+                  onClose?.();
+                }
+              }}
+              className={isDisabled ? 'pointer-events-none' : ''}
+            >
               <Button
                 variant={isActive ? 'secondary' : 'ghost'}
-                className="w-full justify-start"
+                className={cn(
+                  'w-full justify-start transition-all duration-200',
+                  isNavigating && 'opacity-70'
+                )}
+                disabled={isDisabled}
               >
-                {item.icon}
+                {isNavigating ? (
+                  <Loader2 className="h-4 w-4 animate-spin dark:text-white" />
+                ) : (
+                  item.icon
+                )}
                 <span className="ml-2">{item.label}</span>
               </Button>
             </Link>

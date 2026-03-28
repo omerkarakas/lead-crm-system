@@ -23,7 +23,10 @@ dist-ssr
 .env.current
 
 # PocketBase data directories (keep template structure, ignore DB files)
-/pb_data
+/pb_data/*
+/pb_data/data.db
+/pb_data/auxiliary.db
+
 /instances
 
 # Editor directories and files
@@ -36,3 +39,4 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+

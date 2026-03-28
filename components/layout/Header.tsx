@@ -88,8 +88,8 @@ export function Header({ onMenuClick }: HeaderProps) {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => router.push('/leads')}>
-                  Müşteri Adayları
+                <DropdownMenuItem onClick={() => router.push('/dashboard')}>
+                  Ana Sayfa
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => router.push('/users')}>
                   Kullanıcı Yönetimi

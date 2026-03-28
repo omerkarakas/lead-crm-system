@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/stores/auth';
 import { canManageEmailTemplates } from '@/lib/utils/permissions';
@@ -20,7 +20,7 @@ import {
 import { toast } from 'sonner';
 
 export default function AdminEmailTemplatesPage() {
-  const { user, isLoading, checkAuth } = useAuthStore();
+  const { user, isLoading } = useAuthStore();
   const router = useRouter();
   const {
     templates,
@@ -43,18 +43,17 @@ export default function AdminEmailTemplatesPage() {
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<EmailTemplate | null>(null);
+  const hasFetched = useRef(false);
 
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
-
-  useEffect(() => {
-    if (user) {
+    if (user && !hasFetched.current) {
       fetchTemplates();
       fetchCategories();
       fetchArchivedTemplates();
+      hasFetched.current = true;
     }
-  }, [user, fetchTemplates, fetchCategories, fetchArchivedTemplates]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   // Redirect if not authenticated
   if (isLoading) {
@@ -72,7 +71,7 @@ export default function AdminEmailTemplatesPage() {
 
   // Check permissions
   if (!canManageEmailTemplates(user.role)) {
-    router.push('/leads');
+    router.push('/dashboard');
     return null;
   }
 

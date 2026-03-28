@@ -8,12 +8,8 @@ import { UserManagementList } from '@/components/users/UserManagementList';
 import { Loader2 } from 'lucide-react';
 
 export default function UsersPage() {
-  const { user, isLoading, checkAuth } = useAuthStore();
+  const { user, isLoading } = useAuthStore();
   const router = useRouter();
-
-  useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
 
   // Redirect if not authenticated
   if (isLoading) {
@@ -31,7 +27,7 @@ export default function UsersPage() {
 
   // Check permissions
   if (!canManageUsers(user.role)) {
-    router.push('/leads');
+    router.push('/dashboard');
     return null;
   }
 

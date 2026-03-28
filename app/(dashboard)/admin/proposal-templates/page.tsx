@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/stores/auth';
 import { canManageProposalTemplates } from '@/lib/utils/permissions';
@@ -20,7 +20,7 @@ import {
 import { toast } from 'sonner';
 
 export default function AdminProposalTemplatesPage() {
-  const { user, isLoading, checkAuth } = useAuthStore();
+  const { user, isLoading } = useAuthStore();
   const router = useRouter();
   const {
     templates,
@@ -39,17 +39,17 @@ export default function AdminProposalTemplatesPage() {
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<ProposalTemplate | null>(null);
+  const hasFetched = useRef(false);
 
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
-
-  useEffect(() => {
-    if (user) {
+    if (user && !hasFetched.current) {
+      console.log('[ProposalTemplatesPage] Fetching templates...');
       fetchTemplates();
       fetchArchivedTemplates();
+      hasFetched.current = true;
     }
-  }, [user, fetchTemplates, fetchArchivedTemplates]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   // Redirect if not authenticated
   if (isLoading) {
@@ -67,7 +67,7 @@ export default function AdminProposalTemplatesPage() {
 
   // Check permissions
   if (!canManageProposalTemplates(user.role)) {
-    router.push('/leads');
+    router.push('/dashboard');
     return null;
   }
 
