@@ -28,8 +28,20 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(response.items);
   } catch (error: any) {
     console.error('[GET /api/email-templates] Error:', error);
+    console.error('[GET /api/email-templates] Error details:', {
+      message: error?.message,
+      status: error?.status,
+      data: error?.data,
+      stack: error?.stack?.split('\n').slice(0, 3).join('\n'),
+    });
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch templates' },
+      {
+        error: error.message || 'Failed to fetch templates',
+        details: process.env.NODE_ENV === 'development' ? {
+          message: error?.message,
+          status: error?.status,
+        } : undefined
+      },
       { status: error.status || 500 }
     );
   }
