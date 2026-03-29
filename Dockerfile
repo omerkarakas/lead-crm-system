@@ -12,7 +12,10 @@ WORKDIR /app
 
 # Install dependencies based on the preferred package manager
 COPY package.json package-lock.json* ./
-RUN npm ci
+RUN npm ci --cache=/tmp/npm-cache
+
+# Clear npm cache to avoid cross-instance contamination
+RUN rm -rf /tmp/npm-cache
 
 # -----------------------------------------------------------------------------
 # Stage 2: Builder
@@ -20,23 +23,20 @@ RUN npm ci
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Build arguments for PocketBase URL
+# Build arguments for PocketBase URL and cache busting
 ARG NEXT_PUBLIC_POCKETBASE_URL=http://127.0.0.1:8090
+ARG BUILD_ID=default
 ENV NEXT_PUBLIC_POCKETBASE_URL=${NEXT_PUBLIC_POCKETBASE_URL}
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+
+# Use build-specific cache directory to prevent cross-instance contamination
+ENV NEXT_CACHE_DIR=/tmp/.next-cache-${BUILD_ID}
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Set environment for build
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_ENV=production
-
-# Build Next.js application with standalone output
-# Cache buster: timestamp ile her seferinde yeniden build edilir
-ARG BUILD_TIMESTAMP=0
-RUN echo "Build timestamp: ${BUILD_TIMESTAMP}"
-
-# Build with full error output
+# Build with instance-specific cache
 RUN npm run build 2>&1 | tee /tmp/build.log
 
 # Check build result

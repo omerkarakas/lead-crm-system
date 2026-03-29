@@ -303,6 +303,7 @@ services:
       target: nextjs
       args:
         NEXT_PUBLIC_POCKETBASE_URL: https://pb.${domain}
+        BUILD_ID: ${instance_name}
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_POCKETBASE_URL=https://pb.${domain}
@@ -335,6 +336,8 @@ services:
       context: ${SCRIPT_DIR}
       dockerfile: ${SCRIPT_DIR}/Dockerfile
       target: pocketbase
+      args:
+        BUILD_ID: ${instance_name}
     environment:
       - POCKETBASE_URL=https://pb.${domain}
     volumes:
