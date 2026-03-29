@@ -1,8 +1,6 @@
 'use client';
 
-'use client';
-
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Campaign } from '@/types/campaign';
 import { Button } from '@/components/ui/button';
@@ -29,9 +27,15 @@ export function CampaignsClient() {
   const { campaigns, loading, error, fetchCampaigns, createCampaign, updateCampaign, deleteCampaign } =
     useCampaignsStore();
 
+  const hasFetched = useRef(false);
+
   useEffect(() => {
-    fetchCampaigns();
-  }, [fetchCampaigns]);
+    if (!hasFetched.current) {
+      fetchCampaigns();
+      hasFetched.current = true;
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleCreate = () => {
     setEditingCampaign(undefined);
