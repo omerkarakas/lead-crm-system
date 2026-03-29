@@ -32,6 +32,9 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
 # Build Next.js application with standalone output
+# Cache buster: timestamp ile her seferinde yeniden build edilir
+ARG BUILD_TIMESTAMP=0
+RUN echo "Build timestamp: ${BUILD_TIMESTAMP}"
 RUN npm run build
 
 # Verify standalone output was created
