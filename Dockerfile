@@ -37,8 +37,14 @@ ARG BUILD_TIMESTAMP=0
 RUN echo "Build timestamp: ${BUILD_TIMESTAMP}"
 RUN npm run build
 
+# Debug: Check .next directory structure
+RUN echo "=== Checking .next directory ===" && \
+    ls -la /app/.next/ && \
+    echo "=== Checking if standalone exists ===" && \
+    ls -la /app/.next/standalone 2>/dev/null || echo "standalone directory NOT found"
+
 # Verify standalone output was created
-RUN ls -la /app/.next/standalone && echo "Standalone build successful" || (echo "Standalone build failed" && exit 1)
+RUN test -d /app/.next/standalone || (echo "ERROR: standalone not found!" && ls -la /app/.next/ && exit 1)
 
 # -----------------------------------------------------------------------------
 # Stage 3: Next.js Production Runtime
