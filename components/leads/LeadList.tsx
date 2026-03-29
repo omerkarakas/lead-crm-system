@@ -162,6 +162,7 @@ export function LeadList({
               >
                 Şirket{getSortIndicator('company', sortField, sortOrder)}
               </TableHead>
+              <TableHead className="text-center">İşlemler</TableHead>
               <TableHead
                 className="cursor-pointer hover:bg-muted/50"
                 onClick={() => onSort('status')}
@@ -187,7 +188,6 @@ export function LeadList({
               >
                 Kayıt Tarihi{getSortIndicator('created', sortField, sortOrder)}
               </TableHead>
-              <TableHead className="text-right">İşlemler</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -197,6 +197,32 @@ export function LeadList({
                 <TableCell>{lead.phone}</TableCell>
                 <TableCell>{lead.email || '-'}</TableCell>
                 <TableCell>{lead.company || '-'}</TableCell>
+                <TableCell className="text-center">
+                  <TooltipProvider>
+                    <div className="flex items-center justify-end gap-1">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="icon" asChild>
+                            <Link href={`/leads/${lead.id}`}>
+                              <Eye className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Detay</TooltipContent>
+                      </Tooltip>
+                      {onEditLead && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" className="text-green-600 hover:text-green-700 hover:bg-green-50" onClick={() => onEditLead(lead)}>
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Düzenle</TooltipContent>
+                        </Tooltip>
+                      )}
+                    </div>
+                  </TooltipProvider>
+                </TableCell>
                 <TableCell>
                   <Badge variant={STATUS_VARIANTS[lead.status]} className="font-medium">
                     {STATUS_LABELS[lead.status]}
@@ -226,32 +252,6 @@ export function LeadList({
                 </TableCell>
                 <TableCell>
                   {new Date(lead.created).toLocaleDateString('tr-TR')}
-                </TableCell>
-                <TableCell className="text-right">
-                  <TooltipProvider>
-                    <div className="flex items-center justify-end gap-1">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button variant="ghost" size="icon" asChild>
-                            <Link href={`/leads/${lead.id}`}>
-                              <Eye className="h-4 w-4" />
-                            </Link>
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Detay</TooltipContent>
-                      </Tooltip>
-                      {onEditLead && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" className="text-green-600 hover:text-green-700 hover:bg-green-50" onClick={() => onEditLead(lead)}>
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Düzenle</TooltipContent>
-                        </Tooltip>
-                      )}
-                    </div>
-                  </TooltipProvider>
                 </TableCell>
               </TableRow>
             ))}

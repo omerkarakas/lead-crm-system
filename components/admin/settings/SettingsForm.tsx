@@ -25,6 +25,9 @@ const SERVICE_FIELDS: Record<
   ServiceName,
   { key: string; label: string; type: 'text' | 'password'; placeholder?: string }[]
 > = {
+  general: [
+    { key: 'COMPANY', label: 'Şirket Adı', type: 'text', placeholder: 'Moka' },
+  ],
   green_api: [
     { key: 'instance_id', label: 'Instance ID', type: 'text', placeholder: '1101' },
     { key: 'token', label: 'API Token', type: 'password', placeholder: 'edfedf91...' },
@@ -116,24 +119,26 @@ export function SettingsForm({
             </CardTitle>
             <CardDescription className="mt-1">{serviceDescription}</CardDescription>
           </div>
-          <div className="flex items-center gap-3">
-            <TestBadge result={testResult} isLoading={isTesting} />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onTest}
-              disabled={isTesting}
-            >
-              {isTesting ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Test ediliyor...
-                </>
-              ) : (
-                'Bağlantıyı Test Et'
-              )}
-            </Button>
-          </div>
+          {serviceName !== 'general' && (
+            <div className="flex items-center gap-3">
+              <TestBadge result={testResult} isLoading={isTesting} />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onTest}
+                disabled={isTesting}
+              >
+                {isTesting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Test ediliyor...
+                  </>
+                ) : (
+                  'Bağlantıyı Test Et'
+                )}
+              </Button>
+            </div>
+          )}
         </div>
         {serviceName === 'proposal_notifications' && !settings.find(s => s.setting_key === 'sales_phones')?.setting_value && (
           <div className="bg-amber-50 border border-amber-200 rounded-md p-2 mb-3 mt-3">

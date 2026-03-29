@@ -11,13 +11,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Mail, MessageSquare, MoreHorizontal, Pencil, Trash2, List } from 'lucide-react';
+import { Mail, MessageSquare, Pencil, Trash2, List } from 'lucide-react';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface CampaignListProps {
   campaigns: CampaignWithSequences[];
@@ -71,7 +71,7 @@ export function CampaignList({
             <TableHead>Sıralar</TableHead>
             <TableHead>Min. Skor</TableHead>
             <TableHead>Durum</TableHead>
-            <TableHead className="text-right">İşlemler</TableHead>
+            <TableHead className="text-center">İşlemler</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -130,31 +130,35 @@ export function CampaignList({
                       {campaign.is_active ? 'Aktif' : 'Pasif'}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => onViewSequences(campaign)}>
-                          <List className="h-4 w-4 mr-2" />
-                          Sıraları Görüntüle
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onEdit(campaign)}>
-                          <Pencil className="h-4 w-4 mr-2" />
-                          Düzenle
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => onDelete(campaign)}
-                          className="text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Sil
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                  <TableCell className="text-center">
+                    <TooltipProvider>
+                      <div className="flex justify-center gap-1">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" onClick={() => onViewSequences(campaign)}>
+                              <List className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Sıraları Görüntüle</TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" className="text-green-600 hover:text-green-700 hover:bg-green-50" onClick={() => onEdit(campaign)}>
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Düzenle</TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" className="text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => onDelete(campaign)}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Sil</TooltipContent>
+                        </Tooltip>
+                      </div>
+                    </TooltipProvider>
                   </TableCell>
                 </TableRow>
               );

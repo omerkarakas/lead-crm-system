@@ -1,4 +1,4 @@
-export type ServiceName = 'green_api' | 'calcom' | 'resend' | 'proposal_notifications';
+export type ServiceName = 'general' | 'green_api' | 'calcom' | 'resend' | 'proposal_notifications';
 
 export interface Setting {
   id: string;

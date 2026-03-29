@@ -17,7 +17,7 @@ export default function AdminSettingsPage() {
   const router = useRouter();
   const { settings, loading, error, fetchSettings, updateSetting, createSetting, testConnection, clearError } = useSettingsStore();
 
-  const [activeTab, setActiveTab] = useState<ServiceName>('green_api');
+  const [activeTab, setActiveTab] = useState<ServiceName>('general');
   const [testingService, setTestingService] = useState<ServiceName | null>(null);
   const hasFetched = useRef(false);
 
@@ -91,6 +91,7 @@ export default function AdminSettingsPage() {
   const calcomSettings = useServiceSettings('calcom');
   const resendSettings = useServiceSettings('resend');
   const proposalNotificationsSettings = useServiceSettings('proposal_notifications');
+  const generalSettings = useServiceSettings('general');
 
   return (
     <div className="space-y-6">
@@ -118,11 +119,25 @@ export default function AdminSettingsPage() {
       {/* Service Settings Tabs */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ServiceName)}>
         <TabsList>
+          <TabsTrigger value="general">Genel</TabsTrigger>
           <TabsTrigger value="green_api">Green API (WhatsApp)</TabsTrigger>
           <TabsTrigger value="calcom">Cal.com</TabsTrigger>
           <TabsTrigger value="resend">Resend (Email)</TabsTrigger>
           <TabsTrigger value="proposal_notifications">Teklif Bildirimleri</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="general" className="mt-4">
+          <SettingsForm
+            serviceName="general"
+            serviceLabel="Genel Ayarlar"
+            serviceDescription="Şirket adı ve genel sistem ayarları"
+            settings={generalSettings}
+            testResult={null}
+            isTesting={false}
+            onUpdate={handleUpdate}
+            onCreate={handleCreate}
+          />
+        </TabsContent>
 
         <TabsContent value="green_api" className="mt-4">
           <SettingsForm

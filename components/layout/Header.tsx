@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuthStore } from '@/lib/stores/auth';
+import { useSettingsStore } from '@/lib/stores/settings';
 import { Role } from '@/types/user';
 import { Menu, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useRouter } from 'next/navigation';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { useEffect } from 'react';
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -22,7 +24,16 @@ interface HeaderProps {
 
 export function Header({ onMenuClick }: HeaderProps) {
   const { user, logout } = useAuthStore();
+  const { settings, fetchSettings } = useSettingsStore();
   const router = useRouter();
+
+  useEffect(() => {
+    fetchSettings();
+  }, [fetchSettings]);
+
+  const companyName = settings.find(
+    (s) => s.service_name === 'general' && s.setting_key === 'COMPANY'
+  )?.setting_value || 'Moka';
 
   const handleLogout = async () => {
     await logout();
@@ -54,7 +65,7 @@ export function Header({ onMenuClick }: HeaderProps) {
           <Button variant="ghost" size="icon" onClick={onMenuClick} className="lg:hidden">
             <Menu className="h-5 w-5" />
           </Button>
-          <h1 className="text-xl font-semibold">Moka CRM</h1>
+          <h1 className="text-xl font-semibold">{companyName} CRM</h1>
         </div>
 
         <div className="flex items-center gap-2">
@@ -95,6 +106,11 @@ export function Header({ onMenuClick }: HeaderProps) {
                   Kullanıcı Yönetimi
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <a href="https://mokadijital.com" target="_blank" rel="noopener noreferrer" className="cursor-pointer">
+                    mokadijital.com
+                  </a>
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleLogout} className="text-destructive">
                   Çıkış Yap
                 </DropdownMenuItem>

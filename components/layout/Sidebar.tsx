@@ -140,7 +140,7 @@ export function Sidebar({ onClose }: SidebarProps) {
           <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
             <span className="text-primary-foreground font-bold text-sm">M</span>
           </div>
-          <span className="font-bold text-lg">Moka CRM</span>
+          <span className="font-bold text-lg">MokaDijital</span>
         </Link>
       </div>
 
@@ -184,6 +184,14 @@ export function Sidebar({ onClose }: SidebarProps) {
 
       {/* User Info */}
       <div className="p-4 border-t">
+        <a
+          href="https://mokadijital.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block text-sm text-muted-foreground hover:text-foreground mb-3"
+        >
+          mokadijital.com
+        </a>
         {user && (
           <div className="flex items-center gap-3 mb-3">
             <Avatar>
