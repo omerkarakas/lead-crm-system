@@ -34,6 +34,9 @@ ENV NODE_ENV=production
 # Build Next.js application with standalone output
 RUN npm run build
 
+# Verify standalone output was created
+RUN ls -la /app/.next/standalone && echo "Standalone build successful" || (echo "Standalone build failed" && exit 1)
+
 # -----------------------------------------------------------------------------
 # Stage 3: Next.js Production Runtime
 # -----------------------------------------------------------------------------
