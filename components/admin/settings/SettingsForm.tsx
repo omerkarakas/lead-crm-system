@@ -17,7 +17,7 @@ interface SettingsFormProps {
   isTesting?: boolean;
   onUpdate: (id: string, value: string, isActive?: boolean) => Promise<void>;
   onCreate?: (key: string, value: string) => Promise<void>;
-  onTest: () => Promise<void>;
+  onTest?: () => Promise<void>;
 }
 
 // Service-specific field configurations
@@ -119,13 +119,13 @@ export function SettingsForm({
             </CardTitle>
             <CardDescription className="mt-1">{serviceDescription}</CardDescription>
           </div>
-          {serviceName !== 'general' && (
+          {serviceName !== 'general' && onTest && (
             <div className="flex items-center gap-3">
               <TestBadge result={testResult} isLoading={isTesting} />
               <Button
                 variant="outline"
                 size="sm"
-                onClick={onTest}
+                onClick={() => onTest()}
                 disabled={isTesting}
               >
                 {isTesting ? (
