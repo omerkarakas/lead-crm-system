@@ -35,16 +35,23 @@ ENV NODE_ENV=production
 # Cache buster: timestamp ile her seferinde yeniden build edilir
 ARG BUILD_TIMESTAMP=0
 RUN echo "Build timestamp: ${BUILD_TIMESTAMP}"
-RUN npm run build
 
-# Debug: Check .next directory structure
-RUN echo "=== Checking .next directory ===" && \
+# Build with full error output
+RUN npm run build 2>&1 | tee /tmp/build.log
+
+# Check build result
+RUN echo "=== Build completed. Checking .next directory ===" && \
     ls -la /app/.next/ && \
-    echo "=== Checking if standalone exists ===" && \
-    ls -la /app/.next/standalone 2>/dev/null || echo "standalone directory NOT found"
-
-# Verify standalone output was created
-RUN test -d /app/.next/standalone || (echo "ERROR: standalone not found!" && ls -la /app/.next/ && exit 1)
+    echo "=== Checking for standalone ===" && \
+    if [ -d /app/.next/standalone ]; then \
+        echo "✓ standalone found"; \
+        ls -la /app/.next/standalone/; \
+    else \
+        echo "✗ standalone NOT found!"; \
+        echo "=== Last 50 lines of build log ===" && \
+        tail -50 /tmp/build.log; \
+        exit 1; \
+    fi
 
 # -----------------------------------------------------------------------------
 # Stage 3: Next.js Production Runtime
