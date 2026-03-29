@@ -12,24 +12,40 @@ Sistem, web siteleri/reklamlardan gelen lead'leri yakalıyor, WhatsApp üzerinde
 
 Lead toplamadan satışa giden tüm süreci (yakala → qualifie et → randevu al → satış yap) tek bir sistemde yönetilebilir kılıyoruz. Müşterilerimiz Google Sheets + n8n + ayrı email araçları yerine tek bir platform kullanacak.
 
+## Current Milestone: v1.1 CRM Core Features
+
+**Goal:** Endüstri standardı CRM temel özelliklerini ekleyerek ürünü tam teşekküllü bir CRM platformuna dönüştürmek.
+
+**Target features:**
+- Kişi & Şirket Yönetimi (Contacts & Companies ayrımı)
+- Pipeline / Fırsat Yönetimi (Görsel board, opportunity tracking)
+- Görev & Aktivite Takibi (Task management, calendar, reminders)
+- Kayıtlı Filtreler (Saved searches/views)
+- Gelişmiş Dashboard (KPI metrics, funnel visualization)
+
 ## Requirements
 
-### Validated
+### Validated (v1.0 MVP — Shipped 2026-03-15)
 
-(None yet — ship to validate)
+- ✓ Lead Yönetimi: Web form, API ve manuel girişle lead toplama
+- ✓ Lead Qualification: WhatsApp üzerinden otomatik QA soruları ve puanlama sistemi
+- ✓ Randevu Yönetimi: Cal.com entegrasyonu ile randevu takibi ve hatırlatmalar
+- ✓ WhatsApp Pazarlama: Green API ile mesaj gönderimi ve nurturing kampanyaları
+- ✓ Email Pazarlama: Resend ile email kampanyaları ve otomatik nurturing
+- ✓ Lead Nurturing: Müşteriye dönüşmeyen lead'ler için otomatik takip serileri
+- ✓ Kullanıcı Yönetimi: Admin, Sales ve Marketing rolleri ile yetkilendirme
+- ✓ Aktivite Timeline: Notlar, WhatsApp, email, QA, randevu, proposal geçmişi
+- ✓ Proposal Yönetimi: Teklif şablonları, gönderim, yanıt takibi
+- ✓ Kampanya & Nurturing: Sequence builder, enrollment, analytics
 
-### Active
+### Active (v1.1)
 
-- [ ] Lead Yönetimi: Web form, API ve manuel girişle lead toplama
-- [ ] Lead Qualification: WhatsApp üzerinden otomatik QA soruları ve puanlama sistemi
-- [ ] Randevu Yönetimi: Cal.com entegrasyonu ile randevu takibi ve hatırlatmalar
-- [ ] WhatsApp Pazarlama: Green API ile mesaj gönderimi ve nurturing kampanyaları
-- [ ] Email Pazarlama: Resend ile email kampanyaları ve otomatik nurturing
-- [ ] Lead Nurturing: Müşteriye dönüşmeyen lead'ler için otomatik takip serileri
-- [ ] Kullanıcı Yönetimi: Admin, Sales ve Marketing rolleri ile yetkilendirme
-- [ ] Raporlama: Lead funnel, QA performansı ve kampanya istatistikleri dashboard'u
-- [ ] Multi-Tenant: Her müşteri için ayrı PocketBase instance (self-hosted deployment)
-- [ ] White-Label: Müşteriler kendi logoları/domain'leri ile kullanabilecek
+- [ ] Kişi & Şirket Ayrımı: Contact ve Company koleksiyonları, ilişkilendirme
+- [ ] Pipeline/Fırsat Yönetimi: Görsel board view, opportunity değerleri, kapanma tarihi
+- [ ] Görev Sistemi: Todo'lar, due date, reminder, atama
+- [ ] Takvim Entegrasyonu: Görevleri takvimde görme
+- [ ] Kayıtlı Filtreler: Sık kullanılan aramaları kaydetme
+- [ ] Gelişmiş Dashboard: KPI metrics, funnel chart, pipeline snapshot
 
 ### Out of Scope
 
@@ -93,4 +109,4 @@ Lead toplamadan satışa giden tüm süreci (yakala → qualifie et → randevu 
 | Styling | Tailwind CSS + shadcn/ui components | Planned |
 
 ---
-*Last updated: 2026-03-02 — Switched from Vue 3 to Next.js*
+*Last updated: 2026-03-29 — Starting milestone v1.1 CRM Core Features*
