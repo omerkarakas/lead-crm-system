@@ -45,12 +45,12 @@ Moka CRM transforms lead-to-customer conversion through automation. We build fro
   3. Admin can create open-ended questions with free text input
   4. System correctly processes and scores responses for all question types
   5. Open-ended answers receive automatic scores based on answer length/quality
-**Plans**: TBD
+**Plans**: 3 plans in 3 waves
 
 Plans:
-- [ ] 07-01: Question type data model and validation
-- [ ] 07-02: Admin UI for creating new question types
-- [ ] 07-03: Response processing and scoring logic
+- [ ] 07-01-PLAN.md — Question type data model and validation
+- [ ] 07-02-PLAN.md — Admin UI for creating new question types
+- [ ] 07-03-PLAN.md — Response processing and scoring logic
 
 ### Phase 8: WhatsApp Inline Buttons
 **Goal**: Leads can respond to polls using native WhatsApp inline buttons for better UX
