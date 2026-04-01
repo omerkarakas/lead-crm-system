@@ -371,6 +371,17 @@
           "default": 0
         },
         {
+          "id": "qa_questions_question_type",
+          "name": "question_type",
+          "type": "select",
+          "required": true,
+          "options": {
+            "values": ["single", "multiple", "likert", "open"],
+            "maxSelect": 1
+          },
+          "default": "single"
+        },
+        {
           "id": "qa_questions_is_active",
           "name": "is_active",
           "type": "bool",
@@ -487,11 +498,11 @@
         {
           "id": "qa_answers_selected_answer",
           "name": "selected_answer",
-          "type": "select",
+          "type": "text",
           "required": true,
           "options": {
-            "values": ["a", "b", "c"],
-            "maxSelect": 1
+            "min": 1,
+            "max": 1000
           }
         },
         {
