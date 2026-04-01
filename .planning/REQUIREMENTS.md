@@ -1,11 +1,27 @@
 # Requirements: Moka CRM
 
 **Defined:** 2025-03-01
+**Updated:** 2026-04-01 — v1.0.1 Poll Question Types
 **Core Value:** Lead-to-Customer dönüşümünü otomatize eden tek platform.
 
-## v1 Requirements
+## v1.0.1 Requirements - Poll Question Types
 
-Requirements for initial release. Each maps to roadmap phases.
+Requirements for adding new poll question types to existing QA system.
+
+### Poll Questions
+
+- [ ] **POLL-01**: Admin single answer soru oluşturabilir (mevcut a/b/c formatı)
+- [ ] **POLL-02**: Admin multiple choice soru oluşturabilir (checkbox, birden fazla seçim)
+- [ ] **POLL-03**: Admin Likert scale soru oluşturabilir (1-5 anket)
+- [ ] **POLL-04**: Admin açık uçlu soru oluşturabilir (serbest metin)
+- [ ] **POLL-05**: Her soru tipi için puan değeri tanımlayabilir
+- [ ] **POLL-06**: WhatsApp inline butonlar kullanabilir
+- [ ] **POLL-07**: Sistem multiple choice cevaplarını kabul eder
+- [ ] **POLL-08**: Sistem Likert scale cevaplarını kabul eder (1-5)
+- [ ] **POLL-09**: Sistem açık uçlu cevapları kabul eder
+- [ ] **POLL-10**: Açık uçlu cevaplar için otomatik puanlama (kelime sayısı/uzunluk)
+
+## v1.0 Requirements (Validated — Shipped 2026-03-15)
 
 ### Authentication & Users
 
@@ -167,11 +183,27 @@ Explicitly excluded. Documented to prevent scope creep.
 
 Which phases cover which requirements. Updated during roadmap creation.
 
+### v1.0.1 Requirements
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| POLL-01 | Phase 7 | Pending |
+| POLL-02 | Phase 7 | Pending |
+| POLL-03 | Phase 7 | Pending |
+| POLL-04 | Phase 7 | Pending |
+| POLL-05 | Phase 7 | Pending |
+| POLL-06 | Phase 8 | Pending |
+| POLL-07 | Phase 7 | Pending |
+| POLL-08 | Phase 7 | Pending |
+| POLL-09 | Phase 7 | Pending |
+| POLL-10 | Phase 7 | Pending |
+
+### v1.0 Requirements
+
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | AUTH-01 to AUTH-06 | Phase 1 | ✅ Complete |
-| LEAD-01 to LEAD-16 | Phase 1 | ✅ Complete |
-| LEAD-17, LEAD-18 | Phase 6 | ✅ Complete |
+| LEAD-01 to LEAD-18 | Phase 1, 6 | ✅ Complete |
 | QUAL-01 to QUAL-17 | Phase 2 | ✅ Complete |
 | WHATS-01 to WHATS-10 | Phase 2 | ✅ Complete |
 | EMAIL-01 to EMAIL-10 | Phase 3 | ✅ Complete |
@@ -180,10 +212,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LEAD-09, LEAD-10, LEAD-13, LEAD-14 | Phase 6 | ✅ Complete |
 
 **Coverage:**
-- v1 requirements: 98 total
-- Mapped to phases: 98
-- Complete: 98/98 (100%) ✓
+- v1.0.1 requirements: 10 total
+- v1.0 requirements: 98 total
+- v1.0 complete: 98/98 (100%) ✓
+- v1.0.1 mapped: 10/10 (100%) ✓
 
 ---
 *Requirements defined: 2025-03-01*
-*Last updated: 2026-03-12 - Phase 6 complete - All v1 requirements achieved!*
+*Last updated: 2026-04-01 - v1.0.1 Poll Question Types roadmap created*

@@ -12,16 +12,16 @@ Sistem, web siteleri/reklamlardan gelen lead'leri yakalıyor, WhatsApp üzerinde
 
 Lead toplamadan satışa giden tüm süreci (yakala → qualifie et → randevu al → satış yap) tek bir sistemde yönetilebilir kılıyoruz. Müşterilerimiz Google Sheets + n8n + ayrı email araçları yerine tek bir platform kullanacak.
 
-## Current Milestone: v1.1 CRM Core Features
+## Current Milestone: v1.0.1 WhatsApp QA Soru Tipleri
 
-**Goal:** Endüstri standardı CRM temel özelliklerini ekleyerek ürünü tam teşekküllü bir CRM platformuna dönüştürmek.
+**Goal:** Mevcut WhatsApp QA sistemine yeni soru tipleri ekleyerek lead qualification esnekliğini artırmak.
 
 **Target features:**
-- Kişi & Şirket Yönetimi (Contacts & Companies ayrımı)
-- Pipeline / Fırsat Yönetimi (Görsel board, opportunity tracking)
-- Görev & Aktivite Takibi (Task management, calendar, reminders)
-- Kayıtlı Filtreler (Saved searches/views)
-- Gelişmiş Dashboard (KPI metrics, funnel visualization)
+- Çoktan seçmeli (multiple choice) soru tipi
+- Anket/skalası soru tipi (1-5 Likert)
+- Açık uçlu (open-ended) soru tipi
+- WhatsApp inline buton desteği
+- Her soru tipi için puanlama kuralları
 
 ## Requirements
 
@@ -38,14 +38,13 @@ Lead toplamadan satışa giden tüm süreci (yakala → qualifie et → randevu 
 - ✓ Proposal Yönetimi: Teklif şablonları, gönderim, yanıt takibi
 - ✓ Kampanya & Nurturing: Sequence builder, enrollment, analytics
 
-### Active (v1.1)
+### Active (v1.0.1)
 
-- [ ] Kişi & Şirket Ayrımı: Contact ve Company koleksiyonları, ilişkilendirme
-- [ ] Pipeline/Fırsat Yönetimi: Görsel board view, opportunity değerleri, kapanma tarihi
-- [ ] Görev Sistemi: Todo'lar, due date, reminder, atama
-- [ ] Takvim Entegrasyonu: Görevleri takvimde görme
-- [ ] Kayıtlı Filtreler: Sık kullanılan aramaları kaydetme
-- [ ] Gelişmiş Dashboard: KPI metrics, funnel chart, pipeline snapshot
+- [ ] Çoktan seçmeli soru tipi: Birden fazla seçenek seçilebilir
+- [ ] Anket/skalası soru tipi: 1-5 Likert skalaması (10-50 puan)
+- [ ] Açık uçlu soru tipi: Admin tanımlı, serbest metin girişi
+- [ ] WhatsApp inline butonlar: Native butonlar ile daha iyi UX
+- [ ] Her soru tipi için puanlama: Otomatik puan hesaplama kuralları
 
 ### Out of Scope
 
