@@ -1,6 +1,6 @@
 'use client';
 
-import { QAQuestion } from '@/types/qa';
+import { QAQuestion, QuestionType } from '@/types/qa';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -30,6 +30,20 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+
+// Question type badge component
+function QuestionTypeBadge({ type }: { type: QuestionType }) {
+  const variants: Record<QuestionType, { label: string; variant: "default" | "secondary" | "outline" | "destructive" }> = {
+    single: { label: 'Tek Cevap', variant: 'default' },
+    multiple: { label: 'Çoklu Seçim', variant: 'secondary' },
+    likert: { label: 'Anket', variant: 'outline' },
+    open: { label: 'Açık Uçlu', variant: 'destructive' },
+  };
+
+  const { label, variant } = variants[type] || variants.single;
+
+  return <Badge variant={variant}>{label}</Badge>;
+}
 
 interface QuestionListProps {
   questions: QAQuestion[];
@@ -67,7 +81,22 @@ export function QuestionList({
 
   const formatWhatsAppMessage = (question: QAQuestion) => {
     let message = `*${question.order}. ${question.question_text}*\n\n`;
-    message += question.options.join('\n');
+
+    if (question.question_type === 'single' || question.question_type === 'multiple') {
+      message += question.options.join('\n');
+      if (question.question_type === 'multiple') {
+        message += '\n(Birden fazla seçebilirsiniz)';
+      }
+    } else if (question.question_type === 'likert') {
+      const scaleMin = (question as any).scale_min || 1;
+      const scaleMax = (question as any).scale_max || 5;
+      for (let i = scaleMin; i <= scaleMax; i++) {
+        message += `${i}) ${i === scaleMin ? 'Çok kötü' : i === scaleMax ? 'Çok iyi' : '-'}\n`;
+      }
+    } else if (question.question_type === 'open') {
+      message += 'Cevabınızı buraya yazın...';
+    }
+
     return message;
   };
 
@@ -115,6 +144,7 @@ export function QuestionList({
             <TableRow>
               <TableHead className="w-12">Sıra</TableHead>
               <TableHead>Soru</TableHead>
+              <TableHead>Tip</TableHead>
               <TableHead>Seçenekler</TableHead>
               <TableHead>Puanlar</TableHead>
               <TableHead>Durum</TableHead>
@@ -131,21 +161,44 @@ export function QuestionList({
                   </div>
                 </TableCell>
                 <TableCell>
+                  <QuestionTypeBadge type={question.question_type || 'single'} />
+                </TableCell>
+                <TableCell>
                   <div className="text-sm space-y-1">
-                    {question.options.map((opt, i) => (
-                      <div key={i} className="text-muted-foreground">
-                        {opt}
+                    {question.options && question.question_type !== 'likert' && question.question_type !== 'open' ? (
+                      question.options.map((opt, i) => (
+                        <div key={i} className="text-muted-foreground">
+                          {opt}
+                        </div>
+                      ))
+                    ) : question.question_type === 'likert' ? (
+                      <div className="text-muted-foreground">
+                        {(question as any).scale_min || 1}-{(question as any).scale_max || 5} skala
                       </div>
-                    ))}
+                    ) : (
+                      <div className="text-muted-foreground">
+                        Min: {(question as any).min_length || 0}, Max: {(question as any).max_length || 500}
+                      </div>
+                    )}
                   </div>
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-2">
-                    {Object.entries(question.points).map(([key, value]) => (
-                      <Badge key={key} variant="outline">
-                        {key}: {value}
+                    {question.points && Object.keys(question.points).length > 0 ? (
+                      Object.entries(question.points).map(([key, value]) => (
+                        <Badge key={key} variant="outline">
+                          {key}: {value}
+                        </Badge>
+                      ))
+                    ) : question.question_type === 'likert' ? (
+                      <Badge variant="outline">
+                        {(question as any).points_per_level || 0} puan/seviye
                       </Badge>
-                    ))}
+                    ) : question.question_type === 'open' ? (
+                      <Badge variant="outline">
+                        {(question as any).points || 0} puan
+                      </Badge>
+                    ) : null}
                   </div>
                 </TableCell>
                 <TableCell>
