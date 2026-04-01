@@ -10,6 +10,7 @@ import type {
   CreateLikertDto,
   CreateOpenDto,
   CreateQAQuestionDtoLegacy,
+  QAAnswerWithQuestion,
 } from '@/types/qa';
 
 // Create dedicated PocketBase instance for QA to prevent auto-cancellation
@@ -101,15 +102,19 @@ export async function createQuestion(data: CreateQAQuestionDto): Promise<QAQuest
     }
   } else if (data.question_type === 'likert') {
     const likertData = data as CreateLikertDto;
-    recordData.scale_min = likertData.scale_min;
-    recordData.scale_max = likertData.scale_max;
-    recordData.scale_labels = likertData.scale_labels;
-    recordData.points_per_level = likertData.points_per_level;
+    recordData.scale_values = likertData.scale_values;
+    // Send non-empty values to satisfy PocketBase nonempty constraint
+    // These values are ignored for Likert questions
+    recordData.options = [""];
+    recordData.points = { "": 0 };
   } else if (data.question_type === 'open') {
     const openData = data as CreateOpenDto;
     recordData.max_length = openData.max_length;
     recordData.min_length = openData.min_length;
     recordData.points = openData.points;
+    // Send non-empty values to satisfy PocketBase nonempty constraint
+    // These values are ignored for Open questions
+    recordData.options = [""];
   }
 
   const record = await pb.collection('qa_questions').create<QAQuestion>(recordData);
@@ -192,23 +197,51 @@ export async function saveAnswer(answer: QAAnswer): Promise<QAAnswer> {
     validateAnswerData(question, answer);
   }
 
+  console.log('[saveAnswer] Saving answer:', {
+    question_type: question?.question_type,
+    selected_answer: answer.selected_answer,
+    typeof_selected_answer: typeof answer.selected_answer,
+    is_array: Array.isArray(answer.selected_answer)
+  });
+
   // Format selected_answer for storage (convert arrays to JSON strings for multiple choice)
   let storedAnswer: string;
   if (Array.isArray(answer.selected_answer)) {
     storedAnswer = JSON.stringify(answer.selected_answer);
-  } else if (typeof answer.selected_answer === 'number') {
-    storedAnswer = String(answer.selected_answer);
   } else {
+    // Convert primitives (string, number) to string explicitly
     storedAnswer = String(answer.selected_answer);
   }
 
-  const record = await pb.collection('qa_answers').create<QAAnswer>({
+  console.log('[saveAnswer] storedAnswer:', {
+    value: storedAnswer,
+    type: typeof storedAnswer,
+    length: storedAnswer.length
+  });
+
+  const createData = {
     lead_id: answer.lead_id,
     question_id: answer.question_id,
     selected_answer: storedAnswer,
     points_earned: answer.points_earned,
     answered_at: answer.answered_at || new Date().toISOString()
-  });
+  };
+
+  console.log('[saveAnswer] Creating record with data:', JSON.stringify(createData, null, 2));
+
+  let record;
+  try {
+    record = await pb.collection('qa_answers').create<QAAnswer>(createData);
+  } catch (error: any) {
+    console.error('[saveAnswer] PocketBase error details:', {
+      status: error?.status,
+      message: error?.message,
+      data: error?.data,
+      response: error?.response?.data,
+      originalError: error?.originalError?.data
+    });
+    throw error;
+  }
 
   return record;
 }
@@ -242,7 +275,8 @@ export async function saveAnswerWithPoints(
     selected_answer: selectedAnswer as any,
     points_earned: pointsEarned,
     answered_at: new Date().toISOString(),
-  });
+    question_type: question.question_type
+  } as any);
 }
 
 /**
@@ -293,15 +327,6 @@ export async function deleteLeadQAAnswers(leadId: string): Promise<void> {
     console.error('[deleteLeadQAAnswers] Error:', error);
     throw error;
   }
-}
-
-/**
- * Extended answer type with question data
- */
-export interface QAAnswerWithQuestion extends QAAnswer {
-  expand?: {
-    question_id?: QAQuestion;
-  };
 }
 
 // =============================================================================
@@ -396,39 +421,40 @@ function validateMultipleChoice(data: CreateMultipleChoiceDto): void {
  * Validate Likert scale question data
  */
 function validateLikert(data: CreateLikertDto): void {
-  const scaleMin = data.scale_min ?? 1;
-  const scaleMax = data.scale_max ?? 5;
-
-  if (scaleMin < 1) {
+  if (!data.scale_values || data.scale_values.length < 2) {
     throw new QuestionValidationError(
-      'scale_min must be at least 1',
-      'scale_min',
-      'INVALID_SCALE_MIN'
+      'Likert scale must have at least 2 values',
+      'scale_values',
+      'INVALID_SCALE_COUNT'
     );
   }
 
-  if (scaleMax > 10) {
-    throw new QuestionValidationError(
-      'scale_max cannot exceed 10',
-      'scale_max',
-      'INVALID_SCALE_MAX'
-    );
-  }
+  // Check that values are sequential starting from 1
+  for (let i = 0; i < data.scale_values.length; i++) {
+    const item = data.scale_values[i];
+    if (item.value !== i + 1) {
+      throw new QuestionValidationError(
+        `Scale values must be sequential starting from 1. Expected ${i + 1}, got ${item.value}`,
+        'scale_values',
+        'INVALID_SCALE_VALUE'
+      );
+    }
 
-  if (scaleMin >= scaleMax) {
-    throw new QuestionValidationError(
-      'scale_max must be greater than scale_min',
-      'scale_max',
-      'INVALID_SCALE_RANGE'
-    );
-  }
+    if (!item.label || item.label.trim().length === 0) {
+      throw new QuestionValidationError(
+        `Scale value ${item.value} must have a label`,
+        'scale_values',
+        'MISSING_SCALE_LABEL'
+      );
+    }
 
-  if (data.points_per_level !== undefined && data.points_per_level < 0) {
-    throw new QuestionValidationError(
-      'points_per_level must be non-negative',
-      'points_per_level',
-      'INVALID_POINTS_PER_LEVEL'
-    );
+    if (item.points < 0) {
+      throw new QuestionValidationError(
+        `Scale value ${item.value} points cannot be negative`,
+        'scale_values',
+        'INVALID_SCALE_POINTS'
+      );
+    }
   }
 }
 
@@ -588,8 +614,8 @@ export function validateAnswerData(
     }
 
     case 'likert': {
-      const scaleMin = (question as any).scale_min ?? 1;
-      const scaleMax = (question as any).scale_max ?? 5;
+      const scaleValues = (question as any).scale_values || [];
+      const validValues = scaleValues.map((v: any) => v.value);
       const answerNum = Number(answer.selected_answer);
 
       if (isNaN(answerNum)) {
@@ -600,9 +626,9 @@ export function validateAnswerData(
         );
       }
 
-      if (answerNum < scaleMin || answerNum > scaleMax) {
+      if (!validValues.includes(answerNum)) {
         throw new QuestionValidationError(
-          `Answer must be between ${scaleMin} and ${scaleMax}`,
+          `Answer must be one of: ${validValues.join(', ')}`,
           'selected_answer',
           'LIKERT_OUT_OF_RANGE'
         );
@@ -663,10 +689,11 @@ export function calculatePointsEarned(
     }
 
     case 'likert': {
-      const pointsPerLevel = (question as any).points_per_level ?? 0;
+      const scaleValues = (question as any).scale_values || [];
       const answerNum = Number(answer.selected_answer);
       if (isNaN(answerNum)) return 0;
-      return answerNum * pointsPerLevel;
+      const scaleItem = scaleValues.find((v: any) => v.value === answerNum);
+      return scaleItem?.points ?? 0;
     }
 
     case 'open': {

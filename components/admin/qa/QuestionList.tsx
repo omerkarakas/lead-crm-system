@@ -1,6 +1,6 @@
 'use client';
 
-import { QAQuestion, QuestionType } from '@/types/qa';
+import { QAQuestion, QuestionType, SingleChoiceQuestion, MultipleChoiceQuestion } from '@/types/qa';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -88,10 +88,25 @@ export function QuestionList({
         message += '\n(Birden fazla seçebilirsiniz)';
       }
     } else if (question.question_type === 'likert') {
-      const scaleMin = (question as any).scale_min || 1;
-      const scaleMax = (question as any).scale_max || 5;
-      for (let i = scaleMin; i <= scaleMax; i++) {
-        message += `${i}) ${i === scaleMin ? 'Çok kötü' : i === scaleMax ? 'Çok iyi' : '-'}\n`;
+      const scaleValues = (question as any).scale_values || [];
+      // Use actual scale_values if available, otherwise use defaults
+      if (scaleValues.length > 0) {
+        scaleValues.forEach((scaleValue: any) => {
+          const label = scaleValue.label?.trim() || '-';
+          message += `${scaleValue.value}) ${label}\n`;
+        });
+      } else {
+        // Backward compatibility - default labels
+        const defaultLabels: Record<number, string> = {
+          1: 'Çok kötü',
+          2: 'Kötü',
+          3: 'Nötr',
+          4: 'İyi',
+          5: 'Çok iyi'
+        };
+        for (let i = 1; i <= 5; i++) {
+          message += `${i}) ${defaultLabels[i] || '-'}\n`;
+        }
       }
     } else if (question.question_type === 'open') {
       message += 'Cevabınızı buraya yazın...';
@@ -165,15 +180,15 @@ export function QuestionList({
                 </TableCell>
                 <TableCell>
                   <div className="text-sm space-y-1">
-                    {question.options && question.question_type !== 'likert' && question.question_type !== 'open' ? (
-                      question.options.map((opt, i) => (
+                    {question.question_type === 'single' || question.question_type === 'multiple' ? (
+                      (question as SingleChoiceQuestion | MultipleChoiceQuestion).options.map((opt, i) => (
                         <div key={i} className="text-muted-foreground">
                           {opt}
                         </div>
                       ))
                     ) : question.question_type === 'likert' ? (
                       <div className="text-muted-foreground">
-                        {(question as any).scale_min || 1}-{(question as any).scale_max || 5} skala
+                        {(question as any).scale_values?.length || 5} değer
                       </div>
                     ) : (
                       <div className="text-muted-foreground">
@@ -184,15 +199,15 @@ export function QuestionList({
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-2">
-                    {question.points && Object.keys(question.points).length > 0 ? (
-                      Object.entries(question.points).map(([key, value]) => (
+                    {question.question_type === 'single' || question.question_type === 'multiple' ? (
+                      Object.entries((question as SingleChoiceQuestion | MultipleChoiceQuestion).points).map(([key, value]) => (
                         <Badge key={key} variant="outline">
                           {key}: {value}
                         </Badge>
                       ))
                     ) : question.question_type === 'likert' ? (
                       <Badge variant="outline">
-                        {(question as any).points_per_level || 0} puan/seviye
+                        {(question as any).scale_values?.length || 5} değer
                       </Badge>
                     ) : question.question_type === 'open' ? (
                       <Badge variant="outline">

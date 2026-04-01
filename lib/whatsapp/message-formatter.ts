@@ -1,9 +1,11 @@
-import { QAQuestion } from "@/types/qa";
+import { QAQuestion, SingleChoiceQuestion, MultipleChoiceQuestion } from "@/types/qa";
 import type { Lead } from "@/types/lead";
 import { QA_CONFIG } from "@/lib/config/qa";
 
 /**
  * Format poll message for WhatsApp
+ * NOTE: This is used for legacy text-based polls.
+ * New SendPoll approach sends questions individually.
  */
 export function formatPollMessage(lead: Lead, questions: QAQuestion[]): string {
   // Format welcome message
@@ -16,12 +18,25 @@ export function formatPollMessage(lead: Lead, questions: QAQuestion[]): string {
     welcome = welcome.replace("{company}", "");
   }
 
-  // Format questions
+  // Format questions - only single/multiple choice have options
   const questionsText = questions
     .map((q, index) => {
       const num = index + 1;
-      const options = q.options.join("\n   ");
-      return `${num}. ${q.question_text}\n   ${options}`;
+
+      // Handle different question types
+      if (q.question_type === 'single' || q.question_type === 'multiple') {
+        const choiceQ = q as SingleChoiceQuestion | MultipleChoiceQuestion;
+        const options = choiceQ.options.join("\n   ");
+        return `${num}. ${q.question_text}\n   ${options}`;
+      } else if (q.question_type === 'likert') {
+        // For Likert, show the scale values
+        const scaleValues = (q as any).scale_values || [];
+        const scaleOptions = scaleValues.map((v: any) => `${v.value}) ${v.label}`).join("\n   ");
+        return `${num}. ${q.question_text}\n   ${scaleOptions}`;
+      } else {
+        // Open-ended - no options
+        return `${num}. ${q.question_text}\n   (Cevabınızı yazın...)`;
+      }
     })
     .join("\n\n");
 

@@ -19,7 +19,7 @@ export async function QAAnswersTable({ leadId }: QAAnswersTableProps) {
   }
 
   // Calculate total score
-  const totalScore = answers.reduce((sum, answer) => sum + (answer.points_earned || 0), 0);
+  const totalScore = answers.reduce((sum, answer) => sum + ((answer as any).points_earned || 0), 0);
 
   return (
     <div className="bg-white rounded-lg border overflow-hidden">
@@ -33,21 +33,22 @@ export async function QAAnswersTable({ leadId }: QAAnswersTableProps) {
         </thead>
         <tbody>
           {answers.map((answer, index) => {
-            const question = answer.expand?.question_id;
+            const a = answer as any;
+            const question = a.expand?.question_id;
             const questionText = question?.question_text || `Soru ${index + 1}`;
-            const answerText = answer.selected_answer?.toUpperCase() || '-';
+            const answerText = a.selected_answer?.toUpperCase() || '-';
 
             // Find the option text for the selected answer
             let optionText = answerText;
             if (question?.options) {
-              const optionIndex = answer.selected_answer?.charCodeAt(0) - 'a'.charCodeAt(0);
+              const optionIndex = a.selected_answer?.charCodeAt(0) - 'a'.charCodeAt(0);
               if (optionIndex >= 0 && optionIndex < question.options.length) {
                 optionText = `${answerText}) ${question.options[optionIndex]?.replace(/^[a-c]\)\s*/, '') || answerText}`;
               }
             }
 
             return (
-              <tr key={answer.id || index} className="border-t">
+              <tr key={a.id || index} className="border-t">
                 <td className="px-4 py-3 text-sm text-gray-900">{questionText}</td>
                 <td className="px-4 py-3 text-sm">
                   <span className="px-2 py-1 bg-gray-100 rounded text-gray-700">
@@ -55,7 +56,7 @@ export async function QAAnswersTable({ leadId }: QAAnswersTableProps) {
                   </span>
                 </td>
                 <td className="px-4 py-3 text-sm text-right font-medium text-green-600">
-                  +{answer.points_earned}
+                  +{(answer as any).points_earned}
                 </td>
               </tr>
             );

@@ -15,7 +15,14 @@ import {
 } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { Loader2, MessageSquare, Plus, Trash2 } from 'lucide-react';
-import { QAQuestion, CreateQAQuestionDto, UpdateQAQuestionDto, QuestionType } from '@/types/qa';
+import {
+  QAQuestion,
+  CreateQAQuestionDto,
+  UpdateQAQuestionDto,
+  QuestionType,
+  SingleChoiceQuestion,
+  MultipleChoiceQuestion
+} from '@/types/qa';
 import { QuestionTypeSelector } from './QuestionTypeSelector';
 
 interface QuestionBuilderProps {
@@ -27,6 +34,12 @@ interface QuestionBuilderProps {
 
 interface Option {
   text: string;
+  points: number;
+}
+
+interface ScaleValue {
+  value: number;
+  label: string;
   points: number;
 }
 
@@ -52,9 +65,13 @@ export function QuestionBuilder({
   const [maxSelections, setMaxSelections] = useState<number>(2);
 
   // Likert scale fields
-  const [scaleMin, setScaleMin] = useState(1);
-  const [scaleMax, setScaleMax] = useState(5);
-  const [pointsPerLevel, setPointsPerLevel] = useState(10);
+  const [scaleValues, setScaleValues] = useState<ScaleValue[]>([
+    { value: 1, label: 'Çok kötü', points: 0 },
+    { value: 2, label: 'Kötü', points: 25 },
+    { value: 3, label: 'Nötr', points: 50 },
+    { value: 4, label: 'İyi', points: 75 },
+    { value: 5, label: 'Çok iyi', points: 100 },
+  ]);
 
   // Open-ended fields
   const [minLength, setMinLength] = useState(10);
@@ -78,11 +95,13 @@ export function QuestionBuilder({
 
       // Load type-specific data
       if (type === 'single' || type === 'multiple') {
+        // Type assertion for single/multiple choice questions
+        const choiceQ = editingQuestion as (SingleChoiceQuestion | MultipleChoiceQuestion);
         // Parse options from "a) Option 1" format
-        const parsedOptions = editingQuestion.options.map((opt, i) => {
+        const parsedOptions = choiceQ.options.map((opt, i) => {
           const text = opt.replace(/^[a-z]\)\s*/, '');
           const key = type === 'single' ? String.fromCharCode(97 + i) : opt;
-          const points = editingQuestion.points?.[key] || 0;
+          const points = choiceQ.points?.[key] || 0;
           return { text, points };
         });
         setOptions(parsedOptions);
@@ -90,9 +109,19 @@ export function QuestionBuilder({
           setMaxSelections((editingQuestion as any).max_selections || 2);
         }
       } else if (type === 'likert') {
-        setScaleMin((editingQuestion as any).scale_min || 1);
-        setScaleMax((editingQuestion as any).scale_max || 5);
-        setPointsPerLevel((editingQuestion as any).points_per_level || 10);
+        const savedScaleValues = (editingQuestion as any).scale_values;
+        if (savedScaleValues && savedScaleValues.length > 0) {
+          setScaleValues(savedScaleValues);
+        } else {
+          // Default values for backward compatibility
+          setScaleValues([
+            { value: 1, label: 'Çok kötü', points: 0 },
+            { value: 2, label: 'Kötü', points: 25 },
+            { value: 3, label: 'Nötr', points: 50 },
+            { value: 4, label: 'İyi', points: 75 },
+            { value: 5, label: 'Çok iyi', points: 100 },
+          ]);
+        }
       } else if (type === 'open') {
         setMinLength((editingQuestion as any).min_length || 10);
         setMaxLength((editingQuestion as any).max_length || 500);
@@ -109,9 +138,13 @@ export function QuestionBuilder({
         { text: '', points: 100 },
       ]);
       setMaxSelections(2);
-      setScaleMin(1);
-      setScaleMax(5);
-      setPointsPerLevel(10);
+      setScaleValues([
+        { value: 1, label: 'Çok kötü', points: 0 },
+        { value: 2, label: 'Kötü', points: 25 },
+        { value: 3, label: 'Nötr', points: 50 },
+        { value: 4, label: 'İyi', points: 75 },
+        { value: 5, label: 'Çok iyi', points: 100 },
+      ]);
       setMinLength(10);
       setMaxLength(500);
       setOpenPoints(5);
@@ -147,9 +180,10 @@ export function QuestionBuilder({
 
     if (questionType === 'likert') {
       let message = `*${questionText}*\n\n`;
-      for (let i = scaleMin; i <= scaleMax; i++) {
-        message += `${i}) ${i === scaleMin ? 'Çok kötü' : i === scaleMax ? 'Çok iyi' : '-'}\n`;
-      }
+      scaleValues.forEach((scaleValue) => {
+        const label = scaleValue.label.trim() || '-';
+        message += `${scaleValue.value}) ${label}\n`;
+      });
       return message.trim();
     }
 
@@ -198,8 +232,16 @@ export function QuestionBuilder({
     }
 
     if (questionType === 'likert') {
-      if (scaleMin >= scaleMax) {
-        setError('Minimum skalası maksimumdan küçük olmalı');
+      if (scaleValues.length < 2) {
+        setError('En az 2 skala değeri gerekli');
+        return false;
+      }
+      if (scaleValues.some(v => !v.label.trim())) {
+        setError('Tüm skala değerlerinin açıklaması dolu olmalı');
+        return false;
+      }
+      if (scaleValues.some(v => v.points < 0)) {
+        setError('Puanlar negatif olamaz');
         return false;
       }
     }
@@ -250,9 +292,7 @@ export function QuestionBuilder({
         data = {
           question_text: questionText,
           question_type: 'likert',
-          scale_min: scaleMin,
-          scale_max: scaleMax,
-          points_per_level: pointsPerLevel,
+          scale_values: scaleValues,
           is_active: isActive,
         };
       } else {
@@ -268,7 +308,7 @@ export function QuestionBuilder({
       }
 
       if (isEditing && editingQuestion) {
-        await onSave({ ...data, id: editingQuestion.id } as UpdateQAQuestionDto);
+        await onSave(data as UpdateQAQuestionDto);
       } else {
         await onSave(data);
       }
@@ -283,9 +323,13 @@ export function QuestionBuilder({
         { text: '', points: 100 },
       ]);
       setMaxSelections(2);
-      setScaleMin(1);
-      setScaleMax(5);
-      setPointsPerLevel(10);
+      setScaleValues([
+        { value: 1, label: 'Çok kötü', points: 0 },
+        { value: 2, label: 'Kötü', points: 25 },
+        { value: 3, label: 'Nötr', points: 50 },
+        { value: 4, label: 'İyi', points: 75 },
+        { value: 5, label: 'Çok iyi', points: 100 },
+      ]);
       setMinLength(10);
       setMaxLength(500);
       setOpenPoints(5);
@@ -419,63 +463,79 @@ export function QuestionBuilder({
             </div>
           ) : questionType === 'likert' ? (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="scale-min">Minimum Skala</Label>
-                  <Input
-                    id="scale-min"
-                    type="number"
-                    min="1"
-                    max="10"
-                    value={scaleMin}
-                    onChange={(e) => setScaleMin(Number(e.target.value))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="scale-max">Maksimum Skala</Label>
-                  <Input
-                    id="scale-max"
-                    type="number"
-                    min="1"
-                    max="10"
-                    value={scaleMax}
-                    onChange={(e) => setScaleMax(Number(e.target.value))}
-                  />
-                </div>
+              <div className="flex items-center justify-between">
+                <Label>Skala Değerleri</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setScaleValues([
+                    ...scaleValues,
+                    { value: scaleValues.length + 1, label: '', points: 0 }
+                  ])}
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Değer Ekle
+                </Button>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="points-per-level">Her Seviye İçin Puan</Label>
-                <Input
-                  id="points-per-level"
-                  type="number"
-                  min="0"
-                  value={pointsPerLevel}
-                  onChange={(e) => setPointsPerLevel(Number(e.target.value))}
-                  className="w-40"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Maksimum puan: {pointsPerLevel * (scaleMax - scaleMin + 1)}
+                {scaleValues.map((scaleValue, index) => (
+                  <div key={index} className="flex gap-2 items-start">
+                    <div className="w-12 h-10 flex items-center justify-center bg-slate-100 rounded font-semibold">
+                      {scaleValue.value}
+                    </div>
+                    <Input
+                      placeholder={`Seçenek ${scaleValue.value} için açıklama`}
+                      value={scaleValue.label}
+                      onChange={(e) => {
+                        const newValues = [...scaleValues];
+                        newValues[index].label = e.target.value;
+                        setScaleValues(newValues);
+                      }}
+                      className="flex-1"
+                    />
+                    <div className="flex items-center gap-1">
+                      <Label htmlFor={`points-${index}`} className="whitespace-nowrap text-xs">
+                        Puan:
+                      </Label>
+                      <Input
+                        id={`points-${index}`}
+                        type="number"
+                        min="0"
+                        max="1000"
+                        value={scaleValue.points}
+                        onChange={(e) => {
+                          const newValues = [...scaleValues];
+                          newValues[index].points = Number(e.target.value);
+                          setScaleValues(newValues);
+                        }}
+                        className="w-20"
+                      />
+                    </div>
+                    {scaleValues.length > 2 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          const newValues = scaleValues.filter((_, i) => i !== index);
+                          // Renumber values
+                          const renumbered = newValues.map((v, i) => ({ ...v, value: i + 1 }));
+                          setScaleValues(renumbered);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                <p className="text-xs text-amber-800">
+                  <strong>İpucu:</strong> En az 2 skala değeri olmalı. Her değer için ayrı label ve puan belirleyebilirsiniz.
                 </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Önizleme</Label>
-                <div className="bg-slate-50 border rounded-lg p-4 text-sm">
-                  {Array.from({ length: scaleMax - scaleMin + 1 }, (_, i) => {
-                    const num = scaleMin + i;
-                    let label = '';
-                    if (num === scaleMin) label = 'Çok kötü';
-                    else if (num === scaleMax) label = 'Çok iyi';
-                    else label = '-';
-
-                    return (
-                      <div key={num} className="py-1">
-                        {num}) {label}
-                      </div>
-                    );
-                  })}
-                </div>
               </div>
             </div>
           ) : (

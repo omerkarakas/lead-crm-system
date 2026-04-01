@@ -39,6 +39,7 @@ export interface Lead {
   qa_sent_at?: string;
   qa_completed: boolean;
   qa_completed_at?: string;
+  current_question_order?: number;
   offer_response?: string;
   offer_responded_at?: string;
   auto_updated_status?: boolean;
@@ -90,6 +91,7 @@ export interface UpdateLeadDto {
   qa_sent_at?: string;
   qa_completed?: boolean;
   qa_completed_at?: string;
+  current_question_order?: number;
   offer_response?: string;
   offer_responded_at?: string;
   auto_updated_status?: boolean;

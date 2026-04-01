@@ -1,5 +1,5 @@
 import PocketBase from 'pocketbase';
-import type { WhatsAppMessage } from '@/types/qa';
+import type { WhatsAppMessage, QAQuestion } from '@/types/qa';
 
 // Read from env (works in Next.js both server and client side)
 const GREEN_API_INSTANCE_ID = process.env.GREEN_API_INSTANCE_ID || '';
@@ -141,5 +141,177 @@ export async function getUnreadMessageCount(leadId: string): Promise<number> {
   } catch (error) {
     console.error('Get unread message count error:', error);
     return 0;
+  }
+}
+
+// =============================================================================
+// SENDPOLL API FUNCTIONS
+// =============================================================================
+
+/**
+ * SendPoll response format from Green API
+ */
+export interface SendPollResponse {
+  idMessage: string;
+}
+
+/**
+ * Send a native WhatsApp poll via Green API SendPoll method
+ */
+export async function sendPoll(
+  chatId: string,
+  message: string,
+  options: string[],
+  allowMultipleAnswers: boolean
+): Promise<SendPollResponse | null> {
+  if (!GREEN_API_INSTANCE_ID || !GREEN_API_TOKEN) {
+    console.error('[sendPoll] Green API credentials not configured');
+    return null;
+  }
+
+  // Green API SendPoll requires options as objects with optionName property
+  const optionsObjects = options.map(opt => ({ optionName: opt }));
+
+  try {
+    const response = await fetch(
+      `https://api.green-api.com/waInstance${GREEN_API_INSTANCE_ID}/sendPoll/${GREEN_API_TOKEN}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chatId,
+          message,
+          options: optionsObjects,
+          multipleAnswers: allowMultipleAnswers
+        })
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Green API SendPoll error: ${response.status} ${response.statusText} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    console.log('[sendPoll] Poll sent successfully:', data.idMessage);
+    return data;
+  } catch (error) {
+    console.error('[sendPoll] Error:', error);
+    throw error;
+  }
+}
+
+/**
+ * Send an open-ended question as a regular text message
+ */
+export async function sendOpenQuestion(
+  chatId: string,
+  questionText: string,
+  minLength?: number,
+  maxLength?: number
+): Promise<{ idMessage: string } | null> {
+  let message = questionText;
+
+  // Add length constraints if specified
+  if (minLength !== undefined || maxLength !== undefined) {
+    const constraints = [];
+    if (minLength) constraints.push(`min ${minLength}`);
+    if (maxLength) constraints.push(`max ${maxLength}`);
+    message += `\n\n(${constraints.join(', ')} karakter)`;
+  }
+  message += '\n\nCevabınızı buraya yazın...';
+
+  return sendWhatsAppMessage(chatId, message);
+}
+
+// =============================================================================
+// QUESTION MAPPING HELPERS
+// =============================================================================
+
+/**
+ * Map question to poll options (SendPoll format)
+ * - Single: ["a) Opt1", "b) Opt2"] → ["Opt1", "Opt2"]
+ * - Multiple: ["Opt1", "Opt2"] → ["Opt1", "Opt2"]
+ * - Likert: scale_values → ["Çok kötü", "Kötü", "Nötr", "İyi", "Çok iyi"]
+ */
+export function mapQuestionToPollOptions(question: QAQuestion): string[] {
+  switch (question.question_type) {
+    case 'single':
+      // Remove "a) ", "b) " prefixes for SendPoll
+      return question.options.map(opt => opt.replace(/^[a-z]\)\s*/, ''));
+
+    case 'multiple':
+      // Multiple choice options are plain text, use as-is
+      return question.options;
+
+    case 'likert':
+      // Extract labels from scale_values
+      const scaleValues = (question as any).scale_values || [];
+      if (scaleValues.length > 0) {
+        return scaleValues.map((v: any) => v.label || `${v.value}`);
+      }
+      // Fallback to default labels if no scale_values
+      return ['Çok kötü', 'Kötü', 'Nötr', 'İyi', 'Çok iyi'];
+
+    default:
+      return [];
+  }
+}
+
+/**
+ * Get multipleAnswers flag for SendPoll based on question type
+ */
+export function getMultipleAnswersFlag(question: QAQuestion): boolean {
+  return question.question_type === 'multiple';
+}
+
+/**
+ * Calculate chatId from phone number
+ */
+export function phoneToChatId(phone: string): string {
+  return phone.replace(/\D/g, '') + '@c.us';
+}
+
+// =============================================================================
+// QA QUESTION DISPATCH
+// =============================================================================
+
+/**
+ * Send a QA question using the appropriate method based on question type
+ * - Single/Multiple/Likert → SendPoll
+ * - Open → Regular message
+ *
+ * Returns the message ID for tracking
+ */
+export async function sendQAQuestion(
+  phoneNumber: string,
+  question: QAQuestion
+): Promise<{ idMessage: string } | null> {
+  const chatId = phoneToChatId(phoneNumber);
+
+  switch (question.question_type) {
+    case 'single':
+    case 'multiple':
+    case 'likert': {
+      const options = mapQuestionToPollOptions(question);
+      const allowMultiple = getMultipleAnswersFlag(question);
+      return sendPoll(chatId, question.question_text, options, allowMultiple);
+    }
+
+    case 'open': {
+      const openQ = question as any;
+      return sendOpenQuestion(
+        chatId,
+        question.question_text,
+        openQ.min_length,
+        openQ.max_length
+      );
+    }
+
+    default:
+      // TypeScript exhaustiveness check - this should never happen with valid types
+      const _exhaustiveCheck: never = question;
+      console.warn('[sendQAQuestion] Unknown question type:', (_exhaustiveCheck as any).question_type);
+      return null;
   }
 }

@@ -8,5 +8,10 @@
   },
   "enabledPlugins": {
     "n8n-mcp-skills@n8n-mcp-skills": true
+  },
+  "permissions": {
+    "allow": [
+      "Bash(npm run:*)"
+    ]
   }
 }

@@ -198,6 +198,16 @@
             "min": null,
             "max": null
           }
+        },
+        {
+          "id": "leads_current_question_order",
+          "name": "current_question_order",
+          "type": "number",
+          "required": false,
+          "options": {
+            "min": 0,
+            "max": 100
+          }
         }
       ]
     },
@@ -349,14 +359,14 @@
           "id": "qa_questions_options",
           "name": "options",
           "type": "json",
-          "required": true,
+          "required": false,
           "options": {}
         },
         {
           "id": "qa_questions_points",
           "name": "points",
           "type": "json",
-          "required": true,
+          "required": false,
           "options": {}
         },
         {
@@ -388,6 +398,43 @@
           "required": true,
           "options": {},
           "default": true
+        },
+        {
+          "id": "qa_questions_scale_values",
+          "name": "scale_values",
+          "type": "json",
+          "required": false,
+          "options": {}
+        },
+        {
+          "id": "qa_questions_min_length",
+          "name": "min_length",
+          "type": "number",
+          "required": false,
+          "options": {
+            "min": 0,
+            "max": 10000
+          }
+        },
+        {
+          "id": "qa_questions_max_length",
+          "name": "max_length",
+          "type": "number",
+          "required": false,
+          "options": {
+            "min": 1,
+            "max": 10000
+          }
+        },
+        {
+          "id": "qa_questions_max_selections",
+          "name": "max_selections",
+          "type": "number",
+          "required": false,
+          "options": {
+            "min": 1,
+            "max": 10
+          }
         }
       ]
     },

@@ -29,13 +29,11 @@ export interface MultipleChoiceQuestion extends BaseQAQuestion {
 // Likert scale question (1-5 rating)
 export interface LikertQuestion extends BaseQAQuestion {
   question_type: 'likert';
-  scale_min?: number;  // Default 1
-  scale_max?: number;  // Default 5
-  scale_labels?: {
-    min?: string;  // e.g., "Very dissatisfied"
-    max?: string;  // e.g., "Very satisfied"
-  };
-  points_per_level?: number;  // Points per scale level
+  scale_values: Array<{
+    value: number;      // Scale position: 1, 2, 3, 4, 5
+    label: string;      // Display label: "Çok kötü", "Kötü", etc.
+    points: number;     // Points for this selection
+  }>;
 }
 
 // Open-ended question
@@ -89,13 +87,11 @@ export interface CreateMultipleChoiceDto extends BaseCreateQuestionDto {
 
 export interface CreateLikertDto extends BaseCreateQuestionDto {
   question_type: 'likert';
-  scale_min?: number;
-  scale_max?: number;
-  scale_labels?: {
-    min?: string;
-    max?: string;
-  };
-  points_per_level?: number;
+  scale_values: Array<{
+    value: number;
+    label: string;
+    points: number;
+  }>;
 }
 
 export interface CreateOpenDto extends BaseCreateQuestionDto {
@@ -145,13 +141,11 @@ export interface UpdateMultipleChoiceDto {
 export interface UpdateLikertDto {
   question_type?: 'likert';
   question_text?: string;
-  scale_min?: number;
-  scale_max?: number;
-  scale_labels?: {
-    min?: string;
-    max?: string;
-  };
-  points_per_level?: number;
+  scale_values?: Array<{
+    value: number;
+    label: string;
+    points: number;
+  }>;
   order?: number;
   is_active?: boolean;
 }
@@ -235,11 +229,11 @@ export interface WhatsAppMessage {
   green_api_id?: string;
 }
 
-export interface QAAnswerWithQuestion extends QAAnswer {
+export type QAAnswerWithQuestion = QAAnswer & {
   expand?: {
     question_id?: QAQuestion;
   };
-}
+};
 
 // Type aliases for WhatsApp message properties
 export type WhatsAppDirection = 'incoming' | 'outgoing';
