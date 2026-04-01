@@ -10,19 +10,19 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 ## Current Position
 
 Phase: 7 of 8 (Poll Question Types)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-04-01 — Roadmap created for v1.0.1 milestone
+Plan: 1 of 3
+Status: In progress
+Last activity: 2026-04-01 — Completed 07-01: Poll question types data model
 
-Progress: [██████████] 100% (v1.0 complete), [░░░░░░░░░░] 0% (v1.0.1: 0/6 plans)
+Progress: [██████████] 100% (v1.0 complete), [█░░░░░░░░░░] 17% (v1.0.1: 1/6 plans)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 49 (v1.0)
-- Average duration: 9.8 min
-- Total execution time: 5 hours 42 min
+- Total plans completed: 50 (49 v1.0 + 1 v1.0.1)
+- Average duration: 9.7 min
+- Total execution time: 5 hours 49 min
 
 **By Phase:**
 
@@ -37,6 +37,15 @@ Progress: [██████████] 100% (v1.0 complete), [░░░░�
 | 05-campaigns-nurturing   | 6 of 6    | 74 min    | 12.3 min  |
 | 06-polish-integration    | 3 of 3    | 15 min    | 5 min    |
 | **v1.0 Total**           | **49**    | **5h 42m**| **6.9 min**|
+| 07-poll-question-types   | 1 of 3    | 7 min     | 7 min    |
+
+**Recent Trend (Phase 7):**
+- Discriminated unions for QA question types (single, multiple, likert, open)
+- QuestionValidationError class with field and error codes
+- Validation functions: validateQuestionData(), validateAnswerData(), calculatePointsEarned()
+- Database migration 07-add_question_types.js with question_type field
+- selected_answer field changed from select to text for flexibility
+- Legacy DTO types maintained for backward compatibility
 
 **Recent Trend (Phase 6):**
 - ActivityEvent types with 10+ event types (notes, WhatsApp, emails, QA, appointments, proposals, campaigns, status changes)
@@ -64,6 +73,8 @@ Recent decisions affecting current work:
 | Phase structure for v1.0.1 | Small milestone (1-2 days) split into 2 focused phases | 2026-04-01 |
 | Poll question types first | Core functionality (new types) before UX enhancement (buttons) | 2026-04-01 |
 | WhatsApp inline buttons separate phase | Green API integration complexity warrants dedicated phase | 2026-04-01 |
+| Discriminated unions for question types | TypeScript compile-time safety via question_type discriminator | 2026-04-01 |
+| selected_answer as text field | Database flexibility for arrays, numbers, free text; validation in application layer | 2026-04-01 |
 
 [See STATE.md in milestones archive for full v1.0 decision log]
 
@@ -77,13 +88,15 @@ None yet.
 
 [Issues that affect future work]
 
-None yet.
+- Migration 07-add_question_types.js must be deployed before UI can use new question types
+- Existing QA questions will default to 'single' type - no data migration needed
+- selected_answer stored as JSON arrays for multiple choice requires UI parsing (lib/api/qa.ts handles serialization)
 
 ## Session Continuity
 
 Last session: 2026-04-01
-Stopped at: Roadmap created for v1.0.1 - ready to plan Phase 7
+Stopped at: Completed 07-01 - Poll question types data model
 Resume file: None
 Dev server: Not running
 
-**Note:** Starting milestone v1.0.1 with 2 phases (7-8) focused on poll question types and WhatsApp inline buttons. This is a small milestone building on the existing v1.0 MVP qualification system.
+**Note:** Phase 7 (Poll Question Types) in progress. Plan 07-01 complete with database schema, TypeScript types, and validation framework. Ready for 07-02 (QA Form UI) to build type-safe components.
